@@ -1,11 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
 	"net/url"
+	"io/ioutil"
 	"strconv"
 	"time"
 )
@@ -46,13 +48,37 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 func (api *APIClient) doRequest(method, urlPath string, query map[string]string, data []byte) (body []byte, err error) {
 	baseURL, err := url.Parse(api.config.baseURL)
 	if err != nil {
-		return
+		return nil, err
 	}
 	apipath, err := url.Parse(urlPath)
 	if err != nil {
-		return
+		return nil, err
 	}
 	endpoint := baseURL.ResolveReference(apipath).String()
-	println(endpoint)
+
+	req , err := http.NewRequest(method,endpoint,bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	for k,v := range query {
+		q.Add(k,v)
+	}
+	req.URL.RawQuery = q.Encode()
+for k,v := range api.header(method, req.URL.RequestURI(), body) {
+		req.Header.Add(k,v)
+	}
+
+	resp, err := api.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
 	return
+}
+
+
+func (api *APIClient) GetTicker(){
+
 }
