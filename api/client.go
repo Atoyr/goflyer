@@ -5,11 +5,16 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
-	"net/url"
 	"io/ioutil"
 	"strconv"
 	"time"
+
+
+	"github.com/atoyr/goflyer/api/model"
+	"github.com/gorilla/websocket"
+
 )
 
 type APIClient struct {
@@ -46,15 +51,10 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 }
 
 func (api *APIClient) doRequest(method, urlPath string, query map[string]string, data []byte) (body []byte, err error) {
-	baseURL, err := url.Parse(api.config.baseURL)
+	endpoint ,err :=  api.config.GetEndpoint(urlPath)
 	if err != nil {
 		return nil, err
 	}
-	apipath, err := url.Parse(urlPath)
-	if err != nil {
-		return nil, err
-	}
-	endpoint := baseURL.ResolveReference(apipath).String()
 
 	req , err := http.NewRequest(method,endpoint,bytes.NewBuffer(data))
 	if err != nil {
@@ -75,10 +75,41 @@ for k,v := range api.header(method, req.URL.RequestURI(), body) {
 	}
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
-	return
+	if err != nil {
+		return nil, err
+	}
+	return body, err
 }
 
-
-func (api *APIClient) GetTicker(){
-
+func (api *APIClient) GetTicker() (ticker *model.Ticker, err error){
+	url:= "getticker"
+	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
+	if err != nil {
+		return nil , err
+	}
+	err = json.Unmarshal(resp, ticker)
+	if err != nil {
+		return nil , err
+	}
+	return ticker, nil
 }
+
+func (api *APIClient) GetRealtimeTicker(){
+	//c , _ ,err := websocket
+}
+
+func (api *APIClient) GetBalance() (balances []model.Balance, err error) {
+	url := "me/getbalance"
+	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(resp, &balances)
+	if err != nil {
+		return nil, err
+	}
+
+	return balances, nil
+}
+
