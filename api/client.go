@@ -6,15 +6,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"net/http"
+	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"strconv"
 	"time"
 
-
 	"github.com/atoyr/goflyer/api/model"
 	"github.com/gorilla/websocket"
-
 )
 
 type APIClient struct {
@@ -22,6 +22,19 @@ type APIClient struct {
 	secret     string
 	httpClient *http.Client
 	config     *apiConfig
+}
+
+type JsonRPC2 struct {
+	Version string      `json:"jsonrpc"`
+	Method  string      `json:"method"`
+	Params  interface{} `json:"params"`
+	Result  interface{} `json:"result,omitempty"`
+	Error   interface{} `json:"error,omitempty"`
+	Id      *int        `json:"id,omitempty"`
+}
+
+type SubscriveParams struct {
+	Channel string `json:"channel"`
 }
 
 func New(key, secret string) *APIClient {
@@ -51,22 +64,22 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 }
 
 func (api *APIClient) doRequest(method, urlPath string, query map[string]string, data []byte) (body []byte, err error) {
-	endpoint ,err :=  api.config.GetEndpoint(urlPath)
+	endpoint, err := api.config.GetEndpoint(urlPath)
 	if err != nil {
 		return nil, err
 	}
 
-	req , err := http.NewRequest(method,endpoint,bytes.NewBuffer(data))
+	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	q := req.URL.Query()
-	for k,v := range query {
-		q.Add(k,v)
+	for k, v := range query {
+		q.Add(k, v)
 	}
 	req.URL.RawQuery = q.Encode()
-for k,v := range api.header(method, req.URL.RequestURI(), body) {
-		req.Header.Add(k,v)
+	for k, v := range api.header(method, req.URL.RequestURI(), body) {
+		req.Header.Add(k, v)
 	}
 
 	resp, err := api.httpClient.Do(req)
@@ -81,21 +94,59 @@ for k,v := range api.header(method, req.URL.RequestURI(), body) {
 	return body, err
 }
 
-func (api *APIClient) GetTicker() (ticker *model.Ticker, err error){
-	url:= "getticker"
-	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
+func (api *APIClient) GetTicker(productCode string) (ticker *model.Ticker, err error) {
+	url := "getticker"
+	query := map[string]string{}
+	query["product_code"] = productCode
+
+	resp, err := api.doRequest("GET", url, query, nil)
 	if err != nil {
-		return nil , err
+		return nil, err
 	}
 	err = json.Unmarshal(resp, ticker)
 	if err != nil {
-		return nil , err
+		return nil, err
 	}
 	return ticker, nil
 }
 
-func (api *APIClient) GetRealtimeTicker(){
-	//c , _ ,err := websocket
+func (api *APIClient) GetRealtimeTicker(symbol string, ch chan<- Ticker) {
+	c, _, err := websocket.DefaultDialer.Dial(api.config.websocket.String(), nil)
+	if err != nil {
+		log.Fatal("webscoker weeoe")
+	}
+
+	defer c.Close()
+	channel := fmt.Sprintf("lighning_ticker_%s", symbol)
+	if err := c.WriteJSON(&JsonRPC2{Version: "2.0", Method: "subscribe", Params: &SubscriveParams{channel}}); err != nil {
+
+	}
+}
+
+func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []model.Execution, err error) {
+	url := "getexecutions"
+	query := map[string]string{}
+	query["product_code"] = productCode
+	if beforeID != "" {
+		query["before"] = beforeID
+	}
+	if afterID != "" {
+		query["before"] = afterID
+	}
+	if count < 0 {
+		query["count"] = string(count)
+	}
+	resp, err := api.doRequest("GET", url, query, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(resp, &executions)
+	if err != nil {
+		return nil, err
+	}
+
+	return executions, nil
 }
 
 func (api *APIClient) GetBalance() (balances []model.Balance, err error) {
@@ -112,4 +163,3 @@ func (api *APIClient) GetBalance() (balances []model.Balance, err error) {
 
 	return balances, nil
 }
-
