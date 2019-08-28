@@ -2,11 +2,11 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -94,6 +94,37 @@ func (api *APIClient) doRequest(method, urlPath string, query map[string]string,
 	return body, err
 }
 
+func (api *APIClient) doWebsocketRequest(jsonRCP2 JsonRPC2, ch chan<- interface{}, ctx context.Context) {
+	c, _, err := websocket.DefaultDialer.Dial(api.config.websocket.String(), nil)
+	if err != nil {
+		log.Fatal("webscoker weeoe")
+	}
+
+	defer c.Close()
+	if err := c.WriteJSON(&jsonRCP2); err != nil {
+		log.Fatal("websocker")
+	}
+	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+	for {
+		message := new(JsonRPC2)
+		if err := c.ReadJSON(message); err != nil {
+			log.Fatalln("read:", err)
+		}
+
+		if message.Method == "channelMessage" {
+			switch v := message.Params.(type) {
+			case map[string]interface{}:
+				for k, binary := range v {
+					if k == "message" {
+						ch <- binary
+					}
+				}
+			}
+		}
+	}
+}
+
 func (api *APIClient) GetTicker(productCode string) (ticker *model.Ticker, err error) {
 	url := "getticker"
 	query := map[string]string{}
@@ -111,16 +142,6 @@ func (api *APIClient) GetTicker(productCode string) (ticker *model.Ticker, err e
 }
 
 func (api *APIClient) GetRealtimeTicker(symbol string, ch chan<- Ticker) {
-	c, _, err := websocket.DefaultDialer.Dial(api.config.websocket.String(), nil)
-	if err != nil {
-		log.Fatal("webscoker weeoe")
-	}
-
-	defer c.Close()
-	channel := fmt.Sprintf("lighning_ticker_%s", symbol)
-	if err := c.WriteJSON(&JsonRPC2{Version: "2.0", Method: "subscribe", Params: &SubscriveParams{channel}}); err != nil {
-
-	}
 }
 
 func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []model.Execution, err error) {
