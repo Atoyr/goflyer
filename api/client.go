@@ -94,7 +94,7 @@ func (api *APIClient) doRequest(method, urlPath string, query map[string]string,
 	return body, err
 }
 
-func (api *APIClient) doWebsocketRequest(jsonRCP2 JsonRPC2, ch chan<- interface{}, ctx context.Context) {
+func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRCP2 JsonRPC2, ch chan<- interface{} ) {
 	c, _, err := websocket.DefaultDialer.Dial(api.config.websocket.String(), nil)
 	if err != nil {
 		log.Fatal("webscoker weeoe")
