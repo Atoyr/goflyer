@@ -152,9 +152,10 @@ func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- model.Tic
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
 
-	childctx, _ := context.WithCancel(ctx)
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_ticker_%s", productCode)}
-	
+
 	var paramCh = make(chan interface{})
 	go api.doWebsocketRequest(childctx, *jsonRPC2, paramCh)
 
@@ -165,17 +166,16 @@ OUTER:
 			return
 
 		default:
-			param <- paramCh
-
-			marchalTick ,err := json.Marshal(param)
+			param := <-paramCh
+			marchalTick, err := json.Marshal(param)
 			if err != nil {
 				continue OUTER
 			}
-			ticker := new (model.Ticker)
-			if err := json.Unmarshal(marchalTick,&ticker); true{
-
-				ch <- tticker
+			ticker := new(model.Ticker)
+			if err := json.Unmarshal(marchalTick, &ticker); err != nil {
+				continue OUTER
 			}
+			ch <- *ticker
 		}
 
 	}
