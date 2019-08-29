@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -94,30 +95,35 @@ func (api *APIClient) doRequest(method, urlPath string, query map[string]string,
 	return body, err
 }
 
-func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRCP2 JsonRPC2, ch chan<- interface{} ) {
+func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) {
 	c, _, err := websocket.DefaultDialer.Dial(api.config.websocket.String(), nil)
 	if err != nil {
-		log.Fatal("webscoker weeoe")
+		log.Fatalf("function=APIClient.doWebsocketRequest, action=Websocket Dial, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
 
 	defer c.Close()
-	if err := c.WriteJSON(&jsonRCP2); err != nil {
-		log.Fatal("websocker")
+	if err := c.WriteJSON(&jsonRPC2); err != nil {
+		log.Fatalf("function=APIClient.doWebsocketRequest, action=Write Json, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	for {
-		message := new(JsonRPC2)
-		if err := c.ReadJSON(message); err != nil {
-			log.Fatalln("read:", err)
-		}
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			message := new(JsonRPC2)
+			if err := c.ReadJSON(message); err != nil {
+				log.Fatalln("read:", err)
+			}
 
-		if message.Method == "channelMessage" {
-			switch v := message.Params.(type) {
-			case map[string]interface{}:
-				for k, binary := range v {
-					if k == "message" {
-						ch <- binary
+			if message.Method == "channelMessage" {
+				switch params := message.Params.(type) {
+				case map[string]interface{}:
+					for k, v := range params {
+						if k == "message" {
+							ch <- v
+						}
 					}
 				}
 			}
@@ -141,7 +147,38 @@ func (api *APIClient) GetTicker(productCode string) (ticker *model.Ticker, err e
 	return ticker, nil
 }
 
-func (api *APIClient) GetRealtimeTicker(symbol string, ch chan<- Ticker) {
+func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- model.Ticker, productCode string) {
+	jsonRPC2 := new(JsonRPC2)
+	jsonRPC2.Version = "2.0"
+	jsonRPC2.Method = "subscribe"
+
+	childctx, _ := context.WithCancel(ctx)
+	jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_ticker_%s", productCode)}
+	
+	var paramCh = make(chan interface{})
+	go api.doWebsocketRequest(childctx, *jsonRPC2, paramCh)
+
+OUTER:
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		default:
+			param <- paramCh
+
+			marchalTick ,err := json.Marshal(param)
+			if err != nil {
+				continue OUTER
+			}
+			ticker := new (model.Ticker)
+			if err := json.Unmarshal(marchalTick,&ticker); true{
+
+				ch <- tticker
+			}
+		}
+
+	}
 }
 
 func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []model.Execution, err error) {
