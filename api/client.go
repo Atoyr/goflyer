@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/atoyr/goflyer/api/model"
+	"github.com/atoyr/goflyer/model"
 	"github.com/gorilla/websocket"
 )
 
