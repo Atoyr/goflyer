@@ -181,6 +181,40 @@ OUTER:
 	}
 }
 
+func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- model.Ticker, productCode string) {
+	jsonRPC2 := new(JsonRPC2)
+	jsonRPC2.Version = "2.0"
+	jsonRPC2.Method = "subscribe"
+
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_board_snapshot_%s", productCode)}
+
+	var paramCh = make(chan interface{})
+	go api.doWebsocketRequest(childctx, *jsonRPC2, paramCh)
+
+OUTER:
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		default:
+			param := <-paramCh
+			marchalTick, err := json.Marshal(param)
+			if err != nil {
+				continue OUTER
+			}
+			ticker := new(model.Ticker)
+			if err := json.Unmarshal(marchalTick, &ticker); err != nil {
+				continue OUTER
+			}
+			ch <- *ticker
+		}
+
+	}
+}
+
 func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []model.Execution, err error) {
 	url := "getexecutions"
 	query := map[string]string{}
