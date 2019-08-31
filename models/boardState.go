@@ -1,4 +1,4 @@
-package model
+package models
 
 type BoardState struct {
 	Health string `json:"health"`

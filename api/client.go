@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/atoyr/goflyer/model"
+	"github.com/atoyr/goflyer/models"
 	"github.com/gorilla/websocket"
 )
 
@@ -131,7 +131,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 	}
 }
 
-func (api *APIClient) GetBoardState(productCode string) (boardState *model.BoardState, err error) {
+func (api *APIClient) GetBoardState(productCode string) (boardState *models.BoardState, err error) {
 	url := "getboardstate"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -147,7 +147,7 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *model.Board
 	return boardState, nil
 }
 
-func (api *APIClient) GetHealth(productCode string) (health *model.Health, err error) {
+func (api *APIClient) GetHealth(productCode string) (health *models.Health, err error) {
 	url := "gethealth"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -163,7 +163,7 @@ func (api *APIClient) GetHealth(productCode string) (health *model.Health, err e
 	return health, nil
 }
 
-func (api *APIClient) GetTicker(productCode string) (ticker *model.Ticker, err error) {
+func (api *APIClient) GetTicker(productCode string) (ticker *models.Ticker, err error) {
 	url := "getticker"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -179,7 +179,7 @@ func (api *APIClient) GetTicker(productCode string) (ticker *model.Ticker, err e
 	return ticker, nil
 }
 
-func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- model.Ticker, productCode string) {
+func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- models.Ticker, productCode string) {
 	jsonRPC2 := new(JsonRPC2)
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
@@ -203,7 +203,7 @@ OUTER:
 			if err != nil {
 				continue OUTER
 			}
-			ticker := new(model.Ticker)
+			ticker := new(models.Ticker)
 			if err := json.Unmarshal(marchalTick, &ticker); err != nil {
 				continue OUTER
 			}
@@ -213,7 +213,7 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- model.Ticker, productCode string) {
+func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- models.Ticker, productCode string) {
 	jsonRPC2 := new(JsonRPC2)
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
@@ -237,7 +237,7 @@ OUTER:
 			if err != nil {
 				continue OUTER
 			}
-			ticker := new(model.Ticker)
+			ticker := new(models.Ticker)
 			if err := json.Unmarshal(marchalTick, &ticker); err != nil {
 				continue OUTER
 			}
@@ -247,7 +247,7 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []model.Execution, err error) {
+func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []models.Execution, err error) {
 	url := "getexecutions"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -273,7 +273,7 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 	return executions, nil
 }
 
-func (api *APIClient) GetBalance() (balances []model.Balance, err error) {
+func (api *APIClient) GetBalance() (balances []models.Balance, err error) {
 	url := "me/getbalance"
 	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
 	if err != nil {
