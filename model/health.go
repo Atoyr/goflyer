@@ -1,5 +1,5 @@
 package model
 
-type Helth struct {
+type Health struct {
 	Status string `json:"status"`
 }
