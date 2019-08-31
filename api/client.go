@@ -131,6 +131,22 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 	}
 }
 
+func (api *APIClient) GetBoardState(productCode string) (boardState *model.BoardState, err error) {
+	url := "getboardstate"
+	query := map[string]string{}
+	query["product_code"] = productCode
+
+	resp, err := api.doRequest("GET", url, query, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(resp, boardState)
+	if err != nil {
+		return nil, err
+	}
+	return boardState, nil
+}
+
 func (api *APIClient) GetHealth(productCode string) (health *model.Health, err error) {
 	url := "gethealth"
 	query := map[string]string{}
