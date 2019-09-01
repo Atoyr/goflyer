@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/atoyr/goflyer/models"
@@ -129,6 +130,64 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 			}
 		}
 	}
+}
+
+func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) {
+	url := "me/getpermissions"
+	query := map[string]string{}
+	permissions = make(map[string]bool, 0)
+
+	// HTTP Public API
+	permissions["getmarket"] = true
+	permissions["getboard"] = true
+	permissions["getticker"] = true
+	permissions["getexecutions"] = true
+	permissions["getboardstate"] = true
+	permissions["gethealth"] = true
+	permissions["getchats"] = true
+	// HTTP Private API
+	permissions["me/getpermissions"] = false
+	permissions["me/getbalance"] = false
+	permissions["me/getcollateral"] = false
+	permissions["me/getcollateralaccounts"] = false
+	permissions["me/getaddresses"] = false
+	permissions["me/getcoinins"] = false
+	permissions["me/getcoinouts"] = false
+	permissions["me/getbankaccounts"] = false
+	permissions["me/getdeposits"] = false
+	permissions["me/whthdraw"] = false
+	permissions["me/getwithdrawals"] = false
+	permissions["me/sendchildorder"] = false
+	permissions["me/cancelchildorder"] = false
+	permissions["me/sendparentorder"] = false
+	permissions["me/cancelparentorder"] = false
+	permissions["me/cancelallchildorders"] = false
+	permissions["me/getchildorders"] = false
+	permissions["me/getparentorders"] = false
+	permissions["me/getparentorder"] = false
+	permissions["me/getexecutions"] = false
+	permissions["me/getbalancehistory"] = false
+	permissions["me/getpositions"] = false
+	permissions["me/getcollateralhistory"] = false
+	permissions["me/gettradingcommisson"] = false
+
+	resp, err := api.doRequest("GET", url, query, nil)
+	if err != nil {
+		return permissions, err
+	}
+	ret := make([]string, 0)
+	err = json.Unmarshal(resp, &ret)
+	if err != nil {
+		return permissions, err
+	}
+
+	for _, v := range ret {
+		slice := strings.Split(v, "/")
+		key := strings.Join(slice[2:], "/")
+		permissions[key] = true
+	}
+	return permissions, nil
+
 }
 
 func (api *APIClient) GetBoardState(productCode string) (boardState *models.BoardState, err error) {

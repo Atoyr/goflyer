@@ -17,6 +17,13 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+	p, err := apiClient.GetPermissions()
+	if err != nil {
+		log.Println(err)
+	}
+	for k, v := range p {
+		log.Printf("%t : %s", v, k)
+	}
 	go apiClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
 	go apiClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
 	go func() {
