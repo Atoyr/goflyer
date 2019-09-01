@@ -13,17 +13,22 @@ func main() {
 	var boardCannl = make(chan models.Board)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	board, err := apiClient.GetBoard("BTC_JPY")
+	if err != nil {
+		log.Println(err)
+	}
 	go apiClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
 	go apiClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
 	go func() {
-		for board := range boardCannl {
+		for b := range boardCannl {
+			board.Merge(b)
 			log.Printf("action=strealBoard, midPrice: %f", board.MidPrice)
 			log.Printf("action=strealBoard, bibs")
-			for _, bid := range board.Bids[:10] {
+			for _, bid := range board.Bids[:20] {
 				log.Printf("action=strealBoard, %v", bid)
 			}
 			log.Printf("action=strealBoard, asks\n")
-			for _, ask := range board.Asks[:10] {
+			for _, ask := range board.Asks[:20] {
 				log.Printf("action=strealBoard,%v ", ask)
 			}
 		}

@@ -140,6 +140,7 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *models.Boar
 	if err != nil {
 		return nil, err
 	}
+	boardState = new(models.BoardState)
 	err = json.Unmarshal(resp, boardState)
 	if err != nil {
 		return nil, err
@@ -156,6 +157,7 @@ func (api *APIClient) GetHealth(productCode string) (health *models.Health, err 
 	if err != nil {
 		return nil, err
 	}
+	health = new(models.Health)
 	err = json.Unmarshal(resp, health)
 	if err != nil {
 		return nil, err
@@ -172,6 +174,7 @@ func (api *APIClient) GetTicker(productCode string) (ticker *models.Ticker, err 
 	if err != nil {
 		return nil, err
 	}
+	ticker = new(models.Ticker)
 	err = json.Unmarshal(resp, ticker)
 	if err != nil {
 		return nil, err
@@ -211,6 +214,23 @@ OUTER:
 		}
 
 	}
+}
+
+func (api *APIClient) GetBoard(productCode string) (board *models.Board, err error) {
+	url := "getboard"
+	query := map[string]string{}
+	query["product_code"] = productCode
+
+	resp, err := api.doRequest("GET", url, query, nil)
+	if err != nil {
+		return nil, err
+	}
+	board = new(models.Board)
+	err = json.Unmarshal(resp, board)
+	if err != nil {
+		return nil, err
+	}
+	return board, nil
 }
 
 func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- models.Board, productCode string, isDiff bool) {
@@ -271,12 +291,47 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 		return nil, err
 	}
 
+	executions = make([]models.Execution, 0)
 	err = json.Unmarshal(resp, &executions)
 	if err != nil {
 		return nil, err
 	}
 
 	return executions, nil
+}
+
+func (api *APIClient) GetRealtimeExecutions(ctx context.Context, ch chan<- []models.Execution, productCode string) {
+	jsonRPC2 := new(JsonRPC2)
+	jsonRPC2.Version = "2.0"
+	jsonRPC2.Method = "subscribe"
+
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_executions_%s", productCode)}
+
+	var paramCh = make(chan interface{})
+	go api.doWebsocketRequest(childctx, *jsonRPC2, paramCh)
+
+OUTER:
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		default:
+			param := <-paramCh
+			marshalExecutions, err := json.Marshal(param)
+			if err != nil {
+				continue OUTER
+			}
+			executions := make([]models.Execution, 0)
+			if err := json.Unmarshal(marshalExecutions, &executions); err != nil {
+				continue OUTER
+			}
+			ch <- executions
+		}
+
+	}
 }
 
 func (api *APIClient) GetBalance() (balances []models.Balance, err error) {
@@ -286,6 +341,7 @@ func (api *APIClient) GetBalance() (balances []models.Balance, err error) {
 		return nil, err
 	}
 
+	balances = make([]models.Balance, 0)
 	err = json.Unmarshal(resp, &balances)
 	if err != nil {
 		return nil, err
