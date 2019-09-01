@@ -213,14 +213,19 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- models.Ticker, productCode string) {
+func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- models.Board, productCode string, isDiff bool) {
 	jsonRPC2 := new(JsonRPC2)
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
 
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_board_snapshot_%s", productCode)}
+	if isDiff {
+		jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_board_%s", productCode)}
+	} else {
+		jsonRPC2.Params = SubscriveParams{Channel: fmt.Sprintf("lightning_board_snapshot_%s", productCode)}
+
+	}
 
 	var paramCh = make(chan interface{})
 	go api.doWebsocketRequest(childctx, *jsonRPC2, paramCh)
@@ -233,17 +238,18 @@ OUTER:
 
 		default:
 			param := <-paramCh
-			marchalTick, err := json.Marshal(param)
+			marchalBoard, err := json.Marshal(param)
 			if err != nil {
+				log.Printf("error : %s", err)
 				continue OUTER
 			}
-			ticker := new(models.Ticker)
-			if err := json.Unmarshal(marchalTick, &ticker); err != nil {
+			board := new(models.Board)
+			if err := json.Unmarshal(marchalBoard, &board); err != nil {
+				log.Printf("error : %s", err)
 				continue OUTER
 			}
-			ch <- *ticker
+			ch <- *board
 		}
-
 	}
 }
 
