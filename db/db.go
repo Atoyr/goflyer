@@ -6,6 +6,7 @@ import (
 
 type DB interface {
 	Init() error
+	UpdateTicker(t model.Ticker)
 	MergeCandle(candle model.Candle)
-	GetCandles(productCode string) ([]model.Candle,error)
+	GetCandles(productCode string) ([]model.Candle, error)
 }
