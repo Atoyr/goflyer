@@ -6,7 +6,7 @@ import (
 
 type Candle struct {
 	ProductCode string
-	Duration time.Duration
+	Duration    time.Duration
 	Time        time.Time
 	Open        float64
 	Close       float64
@@ -30,7 +30,7 @@ func NewCandle(productCode string, time time.Time, open, close, high, low, volum
 func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
 	toTime := c.Time.Add(c.Duration)
 	tickerTime := ticker.GetTimestamp()
-	if !c.Time.After(tickerTime) && tickerTime.Before(toTime){
+	if !c.Time.After(tickerTime) && tickerTime.Before(toTime) {
 		price := ticker.GetMidPrice()
 		if c.High < price {
 			c.High = price
@@ -40,8 +40,9 @@ func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
 		}
 		c.Volume += ticker.Volume
 		c.Close = price
-		return c,nil
+		return c, nil
 	} else {
+		// TODO return error
 		return nil, nil
 	}
 }
