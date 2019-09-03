@@ -2,6 +2,12 @@ package db
 
 import (
 	"github.com/boltdb/bolt"
+	"encoding/json"
+	"github.com/atoyr/goflyer/models"
+"bytes"
+"fmt"
+"time"
+"log"
 )
 
 type Bolt struct {
@@ -22,34 +28,50 @@ func GetBolt(dbFile string) (*Bolt, error) {
 
 func (b *Bolt) Init() error {
 	b.db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte(TickerBucket))
-		b, err := tx.CreateBucketIfNotExists([]byte("Candle"))
-		return nil
+		_, err := tx.CreateBucketIfNotExists([]byte(TickerBucket))
+		_, err = tx.CreateBucketIfNotExists([]byte("Candle"))
+		return err
 	})
 	return nil
 }
 
-func (b *Bolt) UpdateTicker(t model.Ticker) {
-	return b.db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.Bucket([]byte(TickerBucket))
-		if buf, err := json.Marshal(t); err != nil {
+func (b *Bolt) UpdateTicker(t models.Ticker) error {
+	err := b.db.Update(func(tx *bolt.Tx) error {
+		bucket  := tx.Bucket([]byte(TickerBucket))
+		if marshalTime, err := t.GetTimestamp().MarshalBinary() ; err!= nil {
+			log.Fatal("hoge")
+			return err 
+		} else if buf, err := json.Marshal(t); err != nil {
+			log.Fatal("fugu")
 			return err
-		} else if err := bucket.Put([]byte(t.GetTimestamp()), buf); err != nil {
+		} else if err = bucket.Put(marshalTime,buf) ; err != nil {
+			log.Fatal("piyo")
 			return err
 		}
+		return nil
 	})
+		if err  != nil {
+			log.Fatal(err)
+			return err
+		}
+		return nil
 }
 
-func (b *Bolt) GetTicker(timestamp time.Time) (*model.Ticker, error) {
-	m := new(model.Ticker)
+func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
+	m := new(models.Ticker)
 	err := b.db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(TickerBucket)).Cursor()
-		min := []byte(timestamp)
-		max := []byte(timestamp)
+		min ,err  :=  timestamp.MarshalBinary()
+		if err  != nil {
+			return err
+		}
+		max ,err :=  timestamp.MarshalBinary()
+		if err  != nil {
+			return err
+		}
 
 		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-			fmt.Printf("%s: %s\n", k, v)
-
+			fmt.Printf("%s: %s\n", k, v) 
 		}
 		return nil
 	})
