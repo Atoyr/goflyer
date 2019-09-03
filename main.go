@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"github.com/atoyr/goflyer/api"
-	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/db"
+	"github.com/atoyr/goflyer/models"
 	"log"
 )
 
@@ -18,11 +18,13 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	d ,err := db.GetBolt("hoge")
+
+	d, err := db.GetBolt("hoge")
 	if err != nil {
 		log.Println(err)
 	}
 	d.Init()
+
 	p, err := apiClient.GetPermissions()
 	if err != nil {
 		log.Println(err)

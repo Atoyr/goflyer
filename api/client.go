@@ -175,13 +175,16 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 	if err != nil {
 		return permissions, err
 	}
-	ret := make([]string, 0)
+
+	ret := new(models.Permission)
 	err = json.Unmarshal(resp, &ret)
 	if err != nil {
+		log.Print(resp)
+		log.Printf("error is %s", err)
 		return permissions, err
 	}
 
-	for _, v := range ret {
+	for _, v := range ret.Value {
 		slice := strings.Split(v, "/")
 		key := strings.Join(slice[2:], "/")
 		permissions[key] = true
