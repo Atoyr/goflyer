@@ -114,3 +114,7 @@ func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
 	}
 	return m, nil
 }
+
+func (b *Bolt) GetCandleCollection() {
+
+}
