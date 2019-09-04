@@ -115,6 +115,26 @@ func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
 	return m, nil
 }
 
+func (b *Bolt) UpdateCandle(c models.Candle) error {
+	db := b.db()
+	defer db.Close()
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucketName := fmt.Sprintf("Candle_%s", c.Key())
+		bucket  := tx.Bucket([]byte(bucketName))
+		if buf, err := json.Marshal(c); err != nil {
+			return err
+		} else if err = bucket.Put([]byte(c.Key()),buf) ; err != nil {
+			return err
+		}
+		return nil
+	})
+		if err  != nil {
+			log.Fatal(err)
+			return err
+		}
+		return nil 
+}
+
 func (b *Bolt) GetCandleCollection() {
 
 }

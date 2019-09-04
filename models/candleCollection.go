@@ -11,7 +11,10 @@ type CandleCollection struct {
 	Candles map[string]Candle
 }
 
+func (c *CandleCollection) Name() string {
+	return fmt.Sprintf("%s_%s",c.ProductCode, c.Duration)
+}
+
 func (c *CandleCollection) MergeCandle(candle Candle) {
-	key := fmt.Sprintf("%s_%s",c.ProductCode, c.Duration)
-	c.Candles[key] = candle
+	c.Candles[candle.Key()] = candle
 }

@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"fmt"
 )
 
 type Candle struct {
@@ -15,9 +16,10 @@ type Candle struct {
 	Volume      float64
 }
 
-func NewCandle(productCode string, time time.Time, open, close, high, low, volume float64) *Candle {
+func NewCandle(productCode string, duration time.Duration, time time.Time, open, close, high, low, volume float64) *Candle {
 	c := new(Candle)
 	c.ProductCode = productCode
+	c.Duration = duration
 	c.Time = time
 	c.Open = open
 	c.Close = close
@@ -25,6 +27,18 @@ func NewCandle(productCode string, time time.Time, open, close, high, low, volum
 	c.Low = low
 	c.Volume = volume
 	return c
+}
+
+func (c *Candle) CollectionKey() string {
+	return fmt.Sprintf("%s_%s",c.ProductCode, c.Duration)
+}
+
+func (c *Candle) Key() string {
+	return fmt.Sprintf("%s_%s",c.ProductCode, c.GetTimeString())
+}
+
+func (c *Candle) GetTimeString() string {
+	return c.Time.Format(time.RFC3339)
 }
 
 func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
