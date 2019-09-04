@@ -5,11 +5,17 @@ import (
 	"github.com/atoyr/goflyer/api"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/util"
+	"path/filepath" 
 	"log"
 )
 
 func main() {
 	apiClient := api.New("", "")
+	dirPath , err := util.CreateConfigDirectoryIfNotExists("goflyer")
+	if err != nil {
+		log.Println(err)
+	}
 	var tickerChannl = make(chan models.Ticker)
 	var boardCannl = make(chan models.Board)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -19,7 +25,8 @@ func main() {
 		log.Println(err)
 	}
 
-	d, err := db.GetBolt("hoge")
+	dbfile := filepath.Join(dirPath, "goflyer.db")
+	d, err := db.GetBolt(dbfile)
 	if err != nil {
 		log.Println(err)
 	}
