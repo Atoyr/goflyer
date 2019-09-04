@@ -24,6 +24,7 @@ func (t *Ticker) GetTimestamp() time.Time {
 	datetime, err := time.Parse(time.RFC3339, t.Timestamp)
 	if err != nil {
 		log.Printf("action=Execution.GetTimestamp, argslen=0, args=, err=%s", err.Error())
+		return time.Now()
 	}
 	return datetime
 }
