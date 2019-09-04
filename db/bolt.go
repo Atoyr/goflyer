@@ -67,6 +67,25 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 		return nil
 }
 
+func (b *Bolt) GetAllTicker() ([]models.Ticker, error) {
+	db := b.db()
+	defer db.Close()
+	tickers := make([]models.Ticker,0)
+	err := db.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte(TickerBucket)).Cursor()
+
+		for k, v := c.First(); k != nil ; k, v = c.Next() {
+			fmt.Printf("%s: %s\n", k, v) 
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return tickers, nil
+}
+
 func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
 	db := b.db()
 	defer db.Close()

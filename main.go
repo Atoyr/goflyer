@@ -31,6 +31,7 @@ func main() {
 		log.Println(err)
 	}
 	d.Init()
+	d.GetAllTicker()
 
 	p, err := apiClient.GetPermissions()
 	if err != nil {
