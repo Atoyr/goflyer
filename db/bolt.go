@@ -75,7 +75,9 @@ func (b *Bolt) GetAllTicker() ([]models.Ticker, error) {
 		c := tx.Bucket([]byte(TickerBucket)).Cursor()
 
 		for k, v := c.First(); k != nil ; k, v = c.Next() {
-			fmt.Printf("%s: %s\n", k, v) 
+			var t models.Ticker
+			json.Unmarshal(v,&t)
+			tickers = append(tickers,t)
 		}
 		return nil
 	})

@@ -31,7 +31,13 @@ func main() {
 		log.Println(err)
 	}
 	d.Init()
-	d.GetAllTicker()
+	tickers , err := d.GetAllTicker()
+	if err != nil {
+		log.Println(err)
+	}
+	for _, t := range tickers {
+		log.Println(t)
+	}
 
 	p, err := apiClient.GetPermissions()
 	if err != nil {
