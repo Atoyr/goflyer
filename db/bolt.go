@@ -11,7 +11,7 @@ import (
 )
 
 type Bolt struct {
-	db *bolt.DB
+	dbFile string
 }
 
 const TickerBucket = "Ticker"
@@ -21,14 +21,25 @@ func GetBolt(dbFile string) (*Bolt, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 	bolt := new(Bolt)
-	bolt.db = db
+	bolt.dbFile = dbFile
 	return bolt, nil
 }
 
+func (b *Bolt) db() *bolt.DB {
+	db,err := bolt.Open(b.dbFile, 0600, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+	return db
+}
+
 func (b *Bolt) Init() error {
-	b.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(TickerBucket))
+	db := b.db()
+	defer db.Close()
+	db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("Ticker"))
 		_, err = tx.CreateBucketIfNotExists([]byte("Candle"))
 		return err
 	})
@@ -36,16 +47,15 @@ func (b *Bolt) Init() error {
 }
 
 func (b *Bolt) UpdateTicker(t models.Ticker) error {
-	err := b.db.Update(func(tx *bolt.Tx) error {
-		bucket  := tx.Bucket([]byte(TickerBucket))
+	db := b.db()
+	defer db.Close()
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucket  := tx.Bucket([]byte("Ticker"))
 		if marshalTime, err := t.GetTimestamp().MarshalBinary() ; err!= nil {
-			log.Fatal("hoge")
 			return err 
 		} else if buf, err := json.Marshal(t); err != nil {
-			log.Fatal("fugu")
 			return err
 		} else if err = bucket.Put(marshalTime,buf) ; err != nil {
-			log.Fatal("piyo")
 			return err
 		}
 		return nil
@@ -58,8 +68,10 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 }
 
 func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
+	db := b.db()
+	defer db.Close()
 	m := new(models.Ticker)
-	err := b.db.View(func(tx *bolt.Tx) error {
+	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(TickerBucket)).Cursor()
 		min ,err  :=  timestamp.MarshalBinary()
 		if err  != nil {
