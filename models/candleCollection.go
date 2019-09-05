@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"time"
+	"github.com/atoyr/go-talib"
 )
 
 type CandleCollection struct {
@@ -12,7 +13,7 @@ type CandleCollection struct {
 
 	Smas []MovingAverage
 	Emas []MovingAverage
-	BollingerBands *BollingerBand
+	BollingerBand *BollingerBand
 // 	IchimokuCloud *IchimokuCloud `json:"ichimoku,omitempty"` 
 // 	Rsi *Rsi `json:"rsi,omitempty"` 
 // 	Macd *Macd `json:"macd,omitempty"` 
@@ -83,4 +84,23 @@ func (c *CandleCollection) Volumes() []float64 {
 		ret[i] = v.Volume
 	}
 	return ret
+}
+
+func (c *CandleCollection) AddBollingerBand(n int, k1,k2 float64) {
+	if n <= len(c.Candles){
+
+		closes := c.Closes()
+		up1, center, down1 := talib.BBands(closes,n,k1,k1,0)
+		up2, center, down2 := talib.BBands(closes,n,k2,k2,0)
+		bb := new(BollingerBand)
+		bb.N = n
+		bb.K1 = k1
+		bb.K2 = k2
+		bb.Up2 = up2
+		bb.Up1 = up1
+		bb.Center = center
+		bb.Down1 = down1
+		bb.Down2 = down2
+		c.BollingerBand = bb
+	}
 }
