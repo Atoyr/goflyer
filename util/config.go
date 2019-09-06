@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"encoding/json"
 	"path/filepath"
 	"runtime"
 )
@@ -23,6 +24,37 @@ func CreateConfigDirectoryIfNotExists(appName string) (string, error) {
 	return configDir, nil
 }
 
-func SaveConfig(appName string, data interface{}) {
+func SaveConfig(appName ,fileName string, data interface{}) error {
+	marshalData , err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	configDir , err := CreateConfigDirectoryIfNotExists(appName)
+	if err != nil {
+		return err
+	}
+	
+	configDir = filepath.Join(configDir, fileName)
+	file, err := os.Create(configDir)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
+	file.Write(marshalData)
+	return nil
+}
+
+func LoadConfig(appName, fileName string) (interface{} , error ) {
+configDir , err := CreateConfigDirectoryIfNotExists(appName)
+	if err != nil {
+		return err
+	}
+	
+	configDir = filepath.Join(configDir, fileName)
+	data ,err := iotuil.ReadFile(configDir)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
