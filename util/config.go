@@ -1,8 +1,9 @@
 package util
 
 import (
-	"os"
 	"encoding/json"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -24,16 +25,16 @@ func CreateConfigDirectoryIfNotExists(appName string) (string, error) {
 	return configDir, nil
 }
 
-func SaveConfig(appName ,fileName string, data interface{}) error {
-	marshalData , err := json.Marshal(data)
+func SaveConfig(appName, fileName string, data interface{}) error {
+	marshalData, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	configDir , err := CreateConfigDirectoryIfNotExists(appName)
+	configDir, err := CreateConfigDirectoryIfNotExists(appName)
 	if err != nil {
 		return err
 	}
-	
+
 	configDir = filepath.Join(configDir, fileName)
 	file, err := os.Create(configDir)
 	if err != nil {
@@ -45,14 +46,14 @@ func SaveConfig(appName ,fileName string, data interface{}) error {
 	return nil
 }
 
-func LoadConfig(appName, fileName string) (interface{} , error ) {
-configDir , err := CreateConfigDirectoryIfNotExists(appName)
+func LoadConfig(appName, fileName string) (interface{}, error) {
+	configDir, err := CreateConfigDirectoryIfNotExists(appName)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	
+
 	configDir = filepath.Join(configDir, fileName)
-	data ,err := iotuil.ReadFile(configDir)
+	data, err := ioutil.ReadFile(configDir)
 	if err != nil {
 		return nil, err
 	}
