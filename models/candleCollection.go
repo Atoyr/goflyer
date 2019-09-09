@@ -99,6 +99,26 @@ func (c *CandleCollection) AddSmas(period int) {
 	}
 }
 
+func (c *CandleCollection) updateSmas() error {
+	for _, sma := range c.Smas {
+		err := c.updateSma(sma)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *CandleCollection) updateSma(sma MovingAverage) error {
+	length := len(c.Candles) - len(sma.Values) + sma.Period
+	candles, err := c.LastOfValues(Close, length)
+	if err != nil {
+		return err
+	}
+	sma.Values = append(sma.Values, talib.Sma(candles, sma.Period)...)
+	return nil
+}
+
 func (c *CandleCollection) AddEmas(period int) {
 	if len(c.Candles) > period {
 		var ema MovingAverage
