@@ -92,11 +92,14 @@ func (c *CandleCollection) LastOfValues(valueType string, from int) ([]float64, 
 	return ret, nil
 }
 func (c *CandleCollection) AddSmas(period int) {
+	var sma MovingAverage
+	sma.Period = period
 	if len(c.Candles) > period {
-		var sma MovingAverage
-		sma.Period = period
 		sma.Values = talib.Sma(c.Values(Close), period)
+	} else {
+		sma.Values = make([]float64, len(c.Candles))
 	}
+	c.Smas = append(c.Smas, sma)
 }
 
 func (c *CandleCollection) updateSmas() error {
@@ -122,12 +125,14 @@ func (c *CandleCollection) refreshSmas() {
 }
 
 func (c *CandleCollection) AddEmas(period int) {
+	var ema MovingAverage
+	ema.Period = period
 	if len(c.Candles) > period {
-		var ema MovingAverage
-		ema.Period = period
 		ema.Values = talib.Ema(c.Values(Close), period)
-		c.Emas = append(c.Emas, ema)
+	} else {
+		ema.Values = make([]float64, len(c.Candles))
 	}
+	c.Emas = append(c.Emas, ema)
 }
 
 func (c *CandleCollection) updateEmas() error {
