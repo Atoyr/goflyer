@@ -119,6 +119,16 @@ func (c *CandleCollection) updateSma(sma MovingAverage) error {
 	return nil
 }
 
+func (c *CandleCollection) refreshSmas() {
+	for i, sma := range c.Smas {
+		if len(c.Candles) > sma.Period {
+			c.Smas[i].Values = talib.Sma(c.Values(Close), sma.Period)
+		} else {
+			c.Smas[i].Values = make([]float64, len(c.Candles))
+		}
+	}
+}
+
 func (c *CandleCollection) AddEmas(period int) {
 	if len(c.Candles) > period {
 		var ema MovingAverage
@@ -146,6 +156,16 @@ func (c *CandleCollection) updateEma(ema MovingAverage) error {
 	}
 	ema.Values = append(ema.Values, talib.Ema(candles, ema.Period)...)
 	return nil
+}
+
+func (c *CandleCollection) refreshEmas() {
+	for i, ema := range c.Emas {
+		if len(c.Candles) > ema.Period {
+			c.Emas[i].Values = talib.Ema(c.Values(Close), ema.Period)
+		} else {
+			c.Emas[i].Values = make([]float64, len(c.Candles))
+		}
+	}
 }
 
 func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
