@@ -148,12 +148,20 @@ func (c *CandleCollection) AddSmas(period int) {
 
 func (c *CandleCollection) updateSmas() {
 	for i, sma := range c.Smas {
-		length := len(c.Candles) - len(sma.Values) + sma.Period
-		candles, err := c.LastOfValues(Close, length)
-		if err != nil {
-			c.Smas[i].Values = make([]float64, len(c.Candles))
+		appendlength := len(c.Candles) - len(sma.Values)
+		if appendlength > 0 {
+			if len(c.Candles) > sma.Period {
+				length := appendlength + sma.Period
+				if length > len(c.Candles) {
+					length = len(c.Candles)
+				}
+				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
+				values := talib.Sma(candles, sma.Period)
+				c.Smas[i].Values = append(c.Smas[i].Values, values[len(values)-appendlength:]...)
+			} else {
+				sma.Values = make([]float64, len(c.Candles))
+			}
 		}
-		c.Smas[i].Values = append(c.Smas[i].Values, talib.Sma(candles, sma.Period)...)
 	}
 }
 
@@ -181,12 +189,20 @@ func (c *CandleCollection) AddEmas(period int) {
 
 func (c *CandleCollection) updateEmas() {
 	for i, ema := range c.Emas {
-		length := len(c.Candles) - len(ema.Values) + ema.Period
-		candles, err := c.LastOfValues(Close, length)
-		if err != nil {
-			c.Emas[i].Values = make([]float64, len(c.Candles))
+		appendlength := len(c.Candles) - len(ema.Values)
+		if appendlength > 0 {
+			if len(c.Candles) > ema.Period {
+				length := appendlength + ema.Period
+				if length > len(c.Candles) {
+					length = len(c.Candles)
+				}
+				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
+				values := talib.Ema(candles, ema.Period)
+				c.Emas[i].Values = append(c.Emas[i].Values, values[len(values)-appendlength:]...)
+			} else {
+				ema.Values = make([]float64, len(c.Candles))
+			}
 		}
-		c.Emas[i].Values = append(c.Emas[i].Values, talib.Ema(candles, ema.Period)...)
 	}
 }
 
