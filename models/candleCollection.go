@@ -100,22 +100,14 @@ func (c *CandleCollection) AddSmas(period int) {
 }
 
 func (c *CandleCollection) updateSmas() error {
-	for _, sma := range c.Smas {
-		err := c.updateSma(sma)
+	for i, sma := range c.Smas {
+		length := len(c.Candles) - len(sma.Values) + sma.Period
+		candles, err := c.LastOfValues(Close, length)
 		if err != nil {
 			return err
 		}
+		c.Smas[i].Values = append(c.Smas[i].Values, talib.Sma(candles, sma.Period)...)
 	}
-	return nil
-}
-
-func (c *CandleCollection) updateSma(sma MovingAverage) error {
-	length := len(c.Candles) - len(sma.Values) + sma.Period
-	candles, err := c.LastOfValues(Close, length)
-	if err != nil {
-		return err
-	}
-	sma.Values = append(sma.Values, talib.Sma(candles, sma.Period)...)
 	return nil
 }
 
@@ -139,22 +131,14 @@ func (c *CandleCollection) AddEmas(period int) {
 }
 
 func (c *CandleCollection) updateEmas() error {
-	for _, ema := range c.Emas {
-		err := c.updateEma(ema)
+	for i, ema := range c.Emas {
+		length := len(c.Candles) - len(ema.Values) + ema.Period
+		candles, err := c.LastOfValues(Close, length)
 		if err != nil {
 			return err
 		}
+		c.Emas[i].Values = append(c.Emas[i].Values, talib.Ema(candles, ema.Period)...)
 	}
-	return nil
-}
-
-func (c *CandleCollection) updateEma(ema MovingAverage) error {
-	length := len(c.Candles) - len(ema.Values) + ema.Period
-	candles, err := c.LastOfValues(Close, length)
-	if err != nil {
-		return err
-	}
-	ema.Values = append(ema.Values, talib.Ema(candles, ema.Period)...)
 	return nil
 }
 
