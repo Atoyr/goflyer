@@ -134,6 +134,7 @@ func (c *CandleCollection) refreshChart() {
 	c.refreshEmas()
 }
 
+// SMA
 func (c *CandleCollection) AddSmas(period int) {
 	var sma MovingAverage
 	sma.Period = period
@@ -166,6 +167,7 @@ func (c *CandleCollection) refreshSmas() {
 	}
 }
 
+// EMA
 func (c *CandleCollection) AddEmas(period int) {
 	var ema MovingAverage
 	ema.Period = period
@@ -198,21 +200,27 @@ func (c *CandleCollection) refreshEmas() {
 	}
 }
 
+// BollingerBand
 func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
+	bb := new(BollingerBand)
+	bb.N = n
+	bb.K1 = k1
+	bb.K2 = k2
 	if n <= len(c.Candles) {
-
 		closes := c.Values(Close)
 		up1, center, down1 := talib.BBands(closes, n, k1, k1, 0)
 		up2, center, down2 := talib.BBands(closes, n, k2, k2, 0)
-		bb := new(BollingerBand)
-		bb.N = n
-		bb.K1 = k1
-		bb.K2 = k2
 		bb.Up2 = up2
 		bb.Up1 = up1
 		bb.Center = center
 		bb.Down1 = down1
 		bb.Down2 = down2
-		c.BollingerBand = bb
+	} else {
+		bb.Up2 = make([]float64, len(c.Candles))
+		bb.Up1 = make([]float64, len(c.Candles))
+		bb.Center = make([]float64, len(c.Candles))
+		bb.Down1 = make([]float64, len(c.Candles))
+		bb.Down2 = make([]float64, len(c.Candles))
 	}
+	c.BollingerBand = bb
 }
