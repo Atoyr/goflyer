@@ -104,6 +104,7 @@ func (c *CandleCollection) AddEmas(period int) {
 		var ema MovingAverage
 		ema.Period = period
 		ema.Values = talib.Ema(c.Values(Close), period)
+		c.Emas = append(c.Emas, ema)
 	}
 }
 
