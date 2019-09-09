@@ -10,7 +10,6 @@ type CandleCollection struct {
 	ProductCode string
 	Duration    time.Duration
 	Candles     []Candle
-	TimeValue   []string
 
 	Smas          []MovingAverage
 	Emas          []MovingAverage
@@ -61,7 +60,6 @@ func (c *CandleCollection) MergeCandle(candle Candle) error {
 		}
 	} else {
 		c.Candles = append(c.Candles, candle)
-		c.TimeValue = append(c.TimeValue, candle.GetTimeString())
 	}
 	return nil
 }
