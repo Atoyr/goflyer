@@ -32,9 +32,38 @@ func (c *CandleCollection) Name() string {
 	return fmt.Sprintf("%s_%s", c.ProductCode, c.Duration)
 }
 
-func (c *CandleCollection) AppendCnadle(candle Candle) {
-	c.Candles = append(c.Candles, candle)
-	c.TimeValue = append(c.TimeValue, candle.GetTimeString())
+func (c *CandleCollection) MergeCandle(candle Candle) error {
+	if candle.Duration != c.Duration {
+		// TODO return error
+		return nil
+	}
+	if len(c.Candles) == 0 {
+		c.Candles = []Candle{candle}
+		return nil
+	}
+
+	max := len(c.Candles) - 1
+	beforeTime := c.Candles[max].Time
+	if candle.Time.Equal(beforeTime) {
+		c.Candles[max] = candle
+	} else if candle.Time.Before(c.Candles[max].Time) {
+		for i := range c.Candles {
+			if candle.Time.Equal(c.Candles[max-i].Time) {
+				c.Candles[len(c.Candles)-1-i] = candle
+				break
+			} else if candle.Time.Before(beforeTime) && candle.Time.After(c.Candles[max-i].Time) {
+				before := c.Candles[:max-i]
+				after := c.Candles[max-i+1:]
+				c.Candles = append(before, candle)
+				c.Candles = append(c.Candles, after...)
+				break
+			}
+		}
+	} else {
+		c.Candles = append(c.Candles, candle)
+		c.TimeValue = append(c.TimeValue, candle.GetTimeString())
+	}
+	return nil
 }
 
 func (c *CandleCollection) Alls() (opens, closes, highs, lows, volumes []float64) {
