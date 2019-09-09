@@ -55,43 +55,48 @@ func (c *CandleCollection) Alls() (opens, closes, highs, lows, volumes []float64
 }
 
 func (c *CandleCollection) Values(valueType string) []float64 {
-	ret := make([]float64, len(c.Candles))
+	ret, _ := c.LastOfValues(valueType, 0)
+	return ret
+}
+
+func (c *CandleCollection) LastOfValues(valueType string, from int) ([]float64, error) {
+	if len(c.Candles) <= from {
+		// TODO return error
+		return nil, nil
+	}
+	// 123456 012345
+	ret := make([]float64, len(c.Candles)-from)
 	switch valueType {
 	case Open:
-		for i, v := range c.Candles {
+		for i, v := range c.Candles[from:] {
 			ret[i] = v.Open
 		}
 	case Close:
-		for i, v := range c.Candles {
+		for i, v := range c.Candles[from:] {
 			ret[i] = v.Close
 		}
 	case High:
-		for i, v := range c.Candles {
+		for i, v := range c.Candles[from:] {
 			ret[i] = v.High
 		}
 	case Low:
-		for i, v := range c.Candles {
+		for i, v := range c.Candles[from:] {
 			ret[i] = v.Low
 		}
 	case Volume:
-		for i, v := range c.Candles {
+		for i, v := range c.Candles[from:] {
 			ret[i] = v.Volume
 		}
 	default:
 	}
-	return ret
+	return ret, nil
 }
-
 func (c *CandleCollection) AddSmas(period int) {
 	if len(c.Candles) > period {
 		var sma MovingAverage
 		sma.Period = period
 		sma.Values = talib.Sma(c.Values(Close), period)
 	}
-}
-
-func (c *CandleCollection) updateSmas() {
-
 }
 
 func (c *CandleCollection) AddEmas(period int) {
