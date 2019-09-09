@@ -27,6 +27,11 @@ const High = "High"
 const Low = "Low"
 const Volume = "Volume"
 
+func NewCandleCollection(productCode string, duration time.Duration) CandleCollection {
+	cc := CandleCollection{ProductCode: productCode, Duration: duration}
+	return cc
+}
+
 func (c *CandleCollection) Name() string {
 	return fmt.Sprintf("%s_%s", c.ProductCode, c.Duration)
 }
