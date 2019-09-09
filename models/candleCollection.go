@@ -128,6 +128,26 @@ func (c *CandleCollection) AddEmas(period int) {
 	}
 }
 
+func (c *CandleCollection) updateEmas() error {
+	for _, ema := range c.Emas {
+		err := c.updateEma(ema)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *CandleCollection) updateEma(ema MovingAverage) error {
+	length := len(c.Candles) - len(ema.Values) + ema.Period
+	candles, err := c.LastOfValues(Close, length)
+	if err != nil {
+		return err
+	}
+	ema.Values = append(ema.Values, talib.Ema(candles, ema.Period)...)
+	return nil
+}
+
 func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
 	if n <= len(c.Candles) {
 
