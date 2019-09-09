@@ -10,6 +10,7 @@ type CandleCollection struct {
 	ProductCode string
 	Duration    time.Duration
 	Candles     []Candle
+	TimeValue   []string
 
 	Smas          []MovingAverage
 	Emas          []MovingAverage
@@ -21,12 +22,19 @@ type CandleCollection struct {
 	// 	Events *SignalEvents `json:"events,omitempty"`
 }
 
+const Open = "Open"
+const Close = "Close"
+const High = "High"
+const Low = "Low"
+const Volume = "Volume"
+
 func (c *CandleCollection) Name() string {
 	return fmt.Sprintf("%s_%s", c.ProductCode, c.Duration)
 }
 
 func (c *CandleCollection) AppendCnadle(candle Candle) {
 	c.Candles = append(c.Candles, candle)
+	c.TimeValue = append(c.TimeValue, candle.GetTimeString())
 }
 
 func (c *CandleCollection) Alls() (opens, closes, highs, lows, volumes []float64) {
@@ -46,58 +54,58 @@ func (c *CandleCollection) Alls() (opens, closes, highs, lows, volumes []float64
 	return
 }
 
-func (c *CandleCollection) Opens() []float64 {
+func (c *CandleCollection) Values(valueType string) []float64 {
 	ret := make([]float64, len(c.Candles))
-	for i, v := range c.Candles {
-		ret[i] = v.Open
+	switch valueType {
+	case Open:
+		for i, v := range c.Candles {
+			ret[i] = v.Open
+		}
+	case Close:
+		for i, v := range c.Candles {
+			ret[i] = v.Close
+		}
+	case High:
+		for i, v := range c.Candles {
+			ret[i] = v.High
+		}
+	case Low:
+		for i, v := range c.Candles {
+			ret[i] = v.Low
+		}
+	case Volume:
+		for i, v := range c.Candles {
+			ret[i] = v.Volume
+		}
+	default:
 	}
 	return ret
 }
 
-func (c *CandleCollection) Closes() []float64 {
-	ret := make([]float64, len(c.Candles))
-	for i, v := range c.Candles {
-		ret[i] = v.Close
+func (c *CandleCollection) AddSmas(period int) {
+	if len(c.Candles) > period {
+		var sma MovingAverage
+		sma.Period = period
+		sma.Values = talib.Sma(c.Values(Close), period)
 	}
-	return ret
 }
 
-func (c *CandleCollection) Highs() []float64 {
-	ret := make([]float64, len(c.Candles))
-	for i, v := range c.Candles {
-		ret[i] = v.High
-	}
-	return ret
-}
+func (c *CandleCollection) updateSmas() {
 
-func (c *CandleCollection) Lows() []float64 {
-	ret := make([]float64, len(c.Candles))
-	for i, v := range c.Candles {
-		ret[i] = v.Low
-	}
-	return ret
-}
-
-func (c *CandleCollection) Volumes() []float64 {
-	ret := make([]float64, len(c.Candles))
-	for i, v := range c.Candles {
-		ret[i] = v.Volume
-	}
-	return ret
 }
 
 func (c *CandleCollection) AddEmas(period int) {
 	if len(c.Candles) > period {
 		var ema MovingAverage
 		ema.Period = period
-		ema.Values = talib.Ema(c.Closes(), period)
+		ema.Values = talib.Ema(c.Values(Close), period)
 	}
 }
 
 func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
 	if n <= len(c.Candles) {
 
-		closes := c.Closes()
+		closes := c.Values(Close)
 		up1, center, down1 := talib.BBands(closes, n, k1, k1, 0)
 		up2, center, down2 := talib.BBands(closes, n, k2, k2, 0)
 		bb := new(BollingerBand)
