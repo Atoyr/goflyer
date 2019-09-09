@@ -38,6 +38,7 @@ func (c *CandleCollection) MergeCandle(candle Candle) error {
 	}
 	if len(c.Candles) == 0 {
 		c.Candles = []Candle{candle}
+		c.updateChart()
 		return nil
 	}
 
@@ -45,21 +46,25 @@ func (c *CandleCollection) MergeCandle(candle Candle) error {
 	beforeTime := c.Candles[max].Time
 	if candle.Time.Equal(beforeTime) {
 		c.Candles[max] = candle
+		c.refreshChart()
 	} else if candle.Time.Before(c.Candles[max].Time) {
 		for i := range c.Candles {
 			if candle.Time.Equal(c.Candles[max-i].Time) {
 				c.Candles[len(c.Candles)-1-i] = candle
+				c.refreshChart()
 				break
 			} else if candle.Time.Before(beforeTime) && candle.Time.After(c.Candles[max-i].Time) {
 				before := c.Candles[:max-i]
 				after := c.Candles[max-i+1:]
 				c.Candles = append(before, candle)
 				c.Candles = append(c.Candles, after...)
+				c.refreshChart()
 				break
 			}
 		}
 	} else {
 		c.Candles = append(c.Candles, candle)
+		c.updateChart()
 	}
 	return nil
 }
@@ -118,6 +123,17 @@ func (c *CandleCollection) LastOfValues(valueType string, from int) ([]float64, 
 	}
 	return ret, nil
 }
+
+func (c *CandleCollection) updateChart() {
+	c.updateSmas()
+	c.updateEmas()
+}
+
+func (c *CandleCollection) refreshChart() {
+	c.refreshSmas()
+	c.refreshEmas()
+}
+
 func (c *CandleCollection) AddSmas(period int) {
 	var sma MovingAverage
 	sma.Period = period
@@ -129,16 +145,15 @@ func (c *CandleCollection) AddSmas(period int) {
 	c.Smas = append(c.Smas, sma)
 }
 
-func (c *CandleCollection) updateSmas() error {
+func (c *CandleCollection) updateSmas() {
 	for i, sma := range c.Smas {
 		length := len(c.Candles) - len(sma.Values) + sma.Period
 		candles, err := c.LastOfValues(Close, length)
 		if err != nil {
-			return err
+			c.Smas[i].Values = make([]float64, len(c.Candles))
 		}
 		c.Smas[i].Values = append(c.Smas[i].Values, talib.Sma(candles, sma.Period)...)
 	}
-	return nil
 }
 
 func (c *CandleCollection) refreshSmas() {
@@ -162,16 +177,15 @@ func (c *CandleCollection) AddEmas(period int) {
 	c.Emas = append(c.Emas, ema)
 }
 
-func (c *CandleCollection) updateEmas() error {
+func (c *CandleCollection) updateEmas() {
 	for i, ema := range c.Emas {
 		length := len(c.Candles) - len(ema.Values) + ema.Period
 		candles, err := c.LastOfValues(Close, length)
 		if err != nil {
-			return err
+			c.Emas[i].Values = make([]float64, len(c.Candles))
 		}
 		c.Emas[i].Values = append(c.Emas[i].Values, talib.Ema(candles, ema.Period)...)
 	}
-	return nil
 }
 
 func (c *CandleCollection) refreshEmas() {
