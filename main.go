@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/atoyr/goflyer/api"
+	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	apiClient := api.New("", "")
+	clientClient := client.New("", "")
 	dirPath , err := util.CreateConfigDirectoryIfNotExists("goflyer")
 	if err != nil {
 		log.Println(err)
@@ -20,7 +20,7 @@ func main() {
 	var boardCannl = make(chan models.Board)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	board, err := apiClient.GetBoard("BTC_JPY")
+	board, err := clientClient.GetBoard("BTC_JPY")
 	if err != nil {
 		log.Println(err)
 	}
@@ -39,15 +39,15 @@ func main() {
 		log.Println(t)
 	}
 
-	p, err := apiClient.GetPermissions()
+	p, err := clientClient.GetPermissions()
 	if err != nil {
 		log.Println(err)
 	}
 	for k, v := range p {
 		log.Printf("%t : %s", v, k)
 	}
-	go apiClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
-	go apiClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
+	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
+	go clientClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
 	go func() {
 		for b := range boardCannl {
 			board.Merge(b)
