@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/atoyr/goflyer/models"
 ) 
 
 func GetEcho() (*echo.Echo, error ){
@@ -13,4 +14,10 @@ func GetEcho() (*echo.Echo, error ){
 	})
 	e.GET("/candleCollection", handleCandleCollection)
 	return e, nil
+}
+
+func handleCandleCollection(c echo.Context) error {
+	ccs := models.NewCandleCollections()
+
+	return c.JSON(http.StatusOK,ccs[""])
 }
