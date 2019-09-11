@@ -3,22 +3,38 @@ package api
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
 	"github.com/atoyr/goflyer/models"
-) 
+	"github.com/labstack/echo"
+)
 
-func GetEcho() (*echo.Echo, error ){
+type Context struct {
+	echo.Context
+	CandleCollections models.CandleCollections
+}
+
+func GetEcho(ccs models.CandleCollections) *echo.Echo {
 	e := echo.New()
+	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			context := &Context{c, ccs}
+			return h(context)
+		}
+	})
+
+	return e
+}
+
+func AppendHandler(e *echo.Echo) *echo.Echo {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
 	})
 	e.GET("/candleCollection/:key", handleCandleCollection)
-	return e, nil
+	return e
 }
 
 func handleCandleCollection(c echo.Context) error {
-	key := c.Param("key")
-	ccs := models.NewCandleCollections()
+	context := c.(*Context)
+	key := context.Param("key")
 
-	return c.JSON(http.StatusOK,ccs[key])
+	return c.JSON(http.StatusOK, context.CandleCollections[key])
 }

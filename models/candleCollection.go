@@ -4,22 +4,9 @@ import (
 	"fmt"
 	"github.com/atoyr/go-talib"
 	"time"
-	"sync"
 )
 
-type CandleCollections  map[string]CandleCollection
-
-var (
-	once sync.Once
-	instance CandleCollections
-)
-
-func NewCandleCollections() CandleCollections {
-	once.Do(func() {
-		instance = make(CandleCollections)
-	})
-	return instance
-}
+type CandleCollections map[string]CandleCollection
 
 type CandleCollection struct {
 	ProductCode string

@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
+	"github.com/atoyr/goflyer/api"
 	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
-	"github.com/atoyr/goflyer/api"
-	"path/filepath" 
 	"log"
+	"path/filepath"
 	"time"
 )
 
 func main() {
 	clientClient := client.New("", "")
-	dirPath , err := util.CreateConfigDirectoryIfNotExists("goflyer")
+	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
 	if err != nil {
 		log.Println(err)
 	}
@@ -33,7 +33,7 @@ func main() {
 		log.Println(err)
 	}
 	d.Init()
-	tickers , err := d.GetAllTicker()
+	tickers, err := d.GetAllTicker()
 	if err != nil {
 		log.Println(err)
 	}
@@ -47,7 +47,7 @@ func main() {
 	}
 	for k, v := range p {
 		log.Printf("%t : %s", v, k)
-}
+	}
 
 	cc := models.NewCandleCollection("test", 3*time.Minute)
 	cc.AddSmas(3)
@@ -66,9 +66,9 @@ func main() {
 	for _, c := range candles {
 		cc.MergeCandle(c)
 	}
-	ccs := models.NewCandleCollections()
+	ccs := models.CandleCollections{}
 	ccs["hoge"] = cc
-	e ,_ := api.GetEcho()
+	e := api.AppendHandler(api.GetEcho(ccs))
 	go e.Start(":8080")
 
 	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
