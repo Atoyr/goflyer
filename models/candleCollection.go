@@ -17,7 +17,7 @@ type CandleCollection struct {
 	Emas          []MovingAverage
 	BollingerBand *BollingerBand
 	// 	IchimokuCloud *IchimokuCloud `json:"ichimoku,omitempty"`
-	// 	Rsi *Rsi `json:"rsi,omitempty"`
+	Rsis []RelativeStrengthIndex
 	// 	Macd *Macd `json:"macd,omitempty"`
 	// 	Hvs []Hv `json:"hvs,omitempty"`
 	// 	Events *SignalEvents `json:"events,omitempty"`
@@ -247,3 +247,45 @@ func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
 	}
 	c.BollingerBand = bb
 }
+
+// rsi
+func (c *CandleCollection) AddRsis(period int) {
+	var rsi  RelativeStrengthIndex
+	rsi.Period = period
+	if len(c.Candles) > period {
+		rsi.Values = talib.Rsi(c.Values(Close), period)
+	} else {
+		rsi.Values = make([]float64, len(c.Candles))
+	}
+	c.Rsis = append(c.Rsis, rsi)
+}
+
+func (c *CandleCollection) updateRsis() {
+	for i, rsi := range c.Rsis {
+		appendlength := len(c.Candles) - len(rsi.Values)
+		if appendlength > 0 {
+			if len(c.Candles) > rsi.Period {
+				length := appendlength + rsi.Period
+				if length > len(c.Candles) {
+					length = len(c.Candles)
+				}
+				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
+				values := talib.Rsi(candles, rsi.Period)
+				c.Rsis[i].Values = append(c.Rsis[i].Values, values[len(values)-appendlength:]...)
+			} else {
+				rsi.Values = make([]float64, len(c.Candles))
+			}
+		}
+	}
+}
+
+func (c *CandleCollection) refreshRsis() {
+	for i, rsi := range c.Rsis {
+		if len(c.Candles) > rsi.Period {
+			c.Rsis[i].Values = talib.Rsi(c.Values(Close), rsi.Period)
+		} else {
+			c.Rsis[i].Values = make([]float64, len(c.Candles))
+		}
+	}
+}
+
