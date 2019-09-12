@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"github.com/atoyr/go-talib"
+	"log"
 	"time"
 )
 
@@ -164,7 +165,7 @@ func (c *CandleCollection) updateSmas() {
 					length = len(c.Candles)
 				}
 				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
-				values := talib.Sma(candles, sma.Period)
+				values := Sma(candles, sma.Period)
 				c.Smas[i].Values = append(c.Smas[i].Values, values[len(values)-appendlength:]...)
 			} else {
 				sma.Values = make([]float64, len(c.Candles))
@@ -251,7 +252,7 @@ func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
 
 // RSI
 func (c *CandleCollection) AddRsis(period int) {
-	var rsi  RelativeStrengthIndex
+	var rsi RelativeStrengthIndex
 	rsi.Period = period
 	if len(c.Candles) > period {
 		rsi.Values = talib.Rsi(c.Values(Close), period)
@@ -304,26 +305,30 @@ func (c *CandleCollection) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
 	m.SignalPeriod = signalPeriod
 	m.Macd = macd
 	m.MacdSignal = macdSignal
-	m.MacdHist = macdHist 
-	c.Macd = append(c.Macd,m)
+	m.MacdHist = macdHist
+	c.Macd = append(c.Macd, m)
 }
 
 func (c *CandleCollection) updateMacd() {
-	for k, v := range c.Macd{
+	for k, v := range c.Macd {
 
 		appendlength := len(c.Candles) - len(v.Macd)
 		if appendlength > 0 {
 			var macd, macdSignal, macdHist []float64
 			slowPeriod := int(v.SlowPeriod)
 			length := appendlength + v.SlowPeriod
-				if length > len(c.Candles) {
-					length = len(c.Candles)
-				}
-				from := len(c.Candles) - slowPeriod
-				if from < 0 {
-					from = 0
-				}
+			if length > len(c.Candles) {
+				length = len(c.Candles)
+			}
+			length--
+			from := len(c.Candles) - slowPeriod
+			if from < 0 {
+				from = 0
+			}
+			log.Println(len(c.Candles))
+			log.Println(length)
 			candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
+			log.Println(candles)
 			macd, macdSignal, macdHist = talib.Macd(candles, v.FastPeriod, v.SlowPeriod, v.SignalPeriod)
 			c.Macd[k].Macd = append(c.Macd[k].Macd, macd[from:]...)
 			c.Macd[k].MacdSignal = append(c.Macd[k].MacdSignal, macdSignal[from:]...)
