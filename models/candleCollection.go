@@ -18,7 +18,7 @@ type CandleCollection struct {
 	BollingerBand *BollingerBand
 	// 	IchimokuCloud *IchimokuCloud `json:"ichimoku,omitempty"`
 	Rsis []RelativeStrengthIndex
-	Macd *MovingAverageConvergenceDivergence
+	Macd []MovingAverageConvergenceDivergence
 	// 	Hvs []Hv `json:"hvs,omitempty"`
 	// 	Events *SignalEvents `json:"events,omitempty"`
 }
@@ -134,6 +134,7 @@ func (c *CandleCollection) LastOfValues(valueType string, from int) ([]float64, 
 func (c *CandleCollection) updateChart() {
 	c.updateSmas()
 	c.updateEmas()
+	c.updateMacd()
 }
 
 func (c *CandleCollection) refreshChart() {
@@ -291,17 +292,42 @@ func (c *CandleCollection) refreshRsis() {
 
 // MACD
 func (c *CandleCollection) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
+	var m MovingAverageConvergenceDivergence
 	var macd, macdSignal, macdHist []float64
 	if 1 < len(c.Candles) {
 		closes := c.Values(Close)
 		macd, macdSignal, macdHist = talib.Macd(closes, fastPeriod, slowPeriod, signalPeriod)
 	} else {
 	}
-	c.Macd.FastPeriod = fastPeriod
-	c.Macd.SlowPeriod = slowPeriod
-	c.Macd.SignalPeriod = signalPeriod
-	c.Macd.Macd = macd
-	c.Macd.MacdSignal = macdSignal
-	c.Macd.MacdHist = macdHist 
+	m.FastPeriod = fastPeriod
+	m.SlowPeriod = slowPeriod
+	m.SignalPeriod = signalPeriod
+	m.Macd = macd
+	m.MacdSignal = macdSignal
+	m.MacdHist = macdHist 
+	c.Macd = append(c.Macd,m)
 }
 
+func (c *CandleCollection) updateMacd() {
+	for k, v := range c.Macd{
+
+		appendlength := len(c.Candles) - len(v.Macd)
+		if appendlength > 0 {
+			var macd, macdSignal, macdHist []float64
+			slowPeriod := int(v.SlowPeriod)
+			length := appendlength + v.SlowPeriod
+				if length > len(c.Candles) {
+					length = len(c.Candles)
+				}
+				from := len(c.Candles) - slowPeriod
+				if from < 0 {
+					from = 0
+				}
+			candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
+			macd, macdSignal, macdHist = talib.Macd(candles, v.FastPeriod, v.SlowPeriod, v.SignalPeriod)
+			c.Macd[k].Macd = append(c.Macd[k].Macd, macd[from:]...)
+			c.Macd[k].MacdSignal = append(c.Macd[k].MacdSignal, macdSignal[from:]...)
+			c.Macd[k].MacdHist = append(c.Macd[k].MacdHist, macdHist[from:]...)
+		}
+	}
+}
