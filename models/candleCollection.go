@@ -291,21 +291,17 @@ func (c *CandleCollection) refreshRsis() {
 
 // MACD
 func (c *CandleCollection) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
-	var macd, macd2, macdSignal, macdHist []float64
+	var macd, macdSignal, macdHist []float64
 	if 1 < len(c.Candles) {
 		closes := c.Values(Close)
 		macd, macdSignal, macdHist = talib.Macd(closes, fastPeriod, slowPeriod, signalPeriod)
-		macd2 = make([]float64,len(macd))
-		for i := range macd {
-			macd2[i] = macd[i] - macdSignal[i]
-		}
 	} else {
 	}
 	c.Macd.FastPeriod = fastPeriod
 	c.Macd.SlowPeriod = slowPeriod
 	c.Macd.SignalPeriod = signalPeriod
 	c.Macd.Macd = macd
-	c.Macd.Macd2 = macd2
 	c.Macd.MacdSignal = macdSignal
 	c.Macd.MacdHist = macdHist 
 }
+

@@ -5,7 +5,6 @@ type MovingAverageConvergenceDivergence struct {
 	SlowPeriod int
 	SignalPeriod int
 	Macd []float64
-	Macd2 []float64
 	MacdSignal []float64
 	MacdHist []float64
 }
