@@ -1,9 +1,9 @@
 package models
 
 type MovingAverage struct {
-	Period int
-	Values []float64
-	periodTotal  []float64
+	Period      int
+	Values      []float64
+	periodTotal []float64
 }
 
 type Sma struct {
@@ -11,36 +11,33 @@ type Sma struct {
 }
 
 func NewSma(inReal []float64, inTimePeriod int) Sma {
-	var  sma Sma
+	var sma Sma
 	var values []float64
 	var periodTotal []float64
 
 	if len(inReal) < inTimePeriod {
 		values := make([]float64, len(inReal))
-		periodTotal := make([]float64, len(inReal)) 
-	}else {
+		periodTotal := make([]float64, len(inReal))
+	} else {
 		if inTimePeriod < 0 {
 			inTimePeriod = 1
-		} 
+		}
 		values = make([]float64, inTimePeriod)
-		total  := 0.0
+		total := 0.0
 		head := 0
-		tail := inTimePeriod - 1
-		start := tail
+		start := inTimePeriod - 1
 
-		for i := 0 ; i < tail ; i++ {
+		for i := 0; i < start; i++ {
 			total += inReal[i]
-		} 
+		}
 
-		// TODO
-		for  i:= start; i <  len(inReal); i-- {
+		for i := start; i < len(inReal); i++ {
 			total += inReal[head]
 			values[i] = total / float64(inTimePeriod)
 			periodTotal[i] = total
-			total -= inReal[tail] 
-			head-- 
-			tail--
-		} 
+			total -= inReal[i]
+			head++
+		}
 	}
 
 	sma.Period = inTimePeriod
@@ -48,6 +45,7 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 	sma.periodTotal = periodTotal
 	return sma
 }
+
 // Sma - Simple Moving Average
 func (sma *Sma) UupdateSma(inReal []float64) {
 	var values []float64
@@ -61,6 +59,13 @@ func (sma *Sma) UupdateSma(inReal []float64) {
 		periodTotal := 0.0
 		head := len(inReal) - sma.Period - length
 		tail := len(inReal) - length
+		for i := 0; i < tail; i++ {
+
+		}
+
+		for i := 0; i < start; i++ {
+			total += inReal[i]
+		}
 
 		// TODO
 		for i := 0; i < length; i++ {
