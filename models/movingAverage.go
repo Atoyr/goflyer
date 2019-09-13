@@ -3,45 +3,71 @@ package models
 type MovingAverage struct {
 	Period int
 	Values []float64
+	periodTotal  []float64
 }
 
-// Sma - Simple Moving Average
-func Sma(inReal []float64, inTimePeriod int, length int) []float64 {
-	if length <= 0 {
-		length = len(inReal)
-	}
-	var outReal []float64
+type Sma struct {
+	MovingAverage
+}
+
+func NewSma(inReal []float64, inTimePeriod int) Sma {
+	var  sma Sma
+	var values []float64
+	var periodTotal []float64
+
 	if len(inReal) < inTimePeriod {
-		outReal := make([]float64, len(inReal))
-		return outReal
+		values := make([]float64, len(inReal))
+		periodTotal := make([]float64, len(inReal)) 
+	}else {
+		if inTimePeriod < 0 {
+			inTimePeriod = 1
+		} 
+		values = make([]float64, inTimePeriod)
+		total  := 0.0
+		head := 0
+		tail := inTimePeriod - 1
+		start := tail
+
+		for i := 0 ; i < tail ; i++ {
+			total += inReal[i]
+		} 
+
+		// TODO
+		for  i:= start; i <  len(inReal); i-- {
+			total += inReal[head]
+			values[i] = total / float64(inTimePeriod)
+			periodTotal[i] = total
+			total -= inReal[tail] 
+			head-- 
+			tail--
+		} 
 	}
 
-	outReal = make([]float64, length)
-	startIdx := len(inReal)
-	periodTotal := 0.0
-	if inTimePeriod > 1 {
-		for i := 0; i < inTimePeriod; i++ {
-			periodTotal += inReal[len(inReal)-i]
+	sma.Period = inTimePeriod
+	sma.Values = values
+	sma.periodTotal = periodTotal
+	return sma
+}
+// Sma - Simple Moving Average
+func (sma *Sma) UupdateSma(inReal []float64) {
+	var values []float64
+	length := len(inReal) - len(sma.Values)
+	if len(inReal) < sma.Period {
+		values := make([]float64, length)
+		sma.Values = append(sma.Values, values...)
+		sma.periodTotal = append(sma.periodTotal, values...)
+	} else {
+		values = make([]float64, length)
+		periodTotal := 0.0
+		head := len(inReal) - sma.Period - length
+		tail := len(inReal) - length
+
+		// TODO
+		for i := 0; i < length; i++ {
+			periodTotal += inReal[head]
+			values[i] = periodTotal / float64(inTimePeriod)
+			periodTotal -= inReal[tail]
 		}
-	}
-	for i := len(inReal); i >= 0; i-- {
-		periodTotal += inReal[i-inTimePeriod]
-		tempReal := periodTotal
-		periodTotal -= inReal[i]
 
-		outReal[len(outReal)-i] = tempReal / float64(inTimePeriod)
 	}
-	outIdx := startIdx
-	for ok := true; ok; {
-		periodTotal += inReal[i]
-		tempReal := periodTotal
-		periodTotal -= inReal[trailingIdx]
-		outReal[outIdx] = tempReal / float64(inTimePeriod)
-		trailingIdx++
-		i++
-		outIdx++
-		ok = i < len(outReal)
-	}
-
-	return outReal
 }
