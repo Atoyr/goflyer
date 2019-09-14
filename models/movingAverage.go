@@ -49,8 +49,7 @@ func (sma *Sma) UupdateSma(inReal []float64) {
 	var values []float64
 	if difflength := len(inReal) - len(sma.Values); difflength > 0 {
 		if len(inReal) < sma.Period {
-			values := make([]float64, difflength)
-			sma.Values = append(sma.Values, values...)
+			values = make([]float64, difflength)
 		} else {
 			values = make([]float64, difflength)
 			periodTotal := 0.0
