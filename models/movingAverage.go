@@ -88,3 +88,29 @@ func (sma *Sma) UupdateSma(inReal []float64) {
 		sma.Values = append(sma.Values, values...)
 	}
 }
+
+func NewEma(inReal []float64, inTimePeriod int) Ema {
+	var ema Ema
+	ema.MovingAverage = new(MovingAverage)
+	values := make([]float64, len(inReal))
+
+	if inTimePeriod < 1 {
+		inTimePeriod = 1
+	}
+
+	if len(inReal) >= inTimePeriod {
+		periodTotal := 0.0
+		k := 2 / float64(inTimePeriod+1)
+		for i := 0; i < inTimePeriod; i++ {
+			periodTotal += inReal[i]
+		}
+		values[inTimePeriod-1] = periodTotal / float64(inTimePeriod)
+		for i := inTimePeriod; i < len(inReal); i++ {
+			values[i] = values[i-1] + k*(inReal[i]-values[i-1])
+		}
+	}
+
+	ema.Period = inTimePeriod
+	ema.Values = values
+	return ema
+}
