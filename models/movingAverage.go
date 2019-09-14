@@ -106,3 +106,19 @@ func NewEma(inReal []float64, inTimePeriod int) Ema {
 	ema.Values = values
 	return ema
 }
+
+func (ema *Ema) updateEma(inReal []float64) {
+	if difflength := len(inReal) - len(ema.Values); difflength > 0 {
+		if len(inReal) < ema.Period {
+			values := make([]float64, difflength)
+			ema.Values = append(ema.Values, values...)
+		} else {
+			k := 2 / float64(ema.Period+1)
+
+			for i := len(ema.Values); i < len(inReal); i++ {
+				value := ema.Values[i-1] + k*(inReal[i]-ema.Values[i-1])
+				ema.Values = append(ema.Values, value)
+			}
+		}
+	}
+}
