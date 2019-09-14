@@ -19,13 +19,15 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 	values := make([]float64, len(inReal))
 
 	if len(inReal) >= inTimePeriod {
-	} else {
 		if inTimePeriod < 0 {
 			inTimePeriod = 1
 		}
 		total := 0.0
 		head := 0
 		start := inTimePeriod - 1
+		if start < 0 {
+			return sma
+		}
 
 		for i := 0; i < start; i++ {
 			total += inReal[i]
@@ -106,7 +108,7 @@ func NewEma(inReal []float64, inTimePeriod int) Ema {
 	return ema
 }
 
-func (ema *Ema) updateEma(inReal []float64) {
+func (ema *Ema) UpdateEma(inReal []float64) {
 	if difflength := len(inReal) - len(ema.Values); difflength > 0 {
 		if len(inReal) < ema.Period {
 			values := make([]float64, difflength)

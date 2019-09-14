@@ -14,7 +14,7 @@ type CandleCollection struct {
 	Candles     []Candle
 
 	Smas          []Sma
-	Emas          []MovingAverage
+	Emas          []Ema
 	BollingerBand *BollingerBand
 	// 	IchimokuCloud *IchimokuCloud `json:"ichimoku,omitempty"`
 	Rsis []RelativeStrengthIndex
@@ -166,32 +166,13 @@ func (c *CandleCollection) refreshSmas() {
 
 // EMA
 func (c *CandleCollection) AddEmas(period int) {
-	var ema MovingAverage
-	ema.Period = period
-	if len(c.Candles) > period {
-		ema.Values = talib.Ema(c.Values(Close), period)
-	} else {
-		ema.Values = make([]float64, len(c.Candles))
-	}
+	ema := NewEma(c.Values(Close), period)
 	c.Emas = append(c.Emas, ema)
 }
 
 func (c *CandleCollection) updateEmas() {
-	for i, ema := range c.Emas {
-		appendlength := len(c.Candles) - len(ema.Values)
-		if appendlength > 0 {
-			if len(c.Candles) > ema.Period {
-				length := appendlength + ema.Period
-				if length > len(c.Candles) {
-					length = len(c.Candles)
-				}
-				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
-				values := talib.Ema(candles, ema.Period)
-				c.Emas[i].Values = append(c.Emas[i].Values, values[len(values)-appendlength:]...)
-			} else {
-				ema.Values = make([]float64, len(c.Candles))
-			}
-		}
+	for _, ema := range c.Emas {
+		ema.UpdateEma(c.Values(Close))
 	}
 }
 
