@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"github.com/atoyr/go-talib"
-	"log"
 	"time"
 )
 
@@ -14,7 +13,7 @@ type CandleCollection struct {
 	Duration    time.Duration
 	Candles     []Candle
 
-	Smas          []MovingAverage
+	Smas          []Sma
 	Emas          []MovingAverage
 	BollingerBand *BollingerBand
 	// 	IchimokuCloud *IchimokuCloud `json:"ichimoku,omitempty"`
@@ -145,32 +144,13 @@ func (c *CandleCollection) refreshChart() {
 
 // SMA
 func (c *CandleCollection) AddSmas(period int) {
-	var sma MovingAverage
-	sma.Period = period
-	if len(c.Candles) > period {
-		sma.Values = talib.Sma(c.Values(Close), period)
-	} else {
-		sma.Values = make([]float64, len(c.Candles))
-	}
+	sma := NewSma(c.Values(Close), period)
 	c.Smas = append(c.Smas, sma)
 }
 
 func (c *CandleCollection) updateSmas() {
-	for i, sma := range c.Smas {
-		appendlength := len(c.Candles) - len(sma.Values)
-		if appendlength > 0 {
-			if len(c.Candles) > sma.Period {
-				length := appendlength + sma.Period
-				if length > len(c.Candles) {
-					length = len(c.Candles)
-				}
-				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
-				values := Sma(candles, sma.Period)
-				c.Smas[i].Values = append(c.Smas[i].Values, values[len(values)-appendlength:]...)
-			} else {
-				sma.Values = make([]float64, len(c.Candles))
-			}
-		}
+	for _, sma := range c.Smas {
+		sma.UupdateSma(c.Values(Close))
 	}
 }
 
@@ -310,29 +290,29 @@ func (c *CandleCollection) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
 }
 
 func (c *CandleCollection) updateMacd() {
-	for k, v := range c.Macd {
-
-		appendlength := len(c.Candles) - len(v.Macd)
-		if appendlength > 0 {
-			var macd, macdSignal, macdHist []float64
-			slowPeriod := int(v.SlowPeriod)
-			length := appendlength + v.SlowPeriod
-			if length > len(c.Candles) {
-				length = len(c.Candles)
-			}
-			length--
-			from := len(c.Candles) - slowPeriod
-			if from < 0 {
-				from = 0
-			}
-			log.Println(len(c.Candles))
-			log.Println(length)
-			candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
-			log.Println(candles)
-			macd, macdSignal, macdHist = talib.Macd(candles, v.FastPeriod, v.SlowPeriod, v.SignalPeriod)
-			c.Macd[k].Macd = append(c.Macd[k].Macd, macd[from:]...)
-			c.Macd[k].MacdSignal = append(c.Macd[k].MacdSignal, macdSignal[from:]...)
-			c.Macd[k].MacdHist = append(c.Macd[k].MacdHist, macdHist[from:]...)
-		}
-	}
+	// 	for k, v := range c.Macd {
+	//
+	// 		appendlength := len(c.Candles) - len(v.Macd)
+	// 		if appendlength > 0 {
+	// 			var macd, macdSignal, macdHist []float64
+	// 			slowPeriod := int(v.SlowPeriod)
+	// 			length := appendlength + v.SlowPeriod
+	// 			if length > len(c.Candles) {
+	// 				length = len(c.Candles)
+	// 			}
+	// 			length--
+	// 			from := len(c.Candles) - slowPeriod
+	// 			if from < 0 {
+	// 				from = 0
+	// 			}
+	// 			log.Println(len(c.Candles))
+	// 			log.Println(length)
+	// 			candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
+	// 			log.Println(candles)
+	// 			macd, macdSignal, macdHist = talib.Macd(candles, v.FastPeriod, v.SlowPeriod, v.SignalPeriod)
+	// 			c.Macd[k].Macd = append(c.Macd[k].Macd, macd[from:]...)
+	// 			c.Macd[k].MacdSignal = append(c.Macd[k].MacdSignal, macdSignal[from:]...)
+	// 			c.Macd[k].MacdHist = append(c.Macd[k].MacdHist, macdHist[from:]...)
+	// 		}
+	// 	}
 }

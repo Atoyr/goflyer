@@ -1,5 +1,10 @@
 package models
 
+import (
+	"fmt"
+	"log"
+)
+
 type MovingAverage struct {
 	Period      int
 	Values      []float64
@@ -7,17 +12,22 @@ type MovingAverage struct {
 }
 
 type Sma struct {
-	MovingAverage
+	*MovingAverage
+}
+
+type Ema struct {
+	*MovingAverage
 }
 
 func NewSma(inReal []float64, inTimePeriod int) Sma {
 	var sma Sma
+	sma.MovingAverage = new(MovingAverage)
 	var values []float64
 	var periodTotal []float64
 
 	if len(inReal) < inTimePeriod {
-		values := make([]float64, len(inReal))
-		periodTotal := make([]float64, len(inReal))
+		values = make([]float64, len(inReal))
+		periodTotal = make([]float64, len(inReal))
 	} else {
 		if inTimePeriod < 0 {
 			inTimePeriod = 1
@@ -49,30 +59,43 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 // Sma - Simple Moving Average
 func (sma *Sma) UupdateSma(inReal []float64) {
 	var values []float64
-	length := len(inReal) - len(sma.Values)
-	if len(inReal) < sma.Period {
-		values := make([]float64, length)
+	if difflength := len(inReal) - len(sma.Values); difflength > 0 {
+		if len(inReal) < sma.Period {
+			values := make([]float64, difflength)
+			sma.Values = append(sma.Values, values...)
+			sma.periodTotal = append(sma.periodTotal, values...)
+		} else {
+			values = make([]float64, difflength)
+			periodTotal := 0.0
+			tail := len(sma.Values)
+			head := tail - sma.Period + 1
+			if head < 0 {
+				difflength = difflength + head
+				tail = tail - head
+				head = 0
+				if tail > len(inReal) {
+					return
+				}
+			}
+
+			for i := head; i < tail; i++ {
+				periodTotal += inReal[i]
+			}
+
+			for i := 0; i < difflength; i++ {
+				log.Printf("in : %d, values : %d, period : %d,  head : %d, tail : %d, diff : %d", len(inReal), len(sma.Values), sma.Period, head, tail, difflength)
+				periodTotal += inReal[tail]
+				values[i] = periodTotal / float64(sma.Period)
+				periodTotal -= inReal[head]
+				head++
+				tail++
+			}
+		}
+		var s string
+		for _, v := range values {
+			s = s + fmt.Sprintf(", %f ", v)
+		}
+		log.Println(s)
 		sma.Values = append(sma.Values, values...)
-		sma.periodTotal = append(sma.periodTotal, values...)
-	} else {
-		values = make([]float64, length)
-		periodTotal := 0.0
-		head := len(inReal) - sma.Period - length
-		tail := len(inReal) - length
-		for i := 0; i < tail; i++ {
-
-		}
-
-		for i := 0; i < start; i++ {
-			total += inReal[i]
-		}
-
-		// TODO
-		for i := 0; i < length; i++ {
-			periodTotal += inReal[head]
-			values[i] = periodTotal / float64(inTimePeriod)
-			periodTotal -= inReal[tail]
-		}
-
 	}
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	///	"context"
 	"github.com/atoyr/goflyer/api"
 	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
@@ -18,11 +18,11 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	var tickerChannl = make(chan models.Ticker)
-	var boardCannl = make(chan models.Board)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	board, err := clientClient.GetBoard("BTC_JPY")
+	//	var tickerChannl = make(chan models.Ticker)
+	//	var boardCannl = make(chan models.Board)
+	//	ctx, cancel := context.WithCancel(context.Background())
+	//	defer cancel()
+	//	board, err := clientClient.GetBoard("BTC_JPY")
 	if err != nil {
 		log.Println(err)
 	}
@@ -52,7 +52,7 @@ func main() {
 	cc := models.NewCandleCollection("test", 3*time.Minute)
 	cc.AddSmas(3)
 	cc.AddEmas(3)
-	cc.AddMacd(2,4,4)
+	cc.AddMacd(2, 4, 4)
 	candles := make([]models.Candle, 10)
 	candles[0] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-30*time.Minute), 100, 120, 150, 90, 5)
 	candles[1] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-27*time.Minute), 120, 110, 150, 90, 5)
@@ -70,27 +70,27 @@ func main() {
 	ccs := models.CandleCollections{}
 	ccs["hoge"] = cc
 	e := api.AppendHandler(api.GetEcho(ccs))
-	go e.Start(":8080")
+	e.Start(":8080")
 
-	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
-	go clientClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
-	go func() {
-		for b := range boardCannl {
-			board.Merge(b)
-			log.Printf("action=strealBoard, midPrice: %f", board.MidPrice)
-			log.Printf("action=strealBoard, bibs")
-			for _, bid := range board.Bids[:20] {
-				log.Printf("action=strealBoard, %v", bid)
-			}
-			log.Printf("action=strealBoard, asks\n")
-			for _, ask := range board.Asks[:20] {
-				log.Printf("action=strealBoard,%v ", ask)
-			}
-		}
-
-	}()
-	for ticker := range tickerChannl {
-		log.Printf("action=StreamIngestionData, %v", ticker)
-		d.UpdateTicker(ticker)
-	}
+	//	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
+	//	go clientClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
+	//	go func() {
+	//		for b := range boardCannl {
+	//			board.Merge(b)
+	//			log.Printf("action=strealBoard, midPrice: %f", board.MidPrice)
+	//			log.Printf("action=strealBoard, bibs")
+	//			for _, bid := range board.Bids[:20] {
+	//				log.Printf("action=strealBoard, %v", bid)
+	//			}
+	//			log.Printf("action=strealBoard, asks\n")
+	//			for _, ask := range board.Asks[:20] {
+	//				log.Printf("action=strealBoard,%v ", ask)
+	//			}
+	//		}
+	//
+	//	}()
+	//for ticker := range tickerChannl {
+	//	log.Printf("action=StreamIngestionData, %v", ticker)
+	//	d.UpdateTicker(ticker)
+	//}
 }
