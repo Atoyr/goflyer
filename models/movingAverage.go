@@ -1,9 +1,8 @@
 package models
 
 type MovingAverage struct {
-	Period      int
-	Values      []float64
-	periodTotal []float64
+	Period int
+	Values []float64
 }
 
 type Sma struct {
@@ -17,17 +16,13 @@ type Ema struct {
 func NewSma(inReal []float64, inTimePeriod int) Sma {
 	var sma Sma
 	sma.MovingAverage = new(MovingAverage)
-	var values []float64
-	var periodTotal []float64
+	values := make([]float64, len(inReal))
 
-	if len(inReal) < inTimePeriod {
-		values = make([]float64, len(inReal))
-		periodTotal = make([]float64, len(inReal))
+	if len(inReal) >= inTimePeriod {
 	} else {
 		if inTimePeriod < 0 {
 			inTimePeriod = 1
 		}
-		values = make([]float64, inTimePeriod)
 		total := 0.0
 		head := 0
 		start := inTimePeriod - 1
@@ -39,7 +34,6 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 		for i := start; i < len(inReal); i++ {
 			total += inReal[head]
 			values[i] = total / float64(inTimePeriod)
-			periodTotal[i] = total
 			total -= inReal[i]
 			head++
 		}
@@ -47,7 +41,6 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 
 	sma.Period = inTimePeriod
 	sma.Values = values
-	sma.periodTotal = periodTotal
 	return sma
 }
 
@@ -58,7 +51,6 @@ func (sma *Sma) UupdateSma(inReal []float64) {
 		if len(inReal) < sma.Period {
 			values := make([]float64, difflength)
 			sma.Values = append(sma.Values, values...)
-			sma.periodTotal = append(sma.periodTotal, values...)
 		} else {
 			values = make([]float64, difflength)
 			periodTotal := 0.0
