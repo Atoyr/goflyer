@@ -113,6 +113,14 @@ func (ema *Ema) UpdateEma(inReal []float64) {
 		if len(inReal) < ema.Period {
 			values := make([]float64, difflength)
 			ema.Values = append(ema.Values, values...)
+		} else if len(inReal) == ema.Period {
+			periodTotal := 0.0
+			values := make([]float64, len(inReal))
+			for i := 0; i < len(inReal); i++ {
+				periodTotal += inReal[i]
+			}
+			values[len(inReal)-1] = periodTotal / float64(ema.Period)
+			ema.Values = values
 		} else {
 			k := 2 / float64(ema.Period+1)
 
