@@ -1,10 +1,5 @@
 package models
 
-import (
-	"fmt"
-	"log"
-)
-
 type MovingAverage struct {
 	Period      int
 	Values      []float64
@@ -83,7 +78,6 @@ func (sma *Sma) UupdateSma(inReal []float64) {
 			}
 
 			for i := 0; i < difflength; i++ {
-				log.Printf("in : %d, values : %d, period : %d,  head : %d, tail : %d, diff : %d", len(inReal), len(sma.Values), sma.Period, head, tail, difflength)
 				periodTotal += inReal[tail]
 				values[i] = periodTotal / float64(sma.Period)
 				periodTotal -= inReal[head]
@@ -91,11 +85,6 @@ func (sma *Sma) UupdateSma(inReal []float64) {
 				tail++
 			}
 		}
-		var s string
-		for _, v := range values {
-			s = s + fmt.Sprintf(", %f ", v)
-		}
-		log.Println(s)
 		sma.Values = append(sma.Values, values...)
 	}
 }
