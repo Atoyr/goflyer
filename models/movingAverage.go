@@ -93,7 +93,7 @@ func NewEma(inReal []float64, inTimePeriod int) Ema {
 
 	if len(inReal) >= inTimePeriod {
 		periodTotal := 0.0
-		k := 2 / float64(inTimePeriod+1)
+		k := 2.0 / float64(inTimePeriod+1)
 		for i := 0; i < inTimePeriod; i++ {
 			periodTotal += inReal[i]
 		}
@@ -122,7 +122,7 @@ func (ema *Ema) UpdateEma(inReal []float64) {
 			values[len(inReal)-1] = periodTotal / float64(ema.Period)
 			ema.Values = values
 		} else {
-			k := 2 / float64(ema.Period+1)
+			k := 2.0 / float64(ema.Period+1)
 
 			for i := len(ema.Values); i < len(inReal); i++ {
 				value := ema.Values[i-1] + k*(inReal[i]-ema.Values[i-1])
