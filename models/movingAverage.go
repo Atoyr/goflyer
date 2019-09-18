@@ -47,7 +47,7 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 }
 
 // Sma - Simple Moving Average
-func (sma *Sma) UupdateSma(inReal []float64) {
+func (sma *Sma) Update(inReal []float64) {
 	var values []float64
 	if difflength := len(inReal) - len(sma.Values); difflength > 0 {
 		if len(inReal) < sma.Period {
@@ -108,7 +108,7 @@ func NewEma(inReal []float64, inTimePeriod int) Ema {
 	return ema
 }
 
-func (ema *Ema) UpdateEma(inReal []float64) {
+func (ema *Ema) Update(inReal []float64) {
 	if difflength := len(inReal) - len(ema.Values); difflength > 0 {
 		if len(inReal) < ema.Period {
 			values := make([]float64, difflength)

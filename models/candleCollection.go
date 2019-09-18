@@ -150,7 +150,7 @@ func (c *CandleCollection) AddSmas(period int) {
 
 func (c *CandleCollection) updateSmas() {
 	for _, sma := range c.Smas {
-		sma.UupdateSma(c.Values(Close))
+		sma.Update(c.Values(Close))
 	}
 }
 
@@ -172,7 +172,7 @@ func (c *CandleCollection) AddEmas(period int) {
 
 func (c *CandleCollection) updateEmas() {
 	for _, ema := range c.Emas {
-		ema.UpdateEma(c.Values(Close))
+		ema.Update(c.Values(Close))
 	}
 }
 
