@@ -254,23 +254,15 @@ func (c *CandleCollection) refreshRsis() {
 
 // MACD
 func (c *CandleCollection) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
-	var m MovingAverageConvergenceDivergence
-	var macd, macdSignal, macdHist []float64
-	if 1 < len(c.Candles) {
-		closes := c.Values(Close)
-		macd, macdSignal, macdHist = talib.Macd(closes, fastPeriod, slowPeriod, signalPeriod)
-	} else {
-	}
-	m.FastPeriod = fastPeriod
-	m.SlowPeriod = slowPeriod
-	m.SignalPeriod = signalPeriod
-	m.Macd = macd
-	m.MacdSignal = macdSignal
-	m.MacdHist = macdHist
-	c.Macd = append(c.Macd, m)
+	closes := c.Values(Close)
+	macd := NewMovingAverageConvergenceDivergence(closes, fastPeriod, slowPeriod, signalPeriod)
+	c.Macd = append(c.Macd, macd)
 }
 
 func (c *CandleCollection) updateMacd() {
+	for i := range c.Macd {
+		c.Macd[i].Update(c.Values(Close))
+	}
 	// 	for k, v := range c.Macd {
 	//
 	// 		appendlength := len(c.Candles) - len(v.Macd)

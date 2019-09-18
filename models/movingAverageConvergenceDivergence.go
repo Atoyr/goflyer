@@ -1,5 +1,7 @@
 package models
 
+import "log"
+
 type MovingAverageConvergenceDivergence struct {
 	FastPeriod   int
 	SlowPeriod   int
@@ -50,5 +52,6 @@ func (m *MovingAverageConvergenceDivergence) Update(inReal []float64) {
 			hist[i] = m.Macd[difflength+1] - m.MacdSignal[difflength+i]
 		}
 		m.MacdHist = append(m.MacdHist, hist...)
+		log.Printf("f:%d  s:%d signal:%d length macd : %d macdHist : %d macdSignal : %d", m.FastPeriod, m.SlowPeriod, m.SignalPeriod, len(m.Macd), len(m.MacdHist), len(m.MacdSignal))
 	}
 }
