@@ -37,21 +37,21 @@ func NewMovingAverageConvergenceDivergence(inReal []float64, fastPeriod, slowPer
 }
 
 func (m *MovingAverageConvergenceDivergence) Update(inReal []float64) {
-	if difflength := len(m.Macd) - len(inReal); difflength > 0 {
+	if difflength :=  len(inReal)-len(m.Macd); difflength > 0 {
+		baselength := len(m.Macd)
 		m.fastEma.Update(inReal)
 		m.slowEma.Update(inReal)
 		macd := make([]float64, difflength)
 		for i := range macd {
-			macd[i] = m.fastEma.Values[difflength+i] - m.slowEma.Values[difflength+i]
+			macd[i] = m.fastEma.Values[baselength+ i] - m.slowEma.Values[baselength+i ]
 		}
 		m.Macd = append(m.Macd, macd...)
 		m.signalEma.Update(m.Macd)
 		m.MacdSignal = m.signalEma.Values
 		hist := make([]float64, difflength)
 		for i := range hist {
-			hist[i] = m.Macd[difflength+1] - m.MacdSignal[difflength+i]
+			hist[i] = m.Macd[baselength+i] - m.MacdSignal[baselength+i]
 		}
 		m.MacdHist = append(m.MacdHist, hist...)
-		log.Printf("f:%d  s:%d signal:%d length macd : %d macdHist : %d macdSignal : %d", m.FastPeriod, m.SlowPeriod, m.SignalPeriod, len(m.Macd), len(m.MacdHist), len(m.MacdSignal))
 	}
 }

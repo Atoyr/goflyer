@@ -3,7 +3,7 @@ package main
 import (
 	///	"context"
 	"github.com/atoyr/goflyer/api"
-	"github.com/atoyr/goflyer/client"
+	//"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	clientClient := client.New("", "")
+	//clientClient := client.New("", "")
 	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
 	if err != nil {
 		log.Println(err)
@@ -33,21 +33,21 @@ func main() {
 		log.Println(err)
 	}
 	d.Init()
-	tickers, err := d.GetAllTicker()
-	if err != nil {
-		log.Println(err)
-	}
-	for _, t := range tickers {
-		log.Println(t)
-	}
+	//tickers, err := d.GetAllTicker()
+	//if err != nil {
+	//	log.Println(err)
+	//}
+//	for _, t := range tickers {
+//		log.Println(t)
+//	}
 
-	p, err := clientClient.GetPermissions()
-	if err != nil {
-		log.Println(err)
-	}
-	for k, v := range p {
-		log.Printf("%t : %s", v, k)
-	}
+//	p, err := clientClient.GetPermissions()
+//	if err != nil {
+//		log.Println(err)
+//	}
+//	for k, v := range p {
+//		log.Printf("%t : %s", v, k)
+//	}
 
 	cc := models.NewCandleCollection("test", 3*time.Minute)
 	cc.AddSmas(3)
