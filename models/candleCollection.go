@@ -135,6 +135,7 @@ func (c *CandleCollection) updateChart() {
 	c.updateSmas()
 	c.updateEmas()
 	c.updateMacd()
+	c.updateRsis()
 }
 
 func (c *CandleCollection) refreshChart() {
@@ -149,8 +150,8 @@ func (c *CandleCollection) AddSmas(period int) {
 }
 
 func (c *CandleCollection) updateSmas() {
-	for _, sma := range c.Smas {
-		sma.Update(c.Values(Close))
+	for i := range c.Smas {
+		c.Smas[i].Update(c.Values(Close))
 	}
 }
 
@@ -171,8 +172,8 @@ func (c *CandleCollection) AddEmas(period int) {
 }
 
 func (c *CandleCollection) updateEmas() {
-	for _, ema := range c.Emas {
-		ema.Update(c.Values(Close))
+	for i := range c.Emas {
+		c.Emas[i].Update(c.Values(Close))
 	}
 }
 
@@ -213,43 +214,17 @@ func (c *CandleCollection) AddBollingerBand(n int, k1, k2 float64) {
 
 // RSI
 func (c *CandleCollection) AddRsis(period int) {
-	var rsi RelativeStrengthIndex
-	rsi.Period = period
-	if len(c.Candles) > period {
-		rsi.Values = talib.Rsi(c.Values(Close), period)
-	} else {
-		rsi.Values = make([]float64, len(c.Candles))
-	}
+	rsi := NewRelativeStrengthIndex(c.Values(Close), period)
 	c.Rsis = append(c.Rsis, rsi)
 }
 
 func (c *CandleCollection) updateRsis() {
-	for i, rsi := range c.Rsis {
-		appendlength := len(c.Candles) - len(rsi.Values)
-		if appendlength > 0 {
-			if len(c.Candles) > rsi.Period {
-				length := appendlength + rsi.Period
-				if length > len(c.Candles) {
-					length = len(c.Candles)
-				}
-				candles, _ := c.LastOfValues(Close, len(c.Candles)-length)
-				values := talib.Rsi(candles, rsi.Period)
-				c.Rsis[i].Values = append(c.Rsis[i].Values, values[len(values)-appendlength:]...)
-			} else {
-				rsi.Values = make([]float64, len(c.Candles))
-			}
-		}
+	for i := range c.Rsis {
+		c.Rsis[i].Update(c.Values(Close))
 	}
 }
 
 func (c *CandleCollection) refreshRsis() {
-	for i, rsi := range c.Rsis {
-		if len(c.Candles) > rsi.Period {
-			c.Rsis[i].Values = talib.Rsi(c.Values(Close), rsi.Period)
-		} else {
-			c.Rsis[i].Values = make([]float64, len(c.Candles))
-		}
-	}
 }
 
 // MACD
