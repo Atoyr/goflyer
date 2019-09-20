@@ -49,3 +49,67 @@ func NewRelativeStrengthIndex(inReal []float64, inTimePeriod int) RelativeStreng
 	}
 	return rsi
 }
+
+func (rsi *RelativeStrengthIndex) Update(inReal []float64) {
+	if difflength := len(inReal) - len(rsi.Values); difflength > 0 {
+		if inlength := len(inReal); inlength< rsi.Period {
+			rsi.Values = make([]float64, len(inReal))
+			rsi.diff = make([]float64, len(inReal)) 
+		}else if inlength == rsi.Period {
+			increase := 0.0
+			decrease := 0.0
+			rsilength := len(rsi.Values)
+			rsi.Values = append(rsi.Values, make([]float64,difflength)...)
+			rsi.diff = append(rsi.diff, make([]float64,difflength)...)
+			beforeValue := 0.0
+			if rsilength > 0 {
+				beforeValue = inReal[rsilength - 1] 
+			}
+			if rsilength == 0 {
+				rsilength = 1
+			}
+			for i := rsilength; i < len(inReal); i++ {
+				rsi.diff[i] = inReal[i] - beforeValue
+				beforeValue = inReal[i]
+			}
+			for i := 0; i < len(rsi.diff) ; i++ {
+				if rsi.diff[i] > 0 {
+					increase += rsi.diff[i]
+				} else {
+					decrease -= rsi.diff[i]
+				}
+			}
+			rsi.Values[rsi.Period - 1] = increase / (increase + decrease) * 100 
+		}else {
+			// TODO
+			if len(rsi.Values) > rsi.Period {
+
+			}else {
+				increase := 0.0
+				decrease := 0.0
+				rsilength := len(rsi.Values)
+				rsi.Values = append(rsi.Values, make([]float64,difflength)...)
+				rsi.diff = append(rsi.diff, make([]float64,difflength)...)
+				beforeValue := 0.0
+				if rsilength > 0 {
+					beforeValue = inReal[rsilength - 1] 
+				}
+				if rsilength == 0 {
+					rsilength = 1
+				}
+				for i := rsilength; i < len(inReal); i++ {
+					rsi.diff[i] = inReal[i] - beforeValue
+					beforeValue = inReal[i]
+				}
+				for i := 0; i < len(rsi.diff) ; i++ {
+					if rsi.diff[i] > 0 {
+						increase += rsi.diff[i]
+					} else {
+						decrease -= rsi.diff[i]
+					}
+				}
+				rsi.Values[rsi.Period - 1] = increase / (increase + decrease) * 100 
+			} 
+		}
+	}
+}
