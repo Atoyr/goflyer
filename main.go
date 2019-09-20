@@ -37,22 +37,23 @@ func main() {
 	//if err != nil {
 	//	log.Println(err)
 	//}
-//	for _, t := range tickers {
-//		log.Println(t)
-//	}
+	//	for _, t := range tickers {
+	//		log.Println(t)
+	//	}
 
-//	p, err := clientClient.GetPermissions()
-//	if err != nil {
-//		log.Println(err)
-//	}
-//	for k, v := range p {
-//		log.Printf("%t : %s", v, k)
-//	}
+	//	p, err := clientClient.GetPermissions()
+	//	if err != nil {
+	//		log.Println(err)
+	//	}
+	//	for k, v := range p {
+	//		log.Printf("%t : %s", v, k)
+	//	}
 
 	cc := models.NewCandleCollection("test", 3*time.Minute)
 	cc.AddSmas(3)
 	cc.AddEmas(3)
 	cc.AddMacd(2, 4, 4)
+	cc.AddRsis(2)
 	candles := make([]models.Candle, 10)
 	candles[0] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-30*time.Minute), 100, 120, 150, 90, 5)
 	candles[1] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-27*time.Minute), 120, 110, 150, 90, 5)
