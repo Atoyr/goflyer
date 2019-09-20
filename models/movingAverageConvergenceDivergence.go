@@ -1,7 +1,5 @@
 package models
 
-import "log"
-
 type MovingAverageConvergenceDivergence struct {
 	FastPeriod   int
 	SlowPeriod   int
@@ -37,13 +35,13 @@ func NewMovingAverageConvergenceDivergence(inReal []float64, fastPeriod, slowPer
 }
 
 func (m *MovingAverageConvergenceDivergence) Update(inReal []float64) {
-	if difflength :=  len(inReal)-len(m.Macd); difflength > 0 {
+	if difflength := len(inReal) - len(m.Macd); difflength > 0 {
 		baselength := len(m.Macd)
 		m.fastEma.Update(inReal)
 		m.slowEma.Update(inReal)
 		macd := make([]float64, difflength)
 		for i := range macd {
-			macd[i] = m.fastEma.Values[baselength+ i] - m.slowEma.Values[baselength+i ]
+			macd[i] = m.fastEma.Values[baselength+i] - m.slowEma.Values[baselength+i]
 		}
 		m.Macd = append(m.Macd, macd...)
 		m.signalEma.Update(m.Macd)
