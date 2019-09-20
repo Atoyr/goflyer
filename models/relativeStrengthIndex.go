@@ -12,9 +12,38 @@ func NewRelativeStrengthIndex(inReal []float64, inTimePeriod int) RelativeStreng
 		inTimePeriod = 1
 	}
 	rsi.Period = inTimePeriod
-	rsi.setInitializeValues(len(inReal))
+	rsi.setInitializeValues(0)
 	rsi.Update(inReal)
 	return rsi
+}
+
+func (rsi *RelativeStrengthIndex) Update(inReal []float64) {
+	if difflength := len(inReal) - len(rsi.Values); difflength > 0 {
+		inlength := len(inReal)
+		valuelength := len(rsi.Values)
+		rsi.appendValues(difflength)
+		rsi.setDiffValue(inReal)
+
+		if inlength >= rsi.Period {
+			if valuelength < rsi.Period {
+				rsi.setFirstPeriodValue(inReal)
+			}
+			for i := rsi.Period; i < inlength; i++ {
+				a := rsi.Values[i-1] * float64(rsi.Period-1)
+				b := rsi.Values[i-1] * float64(rsi.Period-1)
+				if rsi.diff[i] > 0 {
+					a = a + rsi.diff[i]
+				} else {
+					b = b - rsi.diff[i]
+				}
+				if a+b == 0 {
+					rsi.Values[i] = 0
+				} else {
+					rsi.Values[i] = a / (a + b) * 100
+				}
+			}
+		}
+	}
 }
 
 func (rsi *RelativeStrengthIndex) setInitializeValues(length int) {
@@ -54,32 +83,8 @@ func (rsi *RelativeStrengthIndex) setFirstPeriodValue(inReal []float64) {
 				decrease -= rsi.diff[i]
 			}
 		}
-		if i == rsi.Period-1 {
+		if i == rsi.Period-1 && increase+decrease != 0 {
 			rsi.Values[i] = increase / (increase + decrease) * 100
-		}
-	}
-}
-
-func (rsi *RelativeStrengthIndex) Update(inReal []float64) {
-	if difflength := len(inReal) - len(rsi.Values); difflength > 0 {
-		inlength := len(inReal)
-		valuelength := len(rsi.Values)
-		rsi.appendValues(difflength)
-
-		if inlength >= rsi.Period {
-			if valuelength < rsi.Period {
-				rsi.setFirstPeriodValue(inReal)
-			}
-			for i := rsi.Period; i < inlength; i++ {
-				a := rsi.Values[i-1] * float64(rsi.Period-1)
-				b := rsi.Values[i-1] * float64(rsi.Period-1)
-				if rsi.diff[i] > 0 {
-					a := a + rsi.diff[i]
-				} else {
-					b := b - rsi.diff[i]
-				}
-				rsi.Values[i] = a / (a * b) * 100
-			}
 		}
 	}
 }
