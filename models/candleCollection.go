@@ -11,7 +11,7 @@ type CandleCollections map[string]CandleCollection
 type CandleCollection struct {
 	ProductCode string
 	Duration    time.Duration
-	Candles     []Candle
+	Candles     Candles
 
 	Smas          []Sma
 	Emas          []Ema
