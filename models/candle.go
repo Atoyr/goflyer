@@ -1,8 +1,8 @@
 package models
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 type Candle struct {
@@ -15,6 +15,8 @@ type Candle struct {
 	Low         float64       `json:"low"`
 	Volume      float64       `json:"volume"`
 }
+
+type Candles []Candle
 
 func NewCandle(productCode string, duration time.Duration, time time.Time, open, close, high, low, volume float64) *Candle {
 	c := new(Candle)
@@ -30,11 +32,11 @@ func NewCandle(productCode string, duration time.Duration, time time.Time, open,
 }
 
 func (c *Candle) CollectionKey() string {
-	return fmt.Sprintf("%s_%s",c.ProductCode, c.Duration)
+	return fmt.Sprintf("%s_%s", c.ProductCode, c.Duration)
 }
 
 func (c *Candle) Key() string {
-	return fmt.Sprintf("%s_%s",c.ProductCode, c.GetTimeString())
+	return fmt.Sprintf("%s_%s", c.ProductCode, c.GetTimeString())
 }
 
 func (c *Candle) GetTimeString() string {
