@@ -49,7 +49,7 @@ func main() {
 	//		log.Printf("%t : %s", v, k)
 	//	}
 
-	cc := models.NewCandleCollection("test", 3*time.Minute)
+	cc := models.NewDataFrame("test", 3*time.Minute)
 	cc.AddSmas(3)
 	cc.AddEmas(3)
 	cc.AddMacd(2, 4, 4)
@@ -68,7 +68,7 @@ func main() {
 	for _, c := range candles {
 		cc.MergeCandle(c)
 	}
-	ccs := models.CandleCollections{}
+	ccs := models.DataFrames{}
 	ccs["hoge"] = cc
 	e := api.AppendHandler(api.GetEcho(ccs))
 	e.Start(":8080")

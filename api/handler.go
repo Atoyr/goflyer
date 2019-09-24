@@ -9,10 +9,10 @@ import (
 
 type Context struct {
 	echo.Context
-	CandleCollections models.CandleCollections
+	DataFrames models.DataFrames
 }
 
-func GetEcho(ccs models.CandleCollections) *echo.Echo {
+func GetEcho(ccs models.DataFrames) *echo.Echo {
 	e := echo.New()
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -36,5 +36,5 @@ func handleCandleCollection(c echo.Context) error {
 	context := c.(*Context)
 	key := context.Param("key")
 
-	return c.JSON(http.StatusOK, context.CandleCollections[key])
+	return c.JSON(http.StatusOK, context.DataFrames[key])
 }
