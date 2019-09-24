@@ -1,8 +1,8 @@
 package models
 
 type MovingAverage struct {
-	Period int
-	Values []float64
+	Period int       `json:"period"`
+	Values []float64 `json:"values"`
 }
 
 type Sma struct {
