@@ -16,11 +16,8 @@ type DataFrame struct {
 	Smas          []Sma
 	Emas          []Ema
 	BollingerBand *BollingerBand
-	// 	IchimokuCloud *IchimokuCloud `json:"ichimoku,omitempty"`
-	Rsis []RelativeStrengthIndex
-	Macd []MovingAverageConvergenceDivergence
-	// 	Hvs []Hv `json:"hvs,omitempty"`
-	// 	Events *SignalEvents `json:"events,omitempty"`
+	Rsis          []RelativeStrengthIndex
+	Macd          []MovingAverageConvergenceDivergence
 }
 
 const Open = "Open"
@@ -36,6 +33,11 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 
 func (df *DataFrame) Name() string {
 	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
+}
+
+func (df *DataFrame) AddTicker(ticker Ticker) error {
+
+	return nil
 }
 
 func (df *DataFrame) MergeCandle(candle Candle) error {
