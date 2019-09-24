@@ -1,15 +1,15 @@
 package models
 
 type MovingAverageConvergenceDivergence struct {
-	FastPeriod   int
-	SlowPeriod   int
-	SignalPeriod int
-	Macd         []float64
-	MacdSignal   []float64
-	MacdHist     []float64
-	fastEma      Ema
-	slowEma      Ema
-	signalEma    Ema
+	FastPeriod   int       `json:"fast_period"`
+	SlowPeriod   int       `json:"slow_period"`
+	SignalPeriod int       `json:"signal_period"`
+	Macd         []float64 `json:"macd"`
+	MacdSignal   []float64 `json:"macd_signal"`
+	MacdHist     []float64 `json:"macd_hist"`
+	fastEma      Ema       `json:"fast_ema"`
+	slowEma      Ema       `json:"slow_ema"`
+	signalEma    Ema       `json:"signal_ema"`
 }
 
 func NewMovingAverageConvergenceDivergence(inReal []float64, fastPeriod, slowPeriod, signalPeriod int) MovingAverageConvergenceDivergence {
