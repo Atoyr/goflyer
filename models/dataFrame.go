@@ -2,8 +2,9 @@ package models
 
 import (
 	"fmt"
-	"github.com/atoyr/go-talib"
 	"time"
+
+	"github.com/atoyr/go-talib"
 )
 
 type DataFrames map[string]DataFrame
@@ -41,7 +42,7 @@ func (df *DataFrame) AddTicker(ticker Ticker) error {
 }
 
 func (df *DataFrame) MergeCandle(candle Candle) error {
-	if candle.Duration != df.Duration {
+	if candle.GetDuration() != df.Duration {
 		// TODO return error
 		return nil
 	}

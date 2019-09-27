@@ -3,7 +3,7 @@ package models
 type RelativeStrengthIndex struct {
 	Period int       `json:"period"`
 	Values []float64 `json:"values"`
-	diff   []float64 `json:"diff"`
+	diff   []float64
 }
 
 func NewRelativeStrengthIndex(inReal []float64, inTimePeriod int) RelativeStrengthIndex {

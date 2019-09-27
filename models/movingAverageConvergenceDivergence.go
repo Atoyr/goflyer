@@ -7,9 +7,9 @@ type MovingAverageConvergenceDivergence struct {
 	Macd         []float64 `json:"macd"`
 	MacdSignal   []float64 `json:"macd_signal"`
 	MacdHist     []float64 `json:"macd_hist"`
-	fastEma      Ema       `json:"fast_ema"`
-	slowEma      Ema       `json:"slow_ema"`
-	signalEma    Ema       `json:"signal_ema"`
+	fastEma      Ema
+	slowEma      Ema
+	signalEma    Ema
 }
 
 func NewMovingAverageConvergenceDivergence(inReal []float64, fastPeriod, slowPeriod, signalPeriod int) MovingAverageConvergenceDivergence {
