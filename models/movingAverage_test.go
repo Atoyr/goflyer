@@ -1,40 +1,50 @@
-package models
+package models_test
 
 import (
 	"testing"
+	"io/ioutil"
+	"os"
+	"log"
+	"encoding/json"
+	"github.com/atoyr/goflyer/models"
 )
 
-func TestSimple(t *testing.T) {
-	in := make([]float64, 10)
-	in[0] = 1
-	in[1] = 2
-	in[2] = 3
-	in[3] = 4
-	in[4] = 5
-	in[5] = 6
-	in[6] = 7
-	in[7] = 8
-	in[8] = 9
-	in[9] = 10
-
-	period := 3
-
-	out := make([]float64, 10)
-	for i, v := range in {
-		if i >= period-1 {
-			sum := 0.0
-			for _, x := range in[i-period+1 : i] {
-				sum += x
-			}
-			out[i] = sum
-		}
+func getCandle1440() models.Candles{
+	jsonFile, err := os.Open("../testdata/candle_144000.json")
+	if err != nil {
+		return nil
+	}
+	defer jsonFile.Close()
+	raw, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil
+	}
+	log.Println(string(raw))
+	var cs  []models.Candle
+	err = json.Unmarshal(raw,&cs)
+	if err != nil {
+		log.Print(err)
 	}
 
-	sma := NewSma(in, 3)
-	for i := range out {
-		if out[i] != sma.Values[i] {
-			t.Fatalf("No %v want %v, but %v:", i, out[i], sma.Values[i])
-		}
+	return  cs
+}
+
+func TestSmaCreate(t *testing.T) {
+	cs := getCandle1440()
+	t.Log(cs)
+	in := make([]float64, len(cs))
+	for i := range cs {
+		in[i] = cs[i].Close
+	}
+
+	period := 6
+
+sma := models.NewSma(in, period)
+	for i := range sma.Values {
+		//if out[i] != sma.Values[i] {
+		//	t.Fatalf("No %v want %v, but %v:", i, out[i], sma.Values[i])
+		//}
+		t.Log(sma.Values[i])
 
 	}
 }
