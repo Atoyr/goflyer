@@ -44,24 +44,28 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 
 // Sma - Simple Moving Average
 func (sma *Sma) Update(inReal []float64) {
-	var values []float64
 	if difflength := len(inReal) - len(sma.Values); difflength > 0 {
-		values = make([]float64, difflength)
+		values := make([]float64, difflength)
 		if len(inReal) >= sma.Period {
 			total := 0.0
-			start := sma.Period - 1
+			start := len(sma.Values) - 1
+			if start < sma.Period-1 {
+				start = sma.Period - 1
+			}
+			sma.Values = append(sma.Values, values...)
 
-			for i := 0; i < start; i++ {
+			for i := start - sma.Period + 1; i < start; i++ {
 				total += inReal[i]
 			}
 
 			for i := start; i < len(inReal); i++ {
 				total += inReal[i]
-				values[i] = total / float64(sma.Period)
+				sma.Values[i] = total / float64(sma.Period)
 				total -= inReal[i-sma.Period+1]
 			}
+		} else {
+			sma.Values = append(sma.Values, values...)
 		}
-		sma.Values = append(sma.Values, values...)
 	}
 }
 

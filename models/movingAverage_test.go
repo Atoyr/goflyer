@@ -72,7 +72,7 @@ func TestSmaUpdate(t *testing.T) {
 	period := 6
 
 	sma := models.NewSma(in[:0], period)
-	for i := 1; i < len(sma.Values); i++ {
+	for i := 1; i < len(in); i++ {
 		sma.Update(in[:i])
 	}
 	goldenSma := getSma1440()
