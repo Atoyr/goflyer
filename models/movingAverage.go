@@ -18,26 +18,22 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 	sma.MovingAverage = new(MovingAverage)
 	values := make([]float64, len(inReal))
 
+	if inTimePeriod <= 0 {
+		inTimePeriod = 1
+	}
+
 	if len(inReal) >= inTimePeriod {
-		if inTimePeriod < 0 {
-			inTimePeriod = 1
-		}
 		total := 0.0
-		head := 0
 		start := inTimePeriod - 1
-		if start < 0 {
-			return sma
-		}
 
 		for i := 0; i < start; i++ {
 			total += inReal[i]
 		}
 
 		for i := start; i < len(inReal); i++ {
-			total += inReal[head]
+			total += inReal[i]
 			values[i] = total / float64(inTimePeriod)
-			total -= inReal[i]
-			head++
+			total -= inReal[i-inTimePeriod+1]
 		}
 	}
 
@@ -50,32 +46,19 @@ func NewSma(inReal []float64, inTimePeriod int) Sma {
 func (sma *Sma) Update(inReal []float64) {
 	var values []float64
 	if difflength := len(inReal) - len(sma.Values); difflength > 0 {
-		if len(inReal) < sma.Period {
-			values = make([]float64, difflength)
-		} else {
-			values = make([]float64, difflength)
-			periodTotal := 0.0
-			tail := len(sma.Values)
-			head := tail - sma.Period + 1
-			if head < 0 {
-				difflength = difflength + head
-				tail = tail - head
-				head = 0
-				if tail > len(inReal) {
-					return
-				}
+		values = make([]float64, difflength)
+		if len(inReal) >= sma.Period {
+			total := 0.0
+			start := sma.Period - 1
+
+			for i := 0; i < start; i++ {
+				total += inReal[i]
 			}
 
-			for i := head; i < tail; i++ {
-				periodTotal += inReal[i]
-			}
-
-			for i := 0; i < difflength; i++ {
-				periodTotal += inReal[tail]
-				values[i] = periodTotal / float64(sma.Period)
-				periodTotal -= inReal[head]
-				head++
-				tail++
+			for i := start; i < len(inReal); i++ {
+				total += inReal[i]
+				values[i] = total / float64(sma.Period)
+				total -= inReal[i-sma.Period+1]
 			}
 		}
 		sma.Values = append(sma.Values, values...)
