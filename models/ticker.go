@@ -1,8 +1,8 @@
 package models
 
 import (
-	"time"
 	"log"
+	"time"
 )
 
 type Ticker struct {
@@ -20,7 +20,7 @@ type Ticker struct {
 	VolumeByProduct float64 `json:"volume_by_product"`
 }
 
-func (t *Ticker) GetTimestamp() time.Time {
+func (t *Ticker) DateTime() time.Time {
 	datetime, err := time.Parse(time.RFC3339, t.Timestamp)
 	if err != nil {
 		log.Printf("action=Execution.GetTimestamp, argslen=0, args=, err=%s", err.Error())
@@ -30,5 +30,8 @@ func (t *Ticker) GetTimestamp() time.Time {
 }
 
 func (t *Ticker) GetMidPrice() float64 {
-	return (t.BestBid + t.BestAsk ) / 2
+	return (t.BestBid + t.BestAsk) / 2
+}
+func (t *Ticker) TruncateDateTime(duration time.Duration) time.Time {
+	return t.DateTime().Truncate(duration)
 }

@@ -1,13 +1,14 @@
 package db
 
 import (
-	"github.com/boltdb/bolt"
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"log"
+	"time"
+
 	"github.com/atoyr/goflyer/models"
-"bytes"
-"fmt"
-"time"
-"log"
+	"github.com/boltdb/bolt"
 )
 
 type Bolt struct {
@@ -28,7 +29,7 @@ func GetBolt(dbFile string) (*Bolt, error) {
 }
 
 func (b *Bolt) db() *bolt.DB {
-	db,err := bolt.Open(b.dbFile, 0600, nil)
+	db, err := bolt.Open(b.dbFile, 0600, nil)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -50,34 +51,34 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket  := tx.Bucket([]byte("Ticker"))
-		if marshalTime, err := t.GetTimestamp().MarshalBinary() ; err!= nil {
-			return err 
+		bucket := tx.Bucket([]byte("Ticker"))
+		if marshalTime, err := t.DateTime().MarshalBinary(); err != nil {
+			return err
 		} else if buf, err := json.Marshal(t); err != nil {
 			return err
-		} else if err = bucket.Put(marshalTime,buf) ; err != nil {
+		} else if err = bucket.Put(marshalTime, buf); err != nil {
 			return err
 		}
 		return nil
 	})
-		if err  != nil {
-			log.Fatal(err)
-			return err
-		}
-		return nil
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
 }
 
 func (b *Bolt) GetAllTicker() ([]models.Ticker, error) {
 	db := b.db()
 	defer db.Close()
-	tickers := make([]models.Ticker,0)
+	tickers := make([]models.Ticker, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(TickerBucket)).Cursor()
 
-		for k, v := c.First(); k != nil ; k, v = c.Next() {
+		for k, v := c.First(); k != nil; k, v = c.Next() {
 			var t models.Ticker
-			json.Unmarshal(v,&t)
-			tickers = append(tickers,t)
+			json.Unmarshal(v, &t)
+			tickers = append(tickers, t)
 		}
 		return nil
 	})
@@ -94,17 +95,17 @@ func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
 	m := new(models.Ticker)
 	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(TickerBucket)).Cursor()
-		min ,err  :=  timestamp.MarshalBinary()
-		if err  != nil {
+		min, err := timestamp.MarshalBinary()
+		if err != nil {
 			return err
 		}
-		max ,err :=  timestamp.MarshalBinary()
-		if err  != nil {
+		max, err := timestamp.MarshalBinary()
+		if err != nil {
 			return err
 		}
 
 		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-			fmt.Printf("%s: %s\n", k, v) 
+			fmt.Printf("%s: %s\n", k, v)
 		}
 		return nil
 	})
@@ -120,19 +121,19 @@ func (b *Bolt) UpdateCandle(c models.Candle) error {
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucketName := fmt.Sprintf("Candle_%s", c.Key())
-		bucket  := tx.Bucket([]byte(bucketName))
+		bucket := tx.Bucket([]byte(bucketName))
 		if buf, err := json.Marshal(c); err != nil {
 			return err
-		} else if err = bucket.Put([]byte(c.Key()),buf) ; err != nil {
+		} else if err = bucket.Put([]byte(c.Key()), buf); err != nil {
 			return err
 		}
 		return nil
 	})
-		if err  != nil {
-			log.Fatal(err)
-			return err
-		}
-		return nil 
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
 }
 
 func (b *Bolt) GetCandleCollection() {

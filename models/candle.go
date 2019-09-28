@@ -49,7 +49,7 @@ func (c *Candle) GetDuration() time.Duration {
 
 func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
 	toTime := c.Time.Add(c.GetDuration())
-	tickerTime := ticker.GetTimestamp()
+	tickerTime := ticker.DateTime()
 	if !c.Time.After(tickerTime) && tickerTime.Before(toTime) {
 		price := ticker.GetMidPrice()
 		if c.High < price {
