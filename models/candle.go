@@ -47,10 +47,14 @@ func (c *Candle) GetDuration() time.Duration {
 	return time.Duration(c.Duration)
 }
 
-func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
+func (c *Candle) IsAddedTicer(ticker Ticker) bool {
 	toTime := c.Time.Add(c.GetDuration())
 	tickerTime := ticker.DateTime()
-	if !c.Time.After(tickerTime) && tickerTime.Before(toTime) {
+	return !(!c.Time.After(tickerTime) && tickerTime.Before(toTime))
+}
+
+func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
+	if !c.IsAddedTicer(ticker) {
 		price := ticker.GetMidPrice()
 		if c.High < price {
 			c.High = price
