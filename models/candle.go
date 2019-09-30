@@ -14,6 +14,8 @@ type Candle struct {
 	High        float64   `json:"high"`
 	Low         float64   `json:"low"`
 	Volume      float64   `json:"volume"`
+	OpenDateTime  time.Time `json:"open_date_time"`
+	CloseDateTime time.Time `json:"close_date_time"`
 }
 
 type Candles []Candle
@@ -47,14 +49,10 @@ func (c *Candle) GetDuration() time.Duration {
 	return time.Duration(c.Duration)
 }
 
-func (c *Candle) IsAddedTicer(ticker Ticker) bool {
+func (c *Candle) addTicker(ticker Ticker) error{
 	toTime := c.Time.Add(c.GetDuration())
 	tickerTime := ticker.DateTime()
-	return !(!c.Time.After(tickerTime) && tickerTime.Before(toTime))
-}
-
-func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
-	if !c.IsAddedTicer(ticker) {
+if !c.Time.After(tickerTime) && tickerTime.Before(toTime){
 		price := ticker.GetMidPrice()
 		if c.High < price {
 			c.High = price
@@ -63,10 +61,37 @@ func (c *Candle) AddTicker(ticker Ticker) (*Candle, error) {
 			c.Low = price
 		}
 		c.Volume += ticker.Volume
-		c.Close = price
-		return c, nil
+		return nil
 	} else {
 		// TODO return error
-		return nil, nil
+		return nil
 	}
+
+}
+
+func (c *Candle) AddTickerToHead(ticker Ticker) error{
+	err := c.addTicker(ticker) 
+	if err != nil {
+		return err
+	}
+	c.Open = ticker.GetMidPrice()
+	return nil
+}
+
+func (c *Candle) AddTickerToMiddle(ticker Ticker) error{
+	err := c.addTicker(ticker) 
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
+func (c *Candle) AddTickerToLast(ticker Ticker) error{
+	err := c.addTicker(ticker) 
+	if err != nil {
+		return err
+	}
+	c.Close = ticker.GetMidPrice()
+	return nil
 }
