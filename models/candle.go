@@ -6,14 +6,14 @@ import (
 )
 
 type Candle struct {
-	ProductCode string    `json:"product_code"`
-	Duration    int64     `json:"duration"`
-	Time        time.Time `json:"time"`
-	Open        float64   `json:"open"`
-	Close       float64   `json:"close"`
-	High        float64   `json:"high"`
-	Low         float64   `json:"low"`
-	Volume      float64   `json:"volume"`
+	ProductCode   string    `json:"product_code"`
+	Duration      int64     `json:"duration"`
+	Time          time.Time `json:"time"`
+	Open          float64   `json:"open"`
+	Close         float64   `json:"close"`
+	High          float64   `json:"high"`
+	Low           float64   `json:"low"`
+	Volume        float64   `json:"volume"`
 	OpenDateTime  time.Time `json:"open_date_time"`
 	CloseDateTime time.Time `json:"close_date_time"`
 }
@@ -49,10 +49,10 @@ func (c *Candle) GetDuration() time.Duration {
 	return time.Duration(c.Duration)
 }
 
-func (c *Candle) addTicker(ticker Ticker) error{
+func (c *Candle) AddTicker(ticker Ticker) error {
 	toTime := c.Time.Add(c.GetDuration())
 	tickerTime := ticker.DateTime()
-if !c.Time.After(tickerTime) && tickerTime.Before(toTime){
+	if !c.Time.After(tickerTime) && tickerTime.Before(toTime) {
 		price := ticker.GetMidPrice()
 		if c.High < price {
 			c.High = price
@@ -61,37 +61,15 @@ if !c.Time.After(tickerTime) && tickerTime.Before(toTime){
 			c.Low = price
 		}
 		c.Volume += ticker.Volume
+		if tickerTime.Before(c.OpenDateTime) {
+			c.OpenDateTime = tickerTime
+		}
+		if tickerTime.After(c.CloseDateTime) {
+			c.CloseDateTime = tickerTime
+		}
 		return nil
 	} else {
 		// TODO return error
 		return nil
 	}
-
-}
-
-func (c *Candle) AddTickerToHead(ticker Ticker) error{
-	err := c.addTicker(ticker) 
-	if err != nil {
-		return err
-	}
-	c.Open = ticker.GetMidPrice()
-	return nil
-}
-
-func (c *Candle) AddTickerToMiddle(ticker Ticker) error{
-	err := c.addTicker(ticker) 
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-
-func (c *Candle) AddTickerToLast(ticker Ticker) error{
-	err := c.addTicker(ticker) 
-	if err != nil {
-		return err
-	}
-	c.Close = ticker.GetMidPrice()
-	return nil
 }
