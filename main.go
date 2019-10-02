@@ -4,12 +4,13 @@ import (
 	///	"context"
 	"github.com/atoyr/goflyer/api"
 	//"github.com/atoyr/goflyer/client"
-	"github.com/atoyr/goflyer/db"
-	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/util"
 	"log"
 	"path/filepath"
 	"time"
+
+	"github.com/atoyr/goflyer/db"
+	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/util"
 )
 
 func main() {
@@ -55,16 +56,16 @@ func main() {
 	cc.AddMacd(2, 4, 4)
 	cc.AddRsis(2)
 	candles := make([]models.Candle, 10)
-	candles[0] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-30*time.Minute), 100, 120, 150, 90, 5)
-	candles[1] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-27*time.Minute), 120, 110, 150, 90, 5)
-	candles[2] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-24*time.Minute), 110, 120, 150, 90, 5)
-	candles[3] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-21*time.Minute), 120, 100, 150, 90, 5)
-	candles[4] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-18*time.Minute), 100, 110, 150, 90, 5)
-	candles[5] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-15*time.Minute), 110, 130, 150, 90, 5)
-	candles[6] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-12*time.Minute), 130, 150, 150, 90, 5)
-	candles[7] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-9*time.Minute), 150, 120, 150, 90, 5)
-	candles[8] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-6*time.Minute), 120, 100, 150, 90, 5)
-	candles[9] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-3*time.Minute), 100, 110, 150, 90, 5)
+	// candles[0] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-30*time.Minute), 100, 120, 150, 90, 5)
+	// candles[1] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-27*time.Minute), 120, 110, 150, 90, 5)
+	// candles[2] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-24*time.Minute), 110, 120, 150, 90, 5)
+	// candles[3] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-21*time.Minute), 120, 100, 150, 90, 5)
+	// candles[4] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-18*time.Minute), 100, 110, 150, 90, 5)
+	// candles[5] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-15*time.Minute), 110, 130, 150, 90, 5)
+	// candles[6] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-12*time.Minute), 130, 150, 150, 90, 5)
+	// candles[7] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-9*time.Minute), 150, 120, 150, 90, 5)
+	// candles[8] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-6*time.Minute), 120, 100, 150, 90, 5)
+	// candles[9] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-3*time.Minute), 100, 110, 150, 90, 5)
 	for _, c := range candles {
 		cc.MergeCandle(c)
 	}

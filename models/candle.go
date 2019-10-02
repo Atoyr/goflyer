@@ -20,16 +20,18 @@ type Candle struct {
 
 type Candles []Candle
 
-func NewCandle(productCode string, duration time.Duration, time time.Time, open, close, high, low, volume float64) *Candle {
+func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candle {
 	c := new(Candle)
 	c.ProductCode = productCode
 	c.Duration = duration.Nanoseconds()
-	c.Time = time
-	c.Open = open
-	c.Close = close
-	c.High = high
-	c.Low = low
-	c.Volume = volume
+	c.Time = ticker.DateTime()
+	c.Open = ticker.GetMidPrice()
+	c.Close = ticker.GetMidPrice()
+	c.High = ticker.GetMidPrice()
+	c.Low = ticker.GetMidPrice()
+	c.Volume = ticker.Volume
+	c.OpenDateTime = ticker.DateTime()
+	c.CloseDateTime = ticker.DateTime()
 	return c
 }
 
