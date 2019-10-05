@@ -11,7 +11,7 @@ import (
 	"github.com/atoyr/goflyer/models"
 )
 
-func getCandle1440() models.Candles {
+func getCandle1440() []models.Candle {
 	jsonFile, err := os.Open("../testdata/candle_144000.json")
 	if err != nil {
 		return nil

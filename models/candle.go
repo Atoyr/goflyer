@@ -18,8 +18,6 @@ type Candle struct {
 	CloseDateTime time.Time `json:"close_date_time"`
 }
 
-type Candles []Candle
-
 func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candle {
 	c := new(Candle)
 	c.ProductCode = productCode
