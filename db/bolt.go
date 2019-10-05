@@ -17,15 +17,15 @@ type Bolt struct {
 
 const TickerBucket = "Ticker"
 
-func GetBolt(dbFile string) (*Bolt, error) {
+func GetBolt(dbFile string) (Bolt, error) {
 	db, err := bolt.Open(dbFile, 0600, nil)
+	var b Bolt
 	if err != nil {
-		return nil, err
+		return b, err
 	}
 	defer db.Close()
-	bolt := new(Bolt)
-	bolt.dbFile = dbFile
-	return bolt, nil
+	b.dbFile = dbFile
+	return b, nil
 }
 
 func (b *Bolt) db() *bolt.DB {

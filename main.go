@@ -2,38 +2,44 @@ package main
 
 import (
 	///	"context"
-	"github.com/atoyr/goflyer/api"
+
 	//"github.com/atoyr/goflyer/client"
+	"context"
 	"log"
 	"path/filepath"
-	"time"
 
+	"github.com/atoyr/goflyer/client"
+	"github.com/atoyr/goflyer/controllers"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
 )
 
 func main() {
-	//clientClient := client.New("", "")
+	clientClient := client.New("", "")
 	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
 	if err != nil {
 		log.Println(err)
 	}
-	//	var tickerChannl = make(chan models.Ticker)
+	var tickerChannl = make(chan models.Ticker)
 	//	var boardCannl = make(chan models.Board)
-	//	ctx, cancel := context.WithCancel(context.Background())
-	//	defer cancel()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	//	board, err := clientClient.GetBoard("BTC_JPY")
 	if err != nil {
 		log.Println(err)
 	}
-
 	dbfile := filepath.Join(dirPath, "goflyer.db")
 	d, err := db.GetBolt(dbfile)
 	if err != nil {
 		log.Println(err)
 	}
 	d.Init()
+
+	cc := controllers.NewClientController(d)
+	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
+	cc.ExecuteTickerRoutin(tickerChannl)
+
 	//tickers, err := d.GetAllTicker()
 	//if err != nil {
 	//	log.Println(err)
@@ -50,12 +56,12 @@ func main() {
 	//		log.Printf("%t : %s", v, k)
 	//	}
 
-	cc := models.NewDataFrame("test", 3*time.Minute)
-	cc.AddSmas(3)
-	cc.AddEmas(3)
-	cc.AddMacd(2, 4, 4)
-	cc.AddRsis(2)
-	candles := make([]models.Candle, 10)
+	// cc := models.NewDataFrame("test", 3*time.Minute)
+	// cc.AddSmas(3)
+	// cc.AddEmas(3)
+	// cc.AddMacd(2, 4, 4)
+	// cc.AddRsis(2)
+	// candles := make([]models.Candle, 10)
 	// candles[0] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-30*time.Minute), 100, 120, 150, 90, 5)
 	// candles[1] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-27*time.Minute), 120, 110, 150, 90, 5)
 	// candles[2] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-24*time.Minute), 110, 120, 150, 90, 5)
@@ -66,13 +72,13 @@ func main() {
 	// candles[7] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-9*time.Minute), 150, 120, 150, 90, 5)
 	// candles[8] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-6*time.Minute), 120, 100, 150, 90, 5)
 	// candles[9] = *models.NewCandle("test", 3*time.Minute, time.Now().Add(-3*time.Minute), 100, 110, 150, 90, 5)
-	for _, c := range candles {
-		cc.MergeCandle(c)
-	}
-	ccs := models.DataFrames{}
-	ccs["hoge"] = cc
-	e := api.AppendHandler(api.GetEcho(ccs))
-	e.Start(":8080")
+	// for _, c := range candles {
+	// 	cc.MergeCandle(c)
+	// }
+	// ccs := models.DataFrames{}
+	// ccs["hoge"] = cc
+	// e := api.AppendHandler(api.GetEcho(ccs))
+	// e.Start(":8080")
 
 	//	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
 	//	go clientClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
