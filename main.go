@@ -30,13 +30,15 @@ func main() {
 		log.Println(err)
 	}
 	dbfile := filepath.Join(dirPath, "goflyer.db")
-	d, err := db.GetBolt(dbfile)
+	// var d db.DB
+	bolt, err := db.GetBolt(dbfile)
+	// d = bolt
 	if err != nil {
 		log.Println(err)
 	}
-	d.Init()
+	bolt.Init()
 
-	cc := controllers.NewClientController(d)
+	cc := controllers.NewClientController(bolt)
 	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
 	cc.ExecuteTickerRoutin(tickerChannl)
 

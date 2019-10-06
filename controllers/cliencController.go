@@ -11,9 +11,9 @@ type ClientController struct {
 	DB db.Bolt
 }
 
-func NewClientController(bolt db.Bolt) *ClientController {
+func NewClientController(d db.Bolt) *ClientController {
 	cc := new(ClientController)
-	cc.DB = bolt
+	cc.DB = d
 
 	return cc
 }
