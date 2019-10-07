@@ -7,6 +7,7 @@ import (
 	"context"
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/controllers"
@@ -40,7 +41,14 @@ func main() {
 
 	cc := controllers.NewClientController(bolt)
 	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
-	cc.ExecuteTickerRoutin(tickerChannl)
+	go cc.ExecuteTickerRoutin(tickerChannl)
+	time.Sleep(time.Second* 1)
+	cancel()
+	jsonPath := filepath.Join( dirPath,"tickers.json")
+	err = db.ExportJsonForTickers(&bolt,jsonPath)
+	if err != nil {
+		log.Print(err)
+	}
 
 	//tickers, err := d.GetAllTicker()
 	//if err != nil {

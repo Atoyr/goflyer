@@ -68,7 +68,7 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	return nil
 }
 
-func (b *Bolt) GetAllTicker() ([]models.Ticker, error) {
+func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 	db := b.db()
 	defer db.Close()
 	tickers := make([]models.Ticker, 0)
