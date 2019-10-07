@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -30,6 +31,15 @@ const Volume = "Volume"
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{ProductCode: productCode, Duration: duration}
 	return df
+}
+
+func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
+	var dataFrame = new(DataFrame)
+	err := json.Unmarshal(row, dataFrame)
+	if err != nil {
+		return nil, err
+	}
+	return dataFrame, nil
 }
 
 func (df *DataFrame) Name() string {
