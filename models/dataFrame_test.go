@@ -1,9 +1,14 @@
-package models
+package models_test
 
-// import (
-// 	"testing"
-// 	"time"
-// )
+import (
+	"io/ioutil"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/atoyr/goflyer/models"
+)
+
 //
 // func TestMergeCandle(t *testing.T) {
 // 	cc := NewDataFrame("test", 3*time.Minute)
@@ -24,3 +29,25 @@ package models
 // 	}
 //
 // }
+func TestAddTicker(t *testing.T) {
+	jsonFile, err := os.Open("../testdata/tickers.json")
+	if err != nil {
+		t.Fatal(err)
+		t.Fail()
+	}
+	defer jsonFile.Close()
+	raw, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		t.Fatal(err)
+		t.Fail()
+	}
+	cc := models.NewDataFrame("test", 3*time.Minute)
+	tickers, err := models.JsonUnmarshalTickers(raw)
+	if err != nil {
+		t.Fatal(err)
+		t.Fail()
+	}
+	for i := range tickers {
+		cc.AddTicker(tickers[i])
+	}
+}
