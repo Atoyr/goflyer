@@ -3,6 +3,7 @@ package models
 import (
 	"log"
 	"time"
+	"encoding/json"
 )
 
 type Ticker struct {
@@ -18,6 +19,24 @@ type Ticker struct {
 	Ltp             float64 `json:"ltp"`
 	Volume          float64 `json:"volume"`
 	VolumeByProduct float64 `json:"volume_by_product"`
+}
+
+func  JsonUnmarshalTicker(row []byte)  (*Ticker,error) {
+	var ticker = new(Ticker)
+	err := json.Unmarshal(row,ticker)
+	if err != nil {
+		return nil, err
+	}
+	return ticker ,nil
+}
+
+func  JsonUnmarshalTickers(row []byte)  ([]Ticker,error) {
+	var tickers []Ticker
+	err := json.Unmarshal(row,&tickers)
+	if err != nil {
+		return nil, err
+	}
+	return tickers ,nil
 }
 
 func (t *Ticker) DateTime() time.Time {
