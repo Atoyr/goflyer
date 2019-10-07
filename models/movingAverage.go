@@ -1,5 +1,9 @@
 package models
 
+import (
+	"encoding/json"
+)
+
 type MovingAverage struct {
 	Period int       `json:"period"`
 	Values []float64 `json:"values"`
@@ -11,6 +15,23 @@ type Sma struct {
 
 type Ema struct {
 	*MovingAverage
+} 
+
+func  JsonUnmarshalSma(row []byte)  (*Sma,error) {
+	var sma = new(Sma)
+	err := json.Unmarshal(row,sma)
+	if err != nil {
+		return nil, err
+	}
+	return sma ,nil
+}
+func  JsonUnmarshalEma(row []byte)  (*Ema,error) {
+	var ema = new(Ema)
+	err := json.Unmarshal(row,ema)
+	if err != nil {
+		return nil, err
+	}
+	return ema ,nil
 }
 
 func NewSma(inReal []float64, inTimePeriod int) Sma {
