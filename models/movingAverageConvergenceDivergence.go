@@ -1,4 +1,7 @@
 package models
+import (
+	"encoding/json"
+)
 
 type MovingAverageConvergenceDivergence struct {
 	FastPeriod   int       `json:"fast_period"`
@@ -32,6 +35,15 @@ func NewMovingAverageConvergenceDivergence(inReal []float64, fastPeriod, slowPer
 	movingAverageConvergenceDivergence.Update(inReal)
 
 	return movingAverageConvergenceDivergence
+}
+
+func  JsonUnmarshalMovingAverageConvergenceDivergence(row []byte)  (*MovingAverageConvergenceDivergence,error) {
+	var macd = new(MovingAverageConvergenceDivergence)
+	err := json.Unmarshal(row,macd)
+	if err != nil {
+		return nil, err
+	}
+	return macd ,nil
 }
 
 func (m *MovingAverageConvergenceDivergence) Update(inReal []float64) {
