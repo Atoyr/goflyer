@@ -42,10 +42,10 @@ func main() {
 	cc := controllers.NewClientController(bolt)
 	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
 	go cc.ExecuteTickerRoutin(tickerChannl)
-	time.Sleep(time.Second* 1)
+	time.Sleep(time.Second * 1)
 	cancel()
-	jsonPath := filepath.Join( dirPath,"tickers.json")
-	err = db.ExportJsonForTickers(&bolt,jsonPath)
+	jsonPath := filepath.Join(dirPath, "tickers.json")
+	err = db.ExportJsonForTickers(&bolt, jsonPath)
 	if err != nil {
 		log.Print(err)
 	}
