@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -31,6 +32,24 @@ func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candl
 	c.OpenDateTime = ticker.DateTime()
 	c.CloseDateTime = ticker.DateTime()
 	return c
+}
+
+func  JsonUnmarshalCandle(row []byte)  (*Candle,error) {
+	var candle = new(Candle)
+	err := json.Unmarshal(row,candle)
+	if err != nil {
+		return nil, err
+	}
+	return candle ,nil
+}
+
+func  JsonUnmarshalCandles(row []byte)  ([]Candle,error) {
+	var candles []Candle
+	err := json.Unmarshal(row,&candles)
+	if err != nil {
+		return nil, err
+	}
+	return candles ,nil
 }
 
 func (c *Candle) CollectionKey() string {
