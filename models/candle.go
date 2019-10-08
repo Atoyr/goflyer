@@ -23,7 +23,7 @@ func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candl
 	c := new(Candle)
 	c.ProductCode = productCode
 	c.Duration = duration.Nanoseconds()
-	c.Time = ticker.DateTime()
+	c.Time = ticker.TruncateDateTime(duration)
 	c.Open = ticker.GetMidPrice()
 	c.Close = ticker.GetMidPrice()
 	c.High = ticker.GetMidPrice()
@@ -34,22 +34,22 @@ func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candl
 	return c
 }
 
-func  JsonUnmarshalCandle(row []byte)  (*Candle,error) {
+func JsonUnmarshalCandle(row []byte) (*Candle, error) {
 	var candle = new(Candle)
-	err := json.Unmarshal(row,candle)
+	err := json.Unmarshal(row, candle)
 	if err != nil {
 		return nil, err
 	}
-	return candle ,nil
+	return candle, nil
 }
 
-func  JsonUnmarshalCandles(row []byte)  ([]Candle,error) {
+func JsonUnmarshalCandles(row []byte) ([]Candle, error) {
 	var candles []Candle
-	err := json.Unmarshal(row,&candles)
+	err := json.Unmarshal(row, &candles)
 	if err != nil {
 		return nil, err
 	}
-	return candles ,nil
+	return candles, nil
 }
 
 func (c *Candle) CollectionKey() string {

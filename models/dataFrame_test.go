@@ -29,6 +29,81 @@ import (
 // 	}
 //
 // }
+
+func TestAddTickerSmall(t *testing.T) {
+	tickers := make([]models.Ticker, 5)
+	tickers[0] = models.Ticker{
+		ProductCode:     "test",
+		Timestamp:       "2019-10-05T16:00:00.0000000Z",
+		TickID:          1,
+		BestBid:         100,
+		BestAsk:         100,
+		BestBidSize:     1,
+		BestAskSize:     1,
+		TotalBidDepth:   0,
+		TotalAskDepth:   0,
+		Ltp:             100,
+		Volume:          1,
+		VolumeByProduct: 100}
+	tickers[1] = models.Ticker{
+		ProductCode:     "test",
+		Timestamp:       "2019-10-05T16:01:00.0000000Z",
+		TickID:          1,
+		BestBid:         110,
+		BestAsk:         110,
+		BestBidSize:     1,
+		BestAskSize:     1,
+		TotalBidDepth:   0,
+		TotalAskDepth:   0,
+		Ltp:             100,
+		Volume:          1,
+		VolumeByProduct: 100}
+	tickers[2] = models.Ticker{
+		ProductCode:     "test",
+		Timestamp:       "2019-10-05T16:02:00.0000000Z",
+		TickID:          1,
+		BestBid:         90,
+		BestAsk:         90,
+		BestBidSize:     1,
+		BestAskSize:     1,
+		TotalBidDepth:   0,
+		TotalAskDepth:   0,
+		Ltp:             100,
+		Volume:          1,
+		VolumeByProduct: 100}
+	tickers[3] = models.Ticker{
+		ProductCode:     "test",
+		Timestamp:       "2019-10-05T16:03:00.0000000Z",
+		TickID:          1,
+		BestBid:         100,
+		BestAsk:         100,
+		BestBidSize:     1,
+		BestAskSize:     1,
+		TotalBidDepth:   0,
+		TotalAskDepth:   0,
+		Ltp:             100,
+		Volume:          1,
+		VolumeByProduct: 100}
+	tickers[4] = models.Ticker{
+		ProductCode:     "test",
+		Timestamp:       "2019-10-05T16:06:00.0000000Z",
+		TickID:          1,
+		BestBid:         200,
+		BestAsk:         200,
+		BestBidSize:     1,
+		BestAskSize:     1,
+		TotalBidDepth:   0,
+		TotalAskDepth:   0,
+		Ltp:             100,
+		Volume:          1,
+		VolumeByProduct: 100}
+
+	cc := models.NewDataFrame("test", 3*time.Minute)
+	for i := range tickers {
+		cc.AddTicker(tickers[i])
+		t.Logf("%v", cc.Candles)
+	}
+}
 func TestAddTicker(t *testing.T) {
 	jsonFile, err := os.Open("../testdata/tickers.json")
 	if err != nil {
@@ -41,12 +116,13 @@ func TestAddTicker(t *testing.T) {
 		t.Fatal(err)
 		t.Fail()
 	}
-	cc := models.NewDataFrame("test", 3*time.Minute)
+	cc := models.NewDataFrame("BTC_JPY", 3*time.Minute)
 	tickers, err := models.JsonUnmarshalTickers(raw)
 	if err != nil {
 		t.Fatal(err)
 		t.Fail()
 	}
+
 	for i := range tickers {
 		cc.AddTicker(tickers[i])
 	}
