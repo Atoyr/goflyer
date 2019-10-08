@@ -10,6 +10,7 @@ func NewCli() *urfavecli.App {
 	app.Author = "atoyr"
 
 	app.Commands = append(app.Commands, exportCommand())
+	app.Commands = append(app.Commands, runWebappsCommand())
 
 	return app
 }

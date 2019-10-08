@@ -1,54 +1,50 @@
 package main
 
 import (
-	///	"context"
+	"os"
 
-	//"github.com/atoyr/goflyer/client"
-	"context"
-	"log"
-	"path/filepath"
-	"time"
-
-	"github.com/atoyr/goflyer/client"
-	"github.com/atoyr/goflyer/controllers"
-	"github.com/atoyr/goflyer/db"
-	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/util"
+	"github.com/atoyr/goflyer/cli"
 )
 
-func main() {
-	clientClient := client.New("", "")
-	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
-	if err != nil {
-		log.Println(err)
-	}
-	var tickerChannl = make(chan models.Ticker)
-	//	var boardCannl = make(chan models.Board)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	//	board, err := clientClient.GetBoard("BTC_JPY")
-	if err != nil {
-		log.Println(err)
-	}
-	dbfile := filepath.Join(dirPath, "goflyer.db")
-	// var d db.DB
-	bolt, err := db.GetBolt(dbfile)
-	// d = bolt
-	if err != nil {
-		log.Println(err)
-	}
-	bolt.Init()
+///	"context"
 
-	cc := controllers.NewClientController(bolt)
-	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
-	go cc.ExecuteTickerRoutin(tickerChannl)
-	time.Sleep(time.Second * 1)
-	cancel()
-	jsonPath := filepath.Join(dirPath, "tickers.json")
-	err = db.ExportJsonForTickers(&bolt, jsonPath)
-	if err != nil {
-		log.Print(err)
-	}
+//"github.com/atoyr/goflyer/client"
+
+func main() {
+	app := cli.NewCli()
+	app.Run(os.Args)
+	//clientClient := client.New("", "")
+	//dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//var tickerChannl = make(chan models.Ticker)
+	////	var boardCannl = make(chan models.Board)
+	//ctx, cancel := context.WithCancel(context.Background())
+	//defer cancel()
+	////	board, err := clientClient.GetBoard("BTC_JPY")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//dbfile := filepath.Join(dirPath, "goflyer.db")
+	//// var d db.DB
+	//bolt, err := db.GetBolt(dbfile)
+	//// d = bolt
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//bolt.Init()
+
+	//cc := controllers.NewClientController(bolt)
+	//go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
+	//go cc.ExecuteTickerRoutin(tickerChannl)
+	//time.Sleep(time.Second * 1)
+	//cancel()
+	//jsonPath := filepath.Join(dirPath, "tickers.json")
+	//err = db.ExportJsonForTickers(&bolt, jsonPath)
+	//if err != nil {
+	//	log.Print(err)
+	//}
 
 	//tickers, err := d.GetAllTicker()
 	//if err != nil {
@@ -85,10 +81,6 @@ func main() {
 	// for _, c := range candles {
 	// 	cc.MergeCandle(c)
 	// }
-	// ccs := models.DataFrames{}
-	// ccs["hoge"] = cc
-	// e := api.AppendHandler(api.GetEcho(ccs))
-	// e.Start(":8080")
 
 	//	go clientClient.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
 	//	go clientClient.GetRealtimeBoard(ctx, boardCannl, "BTC_JPY", false)
