@@ -38,8 +38,9 @@ func runWebappsAction(c *urfavecli.Context) error {
 	for i := range tickers {
 		cc.AddTicker(tickers[i])
 	}
+	cc.AddEmas(6)
 	ccs := models.DataFrames{}
-	ccs["hoge"] = cc
+	ccs[cc.Name()] = cc
 	e := api.AppendHandler(api.GetEcho(ccs))
 	e.Start(":8080")
 	return nil

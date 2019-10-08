@@ -43,6 +43,7 @@ func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
 }
 
 func (df *DataFrame) Name() string {
+	fmt.Printf("%s_%s", df.ProductCode, df.Duration)
 	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
 }
 
