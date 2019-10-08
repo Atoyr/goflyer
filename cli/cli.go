@@ -9,7 +9,7 @@ func NewCli() *urfavecli.App {
 	app.Name = "goflyer"
 	app.Author = "atoyr"
 
-	app.Commands = append(app.Commands, ExportCommand())
+	app.Commands = append(app.Commands, exportCommand())
 
 	return app
 }
