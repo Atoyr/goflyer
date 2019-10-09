@@ -1,25 +1,22 @@
 package cli
 
-import urfavecli "github.com/urfave/cli"
+import (
+	"github.com/atoyr/goflyer/db"
+	"github.com/atoyr/goflyer/executor"
+	urfavecli "github.com/urfave/cli"
+)
 
 func exportCommand() urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "export"
 	command.Aliases = []string{"e"}
-	command.Subcommands = append(command.Subcommands,exportTickersCommand())
-
-	
-	return command
-}
-
-func exportTickersCommand() urfavecli.Command {
-	var command urfavecli.Command
-	command.Name = "tickers"
-	command.Action = exportTickersAction
+	command.Subcommands = append(command.Subcommands, exportTickersCommand())
 
 	return command
 }
 
-func exportTickersAction(c *urfavecli.Context) error {
-	return nil 
+func exportCommandAction(c *urfavecli.Context) error {
+	d, _ := db.GetJsonDB()
+	executor.GetExecutor(&d)
+	return nil
 }
