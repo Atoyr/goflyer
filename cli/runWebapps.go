@@ -15,7 +15,7 @@ func runWebappsCommand() urfavecli.Command {
 }
 
 func runWebappsAction(c *urfavecli.Context) error {
-	dfs := make(map[string]models.DataFrame,0)
+	dfs := make(map[string]models.DataFrame, 0)
 	e := api.AppendHandler(api.GetEcho(dfs))
 	e.Start(":8080")
 	return nil
