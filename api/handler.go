@@ -28,13 +28,6 @@ func AppendHandler(e *echo.Echo) *echo.Echo {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
 	})
-	e.GET("/candleCollection/:key", handleCandleCollection)
+	e.GET("/v1/DataFrame/:productCode", handleDataFrame)
 	return e
-}
-
-func handleCandleCollection(c echo.Context) error {
-	context := c.(*Context)
-	key := context.Param("key")
-
-	return c.JSON(http.StatusOK, context.DataFrames[key])
-}
+} 
