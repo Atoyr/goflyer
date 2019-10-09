@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"time"
 
 	"github.com/atoyr/goflyer/api"
 	"github.com/atoyr/goflyer/models"
@@ -30,8 +29,8 @@ func runWebappsAction(c *urfavecli.Context) error {
 	if err != nil {
 		return err
 	}
-	cc := models.NewDataFrame("BTC_JPY", 3*time.Minute)
-	tickers, err := models.JsonUnmarshalTickers(raw)
+	cc := models.NewDataFrame(models.BTC_JPY,models.GetDuration("3m"))
+		tickers, err := models.JsonUnmarshalTickers(raw)
 	if err != nil {
 		return err
 	}

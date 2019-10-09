@@ -116,7 +116,7 @@ func TestAddTicker(t *testing.T) {
 		t.Fatal(err)
 		t.Fail()
 	}
-	cc := models.NewDataFrame("BTC_JPY", 3*time.Minute)
+	cc := models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m"))
 	tickers, err := models.JsonUnmarshalTickers(raw)
 	if err != nil {
 		t.Fatal(err)

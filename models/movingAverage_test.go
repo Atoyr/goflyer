@@ -12,7 +12,7 @@ import (
 )
 
 func getCandle1440() []models.Candle {
-	jsonFile, err := os.Open("../testdata/candle_144000.json")
+	jsonFile, err := os.Open("../testdata/candle_4h.json")
 	if err != nil {
 		return nil
 	}
@@ -31,7 +31,7 @@ func getCandle1440() []models.Candle {
 }
 
 func getSma1440() models.Sma {
-	jsonFile, _ := os.Open("../testdata/sma_6_1440.golden")
+	jsonFile, _ := os.Open("../testdata/sma_6_4h.golden")
 	defer jsonFile.Close()
 	raw, _ := ioutil.ReadAll(jsonFile)
 	var sma models.Sma
