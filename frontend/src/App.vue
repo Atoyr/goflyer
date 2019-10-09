@@ -1,7 +1,7 @@
 <template>
   <div id="app">
  <GChart
-      type="ColumnChart"
+      type="CandlestickChart"
       :data="chartData"
       :options="chartOptions"
     />   
@@ -9,7 +9,6 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 import { GChart } from 'vue-google-charts';
 
 export default {
@@ -20,11 +19,11 @@ export default {
   data() {
     return {
       chartData: [
-        ['Year', 'Sales', 'Expenses', 'Profit'],
-        ['2014', 1000, 400, 200],
-        ['2015', 1170, 460, 250],
-        ['2016', 660, 1120, 300],
-        ['2017', 1030, 540, 350]
+              ['Mon', 20, 28, 38, 45],
+              ['Tue', 31, 38, 55, 66],
+              ['Wed', 50, 55, 77, 80],
+              ['Thu', 77, 77, 66, 50],
+              ['Fri', 68, 66, 22, 15]
       ],
       chartOptions: {
         title: 'Company Performance',
