@@ -19,18 +19,39 @@ export default {
   data() {
     return {
       chartData: [
-              ['time', 'open','high','low','close'],
-              ['Mon', 20, 28, 38, 45],
-              ['Tue', 31, 38, 55, 66],
-              ['Wed', 50, 55, 77, 80],
-              ['Thu', 77, 77, 66, 50],
-              ['Fri', 68, 66, 22, 15]
+              ['time', 'open','high','low','close']
       ],
       chartOptions: {
         title: 'Company Performance',
-        subtitle: 'Sales'
+        subtitle: 'Sales',
+        bar: { groupWidth: '50%' }, // Remove space between bars.
+        candlestick: {
+          fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
+          risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
+        }
       }
-    };
+    }
+  },
+  created() {
+    fetch('http://localhost:8080/v1/Candlestick/BTC_JPY/3m')
+    .then(response => {
+      return response.json()
+    })
+    .then(json => {
+      console.log(json)
+      for (var i = 0; i < json.length;i++ ){
+          console.log(json[i].time)
+            console.log(json[i].open)
+            console.log(json[i].high)
+            console.log(json[i].low)
+            console.log(json[i].close )
+          var a = new Array(json[i].time,  json[i].high,json[i].open,json[i].close, json[i].low  )
+        this.chartData.push(a)
+      }
+    })
+    .catch( (err) => {
+      console.log(err) 
+    });
   }
 }
 </script>
