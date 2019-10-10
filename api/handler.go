@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type Context struct {
@@ -12,6 +13,7 @@ type Context struct {
 
 func GetEcho() *echo.Echo {
 	e := echo.New()
+	e.Use(middleware.CORS())
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			context := &Context{c}
