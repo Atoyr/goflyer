@@ -42,6 +42,20 @@ func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
 	return dataFrame, nil
 }
 
+func (df *DataFrame) GetCountDataFrame(count int) *DataFrame{
+	start  := len(df.Candles) - count
+	if count < 0 {
+		count = 0
+	}
+	ret := new(DataFrame) 
+	ret.ProductCode = df.ProductCode
+	ret.Duration = df.Duration
+	ret.Candles = df.Candles[start:]
+	ret.refreshChart()
+
+	return ret
+}
+
 func (df *DataFrame) Name() string {
 	fmt.Printf("%s_%s", df.ProductCode, df.Duration)
 	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
