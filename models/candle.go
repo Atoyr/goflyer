@@ -19,6 +19,8 @@ type Candle struct {
 	CloseDateTime time.Time `json:"close_date_time"`
 }
 
+type Candles []Candle
+
 func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candle {
 	c := new(Candle)
 	c.ProductCode = productCode
@@ -91,4 +93,23 @@ func (c *Candle) AddTicker(ticker Ticker) error {
 		// TODO return error
 		return nil
 	}
+}
+
+func (c *Candle) GetCandleOHLC() CandleOHLC{
+	ohlc := new(CandleOHLC)
+	ohlc.Time = c.Time.Format(time.RFC3339)
+	ohlc.Open = c.Open
+	ohlc.High = c.High
+	ohlc.Low = c.Low
+	ohlc.Close = c.Close
+	return *ohlc
+}
+
+func (cs Candles) GetCandleOHLCs() []CandleOHLC {
+	ohlcs := make([]CandleOHLC,len(cs))
+	for i := range cs {
+		ohlcs[i] = cs[i].GetCandleOHLC()
+	}
+
+	return ohlcs
 }
