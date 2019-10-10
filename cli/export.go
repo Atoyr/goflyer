@@ -15,6 +15,14 @@ func exportCommand() urfavecli.Command {
 	return command
 }
 
+func exportTickersCommand() urfavecli.Command {
+	var command urfavecli.Command
+	command.Name = "tickers"
+	command.Action = exportTickersAction
+
+	return command
+}
+
 func exportCommandAction(c *urfavecli.Context) error {
 	d, _ := db.GetJsonDB()
 	executor.GetExecutor(&d)

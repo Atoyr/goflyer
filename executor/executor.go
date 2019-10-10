@@ -46,6 +46,10 @@ func RunClient() {
 
 func (e *executor) GetDataFrame(key string) models.DataFrame {
 	if df ,ok := e.dataFrames[key] ; ok {
+		tickers,_ := e.db.GetTickerAll()
+		for i := range tickers {
+			df.AddTicker(tickers[i])
+		}
 		return df
 	}
 	return e.dataFrames["24h"]

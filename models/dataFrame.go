@@ -44,8 +44,8 @@ func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
 
 func (df *DataFrame) GetCountDataFrame(count int) *DataFrame{
 	start  := len(df.Candles) - count
-	if count < 0 {
-		count = 0
+	if start < 0 {
+		start = 0
 	}
 	ret := new(DataFrame) 
 	ret.ProductCode = df.ProductCode
