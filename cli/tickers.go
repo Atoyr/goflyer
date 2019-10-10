@@ -1,6 +1,8 @@
 package cli
 
-import urfavecli "github.com/urfave/cli"
+import (
+	urfavecli "github.com/urfave/cli"
+)
 
 func printCommand() urfavecli.Command {
 	var command urfavecli.Command
@@ -16,9 +18,4 @@ func printTickerAction() urfavecli.Command {
 	command.Action = exportTickersAction
 
 	return command
-}
-
-func exportTickersAction(c *urfavecli.Context) error {
-
-	return nil
 }

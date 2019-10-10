@@ -12,24 +12,23 @@ import (
 	urfavecli "github.com/urfave/cli"
 )
 
-func exportCommand() urfavecli.Command {
+func getterCommand() urfavecli.Command {
 	var command urfavecli.Command
-	command.Name = "export"
-	command.Aliases = []string{"e"}
-	command.Subcommands = append(command.Subcommands, exportTickersCommand())
+	command.Name = "print"
+	command.Aliases = []string{"p"}
 
 	return command
 }
 
-func exportTickersCommand() urfavecli.Command {
+func getterTickerCommand() urfavecli.Command {
 	var command urfavecli.Command
-	command.Name = "tickers"
-	command.Action = exportTickersAction
+	command.Name = "getter"
+	command.Action = getterTickerAction
 
 	return command
 }
 
-func exportTickersAction(c *urfavecli.Context) error {
+func getterTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
@@ -42,8 +41,10 @@ func exportTickersAction(c *urfavecli.Context) error {
 		return err
 	}
 	exe := executor.GetExecutor(&boltdb)
+	f := make([]func(models.Ticker), 0)
+	f = append(f, func(ticker models.Ticker) { fmt.Println(ticker) })
 	fmt.Println("Start")
-	exe.RunTickerGetter(ctx, make([]func(models.Ticker), 0))
+	exe.RunTickerGetter(ctx, f)
 	fmt.Println("end")
 
 	return nil

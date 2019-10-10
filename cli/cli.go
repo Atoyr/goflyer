@@ -11,6 +11,7 @@ func NewCli() *urfavecli.App {
 
 	app.Commands = append(app.Commands, exportCommand())
 	app.Commands = append(app.Commands, runWebappsCommand())
+	app.Commands = append(app.Commands, getterTickerCommand())
 
 	return app
 }

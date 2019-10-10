@@ -77,10 +77,8 @@ func (e *executor) RunTickerGetter(ctx context.Context, callbacks []func(models.
 	var tickerChannl = make(chan models.Ticker)
 
 	c := client.New("", "")
-	c.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
+	go c.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
 	for ticker := range tickerChannl {
-		// TODO Update Database
-		fmt.Println(ticker)
 		for i := range callbacks {
 			callbacks[i](ticker)
 		}
