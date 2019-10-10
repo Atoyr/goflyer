@@ -84,9 +84,11 @@ func (c *Candle) AddTicker(ticker Ticker) error {
 		c.Volume += ticker.Volume
 		if tickerTime.Before(c.OpenDateTime) {
 			c.OpenDateTime = tickerTime
+			c.Open = price
 		}
 		if tickerTime.After(c.CloseDateTime) {
 			c.CloseDateTime = tickerTime
+			c.Close = price
 		}
 		return nil
 	} else {
