@@ -19,6 +19,7 @@ export default {
   data() {
     return {
       chartData: [
+              ['time', 'open','high','low','close'],
               ['Mon', 20, 28, 38, 45],
               ['Tue', 31, 38, 55, 66],
               ['Wed', 50, 55, 77, 80],
