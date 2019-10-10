@@ -25,8 +25,8 @@ func GetExecutor(db db.DB) *executor {
 		e := new(executor)
 		e.dataFrames = make(map[string]models.DataFrame, 0)
 
-		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY,models.GetDuration("3m"))
-		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY,models.GetDuration("24h"))
+		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m"))
+		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("24h"))
 		exe = e
 	})
 	exe.db = db
@@ -45,8 +45,8 @@ func RunClient() {
 }
 
 func (e *executor) GetDataFrame(key string) models.DataFrame {
-	if df ,ok := e.dataFrames[key] ; ok {
-		tickers,_ := e.db.GetTickerAll()
+	if df, ok := e.dataFrames[key]; ok {
+		tickers, _ := e.db.GetTickerAll()
 		for i := range tickers {
 			df.AddTicker(tickers[i])
 		}
@@ -55,19 +55,31 @@ func (e *executor) GetDataFrame(key string) models.DataFrame {
 	return e.dataFrames["24h"]
 }
 
-func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC{
+func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	var cs models.Candles
 	var dataFrame models.DataFrame
-	if df ,ok := e.dataFrames[key] ; ok {
-		tickers,_ := e.db.GetTickerAll()
+	if df, ok := e.dataFrames[key]; ok {
+		tickers, _ := e.db.GetTickerAll()
 		for i := range tickers {
 			df.AddTicker(tickers[i])
 		}
 		dataFrame = df
-	}else {
-		dataFrame =e.dataFrames["24h"]
+	} else {
+		dataFrame = e.dataFrames["24h"]
 	}
 	cs = dataFrame.Candles
 	return cs.GetCandleOHLCs()
 }
 
+func (e *executor) RunTickerGetter(ctx context.Context) {
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var tickerChannl = make(chan models.Ticker)
+
+	c := client.New("", "")
+	c.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
+	for ticker := range tickerChannl {
+		// TODO Update Database
+		fmt.Println(ticker)
+	}
+}
