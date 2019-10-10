@@ -54,3 +54,20 @@ func (e *executor) GetDataFrame(key string) models.DataFrame {
 	}
 	return e.dataFrames["24h"]
 }
+
+func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC{
+	var cs models.Candles
+	var dataFrame models.DataFrame
+	if df ,ok := e.dataFrames[key] ; ok {
+		tickers,_ := e.db.GetTickerAll()
+		for i := range tickers {
+			df.AddTicker(tickers[i])
+		}
+		dataFrame = df
+	}else {
+		dataFrame =e.dataFrames["24h"]
+	}
+	cs = dataFrame.Candles
+	return cs.GetCandleOHLCs()
+}
+
