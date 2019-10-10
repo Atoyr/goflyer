@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+
 func GetDuration(duration string) time.Duration {
 	d := 24 * time.Hour
 	switch duration {
@@ -29,6 +30,8 @@ func GetDuration(duration string) time.Duration {
 			d = 6 * time.Hour
 		case "12h" :
 			d = 12 * time.Hour
+		case "24h" :
+			d = 24 * time.Hour
 	}
 	return d
 }

@@ -24,6 +24,9 @@ func GetExecutor(db db.DB) *executor {
 	once.Do(func() {
 		e := new(executor)
 		e.dataFrames = make(map[string]models.DataFrame, 0)
+
+		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY,models.GetDuration("3m"))
+		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY,models.GetDuration("24h"))
 		exe = e
 	})
 	exe.db = db
@@ -39,4 +42,11 @@ func RunClient() {
 	for ticker := range tickerChannl {
 		fmt.Println(ticker)
 	}
+}
+
+func (e *executor) GetDataFrame(key string) models.DataFrame {
+	if df ,ok := e.dataFrames[key] ; ok {
+		return df
+	}
+	return e.dataFrames["24h"]
 }

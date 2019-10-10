@@ -3,20 +3,18 @@ package api
 import (
 	"net/http"
 
-	"github.com/atoyr/goflyer/models"
 	"github.com/labstack/echo"
 )
 
 type Context struct {
 	echo.Context
-	DataFrames models.DataFrames
 }
 
-func GetEcho(ccs models.DataFrames) *echo.Echo {
+func GetEcho() *echo.Echo {
 	e := echo.New()
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			context := &Context{c, ccs}
+			context := &Context{c}
 			return h(context)
 		}
 	})
