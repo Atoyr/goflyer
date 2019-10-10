@@ -27,5 +27,6 @@ func AppendHandler(e *echo.Echo) *echo.Echo {
 		return c.String(http.StatusOK, "")
 	})
 	e.GET("/v1/DataFrame/BTC_JPY/:duration", handleDataFrame)
+	e.GET("/v1/Candlestick/BTC_JPY/:duration", handleCandlestick)
 	return e
 } 
