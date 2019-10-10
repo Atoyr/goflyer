@@ -71,7 +71,7 @@ func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	return cs.GetCandleOHLCs()
 }
 
-func (e *executor) RunTickerGetter(ctx context.Context) {
+func (e *executor) RunTickerGetter(ctx context.Context, callbacks []func(models.Ticker)) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var tickerChannl = make(chan models.Ticker)
@@ -81,5 +81,8 @@ func (e *executor) RunTickerGetter(ctx context.Context) {
 	for ticker := range tickerChannl {
 		// TODO Update Database
 		fmt.Println(ticker)
+		for i := range callbacks {
+			callbacks[i](ticker)
+		}
 	}
 }
