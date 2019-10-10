@@ -86,7 +86,7 @@ func TestAddTickerSmall(t *testing.T) {
 		VolumeByProduct: 100}
 	tickers[4] = models.Ticker{
 		ProductCode:     "test",
-		Timestamp:       "2019-10-05T16:06:00.0000000Z",
+		Timestamp:       "2019-10-05T16:05:00.0000000Z",
 		TickID:          1,
 		BestBid:         200,
 		BestAsk:         200,
