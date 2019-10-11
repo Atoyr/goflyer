@@ -84,3 +84,16 @@ func (e *executor) RunTickerGetter(ctx context.Context, callbacks []func(models.
 		}
 	}
 }
+
+func (e *executor) MigrationDB(db db.DB) error {
+	tickers, err := e.db.GetTickerAll()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Execute Migration...")
+	for i := range tickers {
+		db.UpdateTicker(tickers[i])
+	}
+	fmt.Printf("finish!!")
+	return nil
+}
