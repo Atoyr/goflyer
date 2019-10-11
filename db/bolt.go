@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/atoyr/goflyer/models"
 	"github.com/boltdb/bolt"
@@ -15,7 +14,20 @@ type Bolt struct {
 	dbFile string
 }
 
-const TickerBucket = "Ticker"
+// Bucket layout
+// - TickerBucket
+// - DurationBucket
+//   - CandleBucket
+//   - SmasBucket
+//   - EmasBucket
+
+const (
+	TickerBucket   = "Ticker"
+	DurationBucket = "Duration"
+	CandleBucketk  = "Candle"
+	SmasBucket     = "Smas"
+	EmasBucket     = "Emas"
+)
 
 func GetBolt(dbFile string) (Bolt, error) {
 	db, err := bolt.Open(dbFile, 0600, nil)
@@ -40,11 +52,32 @@ func (b *Bolt) db() *bolt.DB {
 func (b *Bolt) init() error {
 	db := b.db()
 	defer db.Close()
-	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("Ticker"))
-		_, err = tx.CreateBucketIfNotExists([]byte("Candle"))
-		return err
+	err := db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(TickerBucket))
+		if err != nil {
+			return err
+		}
+		durationBucket, err := tx.CreateBucketIfNotExists([]byte(DurationBucket))
+		if err != nil {
+			return err
+		}
+		_, err = durationBucket.CreateBucketIfNotExists([]byte(CandleBucketk))
+		if err != nil {
+			return err
+		}
+		_, err = durationBucket.CreateBucketIfNotExists([]byte(SmasBucket))
+		if err != nil {
+			return err
+		}
+		_, err = durationBucket.CreateBucketIfNotExists([]byte(EmasBucket))
+		if err != nil {
+			return err
+		}
+		return nil
 	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -52,21 +85,51 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("Ticker"))
-		if marshalTime, err := t.DateTime().MarshalBinary(); err != nil {
+		bucket := tx.Bucket([]byte(TickerBucket))
+		marshalID := []byte(t.TickID)
+		if buf, err := json.Marshal(t); err != nil {
 			return err
-		} else if buf, err := json.Marshal(t); err != nil {
-			return err
-		} else if err = bucket.Put(marshalTime, buf); err != nil {
+		} else if err = bucket.Put(marshalID, buf); err != nil {
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 	return nil
+}
+
+func (b *Bolt) GetTicker(tickerID float64) (models.Ticker, error) {
+	db := b.db()
+	defer db.Close()
+	ticker := new(models.Ticker)
+	err := db.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte(TickerBucket)).Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			min, err := tickerID
+			if err != nil {
+				return err
+			}
+			max, err := tickerID
+			if err != nil {
+				return err
+			}
+
+			for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+				ticker, err = models.JsonUnmarshalTicker(v)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("%s: %s\n", k, v)
+			}
+			return nil
+		}
+		return nil
+	})
+
+	return *ticker, err
 }
 
 func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
@@ -88,33 +151,6 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 		return nil, err
 	}
 	return tickers, nil
-}
-
-func (b *Bolt) GetTicker(timestamp time.Time) (*models.Ticker, error) {
-	db := b.db()
-	defer db.Close()
-	m := new(models.Ticker)
-	err := db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(TickerBucket)).Cursor()
-		min, err := timestamp.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		max, err := timestamp.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
-		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-			fmt.Printf("%s: %s\n", k, v)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
 }
 
 func (b *Bolt) UpdateCandle(c models.Candle) error {
