@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/util"
 	"github.com/boltdb/bolt"
 )
 
@@ -86,7 +87,7 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(TickerBucket))
-		marshalID := []byte(t.TickID)
+		marshalID := util.Float64ToBytes(t.TickID)
 		if buf, err := json.Marshal(t); err != nil {
 			return err
 		} else if err = bucket.Put(marshalID, buf); err != nil {
@@ -100,30 +101,21 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	return nil
 }
 
-func (b *Bolt) GetTicker(tickerID float64) (models.Ticker, error) {
+func (b *Bolt) GetTicker(tickID float64) (models.Ticker, error) {
 	db := b.db()
 	defer db.Close()
 	ticker := new(models.Ticker)
 	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(TickerBucket)).Cursor()
 
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			min, err := tickerID
-			if err != nil {
-				return err
-			}
-			max, err := tickerID
-			if err != nil {
-				return err
-			}
+		marshalID := util.Float64ToBytes(tickID)
 
-			for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-				ticker, err = models.JsonUnmarshalTicker(v)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("%s: %s\n", k, v)
+		for k, v := c.Seek(marshalID); k != nil && bytes.Compare(k, marshalID) <= 0; k, v = c.Next() {
+			t, err := models.JsonUnmarshalTicker(v)
+			if err != nil {
+				return err
 			}
+			ticker = t
 			return nil
 		}
 		return nil
