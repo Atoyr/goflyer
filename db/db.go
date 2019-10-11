@@ -5,9 +5,8 @@ import (
 )
 
 type DB interface {
-	Init() error
 	UpdateTicker(ticker models.Ticker) error
-	GetTickerAll() ([]models.Ticker, error) 
+	GetTickerAll() ([]models.Ticker, error)
 	//	MergeCandle(candle models.Candle)
 	//	GetCandles(productCode string) ([]models.Candle, error)
 }

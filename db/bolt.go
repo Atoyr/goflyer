@@ -25,6 +25,7 @@ func GetBolt(dbFile string) (Bolt, error) {
 	}
 	defer db.Close()
 	b.dbFile = dbFile
+	b.init()
 	return b, nil
 }
 
@@ -36,7 +37,7 @@ func (b *Bolt) db() *bolt.DB {
 	return db
 }
 
-func (b *Bolt) Init() error {
+func (b *Bolt) init() error {
 	db := b.db()
 	defer db.Close()
 	db.Update(func(tx *bolt.Tx) error {

@@ -18,10 +18,6 @@ func GetJsonDB() (JsonDB, error) {
 	return jsonDB, nil
 }
 
-func (j *JsonDB) Init() error {
-	return nil
-}
-
 func (j *JsonDB) UpdateTicker(models.Ticker) error {
 	return nil
 }
