@@ -13,6 +13,7 @@ import (
 type executor struct {
 	dataFrames models.DataFrames
 	db         db.DB
+	client     client.APIClient
 }
 
 var (
@@ -24,6 +25,7 @@ func GetExecutor(db db.DB) *executor {
 	once.Do(func() {
 		e := new(executor)
 		e.dataFrames = make(map[string]models.DataFrame, 0)
+		e.client = *client.New("", "")
 
 		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m"))
 		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("24h"))
@@ -71,18 +73,23 @@ func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	return cs.GetCandleOHLCs()
 }
 
-func (e *executor) RunTickerGetter(ctx context.Context, callbacks []func(models.Ticker)) {
+func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(models.Ticker)) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var tickerChannl = make(chan models.Ticker)
 
-	c := client.New("", "")
-	go c.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
+	go e.client.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
 	for ticker := range tickerChannl {
+		e.db.UpdateTicker(ticker)
 		for i := range callbacks {
 			callbacks[i](ticker)
 		}
 	}
+}
+
+func (e *executor) GetTicker(count int, before, after float64) ([]models.Ticker, error) {
+	tickers, err := e.db.GetTickerAll()
+	return tickers, err
 }
 
 func (e *executor) MigrationDB(db db.DB) error {

@@ -31,15 +31,10 @@ const (
 )
 
 func GetBolt(dbFile string) (Bolt, error) {
-	db, err := bolt.Open(dbFile, 0600, nil)
 	var b Bolt
-	if err != nil {
-		return b, err
-	}
-	defer db.Close()
 	b.dbFile = dbFile
-	b.init()
-	return b, nil
+	err := b.init()
+	return b, err
 }
 
 func (b *Bolt) db() *bolt.DB {
@@ -96,6 +91,7 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 		return nil
 	})
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil

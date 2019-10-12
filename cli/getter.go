@@ -43,9 +43,7 @@ func getterTickerAction(c *urfavecli.Context) error {
 	exe := executor.GetExecutor(&boltdb)
 	f := make([]func(models.Ticker), 0)
 	f = append(f, func(ticker models.Ticker) { fmt.Println(ticker) })
-	fmt.Println("Start")
-	exe.RunTickerGetter(ctx, f)
-	fmt.Println("end")
+	exe.FetchTickerAsync(ctx, f)
 
 	return nil
 }

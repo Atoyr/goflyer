@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/atoyr/goflyer/db"
@@ -42,9 +41,7 @@ func exportTickersAction(c *urfavecli.Context) error {
 		return err
 	}
 	exe := executor.GetExecutor(&boltdb)
-	fmt.Println("Start")
-	exe.RunTickerGetter(ctx, make([]func(models.Ticker), 0))
-	fmt.Println("end")
+	exe.FetchTickerAsync(ctx, make([]func(models.Ticker), 0))
 
 	return nil
 }
