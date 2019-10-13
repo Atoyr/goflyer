@@ -12,23 +12,27 @@ import (
 	urfavecli "github.com/urfave/cli"
 )
 
-func getterCommand() urfavecli.Command {
+func fetchCommand() urfavecli.Command {
 	var command urfavecli.Command
-	command.Name = "print"
-	command.Aliases = []string{"p"}
+	command.Name = "fetch"
+	command.Aliases = []string{"f"}
+	command.Action = fetchAction
+	command.Flags = []urfavecli.Flag{
+		urfavecli.StringFlag{
+			Name:     "target , t",
+			Usage:    "target choose ticker ...",
+			Value:    "fetch target",
+			Required: true,
+		}}
 
 	return command
 }
 
-func getterTickerCommand() urfavecli.Command {
-	var command urfavecli.Command
-	command.Name = "getter"
-	command.Action = getterTickerAction
-
-	return command
+func fetchAction(c *urfavecli.Context) error {
+	return fetchTickerAction(c)
 }
 
-func getterTickerAction(c *urfavecli.Context) error {
+func fetchTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
