@@ -5,6 +5,11 @@
       :data="chartData"
       :options="chartOptions"
     />   
+ <GChart
+      type="ChartRangeFilter"
+      :data="chartData"
+      :options="chartOptions"
+    />   
   </div>
 </template>
 
