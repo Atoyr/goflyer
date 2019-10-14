@@ -92,6 +92,10 @@ func (e *executor) GetTicker(count int, before, after float64) ([]models.Ticker,
 	return tickers, err
 }
 
+func (e *executor) SaveTicker(ticker models.Ticker) {
+	e.db.UpdateTicker(ticker)
+}
+
 func (e *executor) MigrationDB(db db.DB) error {
 	tickers, err := e.db.GetTickerAll()
 	if err != nil {

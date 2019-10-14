@@ -23,6 +23,10 @@ func fetchCommand() urfavecli.Command {
 			Usage:    "target choose ticker ...",
 			Value:    "fetch target",
 			Required: true,
+		},
+		urfavecli.BoolFlag{
+			Name:  "save , s",
+			Usage: "save db",
 		}}
 
 	return command
@@ -47,6 +51,9 @@ func fetchTickerAction(c *urfavecli.Context) error {
 	exe := executor.GetExecutor(&boltdb)
 	f := make([]func(models.Ticker), 0)
 	f = append(f, func(ticker models.Ticker) { fmt.Println(ticker) })
+	if c.Bool("save") {
+		f = append(f, exe.SaveTicker)
+	}
 	exe.FetchTickerAsync(ctx, f)
 
 	return nil
