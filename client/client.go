@@ -115,6 +115,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 		default:
 			message := new(JsonRPC2)
 			if err := c.ReadJSON(message); err != nil {
+				log.Println(message)
 				log.Fatalln("read:", err)
 			}
 
