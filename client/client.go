@@ -108,6 +108,12 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
+	config, err := models.GetConfig()
+	if err != nil {
+		log.Fatalf("function=APIClient,doWebsocketRequest, action=Get Config, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
+	}
+	retrymsec := config.Retrymsec()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -115,8 +121,12 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 		default:
 			message := new(JsonRPC2)
 			if err := c.ReadJSON(message); err != nil {
-				log.Println(message)
-				log.Fatalln("read:", err)
+				if retrymsec > 0 {
+					time.Sleep(time.Duration(retrymsec) * time.Millisecond)
+				} else {
+					log.Println(message)
+					log.Fatalln("read:", err)
+				}
 			}
 
 			if message.Method == "channelMessage" {

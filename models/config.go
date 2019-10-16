@@ -14,6 +14,7 @@ type config struct {
 	apikey      string
 	dbfile      string
 	timeoutmsec int64
+	retrymsec   int64
 }
 
 type outconfig struct {
@@ -21,6 +22,7 @@ type outconfig struct {
 	Apikey      string `json:"apikey"`
 	Dbfile      string `json:"dbfile"`
 	Timeoutmsec int64  `json:"timeoutmsec"`
+	Retrymsec   int64  `json:"retrymsec"`
 }
 
 const (
@@ -52,9 +54,12 @@ func GetConfig() (config, error) {
 		c.apikey = out.Apikey
 		c.dbfile = out.Dbfile
 		c.timeoutmsec = out.Timeoutmsec
+		c.retrymsec = out.Retrymsec
 	} else {
 		c.appPath = appPath
 		c.dbfile = dbName
+		c.timeoutmsec = 5000
+		c.timeoutmsec = 60000
 		err := c.Save()
 		if err != nil {
 			return c, err
@@ -69,6 +74,7 @@ func (c *config) Save() error {
 		Apikey:      c.apikey,
 		Dbfile:      c.dbfile,
 		Timeoutmsec: c.timeoutmsec,
+		Retrymsec:   c.retrymsec,
 	}
 	return util.SaveJsonMarshalIndent(out, filepath.Join(c.appPath, configName))
 }
@@ -83,4 +89,8 @@ func (c *config) DBFile() string {
 
 func (c *config) Timeoutmsec() int64 {
 	return c.timeoutmsec
+}
+
+func (c *config) Retrymsec() int64 {
+	return c.retrymsec
 }
