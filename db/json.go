@@ -58,5 +58,5 @@ func ExportJsonForTickers(db DB, path string) error {
 	if err != nil {
 		return err
 	}
-	return util.JsonMarshalIndent(tickers, path)
+	return util.SaveJsonMarshalIndent(tickers, path)
 }

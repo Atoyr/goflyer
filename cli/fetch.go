@@ -3,12 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"log"
 
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
 
@@ -39,12 +38,12 @@ func fetchAction(c *urfavecli.Context) error {
 func fetchTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
+	config, err := models.GetConfig()
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
-	dbfile := filepath.Join(dirPath, "goflyer.db")
-	boltdb, err := db.GetBolt(dbfile)
+	boltdb, err := db.GetBolt(config.DBFile())
 	if err != nil {
 		return err
 	}
