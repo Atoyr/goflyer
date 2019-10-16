@@ -2,12 +2,13 @@ package util
 
 import (
 	"bytes"
+	"os"
 	"encoding/binary"
 	"encoding/json"
 	"io/ioutil"
 )
 
-func JsonMarshalIndent(value interface{}, path string) error {
+func SaveJsonMarshalIndent(value interface{}, path string) error {
 	marshalJson, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -23,6 +24,11 @@ func JsonMarshalIndent(value interface{}, path string) error {
 		return err
 	}
 	return nil
+}
+
+func FileExists(filepath string) bool {
+	_, err := os.Stat(filepath)
+	return err == nil
 }
 
 func Float64ToBytes(f float64) []byte {
