@@ -49,11 +49,15 @@ func fetchTickerAction(c *urfavecli.Context) error {
 	}
 	exe := executor.GetExecutor(&boltdb)
 	f := make([]func(models.Ticker), 0)
-	f = append(f, func(ticker models.Ticker) { fmt.Println(ticker) })
+	f = append(f, printFetchTicker)
 	if c.Bool("save") {
 		f = append(f, exe.SaveTicker)
 	}
 	exe.FetchTickerAsync(ctx, f)
 
 	return nil
+}
+
+func printFetchTicker(ticker models.Ticker) {
+	fmt.Printf("\r[  OK  ] ASK : %f\t BID : %f", ticker.BestAsk, ticker.BestBid)
 }
