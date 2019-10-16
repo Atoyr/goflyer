@@ -1,18 +1,19 @@
 package models
 
 import (
-	"path/filepath"
 	"io/ioutil"
+	"path/filepath"
 
 	"encoding/json"
+
 	"github.com/atoyr/goflyer/util"
 )
 
 type config struct {
-	appPath     string 
-	apikey      string 
-	dbfile      string 
-	timeoutmsec int64  
+	appPath     string
+	apikey      string
+	dbfile      string
+	timeoutmsec int64
 }
 
 type outconfig struct {
@@ -36,7 +37,7 @@ func GetConfig() (config, error) {
 	if err != nil {
 		return config{}, err
 	}
-	configFile := filepath.Join(appPath,configName)
+	configFile := filepath.Join(appPath, configName)
 	if util.FileExists(configFile) {
 		raw, err := ioutil.ReadFile(configFile)
 		if err != nil {
@@ -50,8 +51,8 @@ func GetConfig() (config, error) {
 		c.appPath = out.AppPath
 		c.apikey = out.Apikey
 		c.dbfile = out.Dbfile
-		c.timeoutmsec = out.Timeoutmsec 
-	}else { 
+		c.timeoutmsec = out.Timeoutmsec
+	} else {
 		c.appPath = appPath
 		c.dbfile = dbName
 		err := c.Save()
@@ -59,18 +60,17 @@ func GetConfig() (config, error) {
 			return c, err
 		}
 	}
-	return c,nil
+	return c, nil
 }
 
-
 func (c *config) Save() error {
-	out := outconfig {
-		AppPath: c.appPath,
-		Apikey: c.apikey,
-		Dbfile: c.dbfile,
+	out := outconfig{
+		AppPath:     c.appPath,
+		Apikey:      c.apikey,
+		Dbfile:      c.dbfile,
 		Timeoutmsec: c.timeoutmsec,
 	}
-	return util.SaveJsonMarshalIndent(out,filepath.Join(c.appPath,configName))
+	return util.SaveJsonMarshalIndent(out, filepath.Join(c.appPath, configName))
 }
 
 func (c *config) AppPath() string {
