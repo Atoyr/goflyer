@@ -161,6 +161,10 @@ func (b *Bolt) UpdateCandle(c models.Candle) error {
 	return nil
 }
 
+func (b *Bolt) GetCandle(duration string) models.Candle {
+	return models.Candle{}
+}
+
 func (b *Bolt) GetCandleCollection() {
 
 }
