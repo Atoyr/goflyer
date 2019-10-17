@@ -41,7 +41,7 @@ func exportTickersAction(c *urfavecli.Context) error {
 		return err
 	}
 	exe := executor.GetExecutor(&boltdb)
-	exe.FetchTickerAsync(ctx, make([]func(models.Ticker), 0))
+	exe.FetchTickerAsync(ctx, make([]func(beforeticker, ticker models.Ticker), 0))
 
 	return nil
 }

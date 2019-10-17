@@ -275,12 +275,16 @@ OUTER:
 
 		default:
 			param := <-paramCh
+			ticker := new(models.Ticker)
 			marchalTick, err := json.Marshal(param)
 			if err != nil {
+				ticker.Message = err.Error()
+				ch <- *ticker
 				continue OUTER
 			}
-			ticker := new(models.Ticker)
 			if err := json.Unmarshal(marchalTick, &ticker); err != nil {
+				ticker.Message = err.Error()
+				ch <- *ticker
 				continue OUTER
 			}
 			ch <- *ticker

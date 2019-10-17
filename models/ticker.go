@@ -19,6 +19,7 @@ type Ticker struct {
 	Ltp             float64 `json:"ltp"`
 	Volume          float64 `json:"volume"`
 	VolumeByProduct float64 `json:"volume_by_product"`
+	Message         string `json:"message,omitempty"`
 }
 
 func  JsonUnmarshalTicker(row []byte)  (*Ticker,error) {

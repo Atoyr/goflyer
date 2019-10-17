@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
 
@@ -48,7 +50,7 @@ func fetchTickerAction(c *urfavecli.Context) error {
 		return err
 	}
 	exe := executor.GetExecutor(&boltdb)
-	f := make([]func(models.Ticker), 0)
+	f := make([]func(beforeticker,ticker models.Ticker), 0)
 	f = append(f, printFetchTicker)
 	if c.Bool("save") {
 		f = append(f, exe.SaveTicker)
@@ -58,6 +60,28 @@ func fetchTickerAction(c *urfavecli.Context) error {
 	return nil
 }
 
-func printFetchTicker(ticker models.Ticker) {
-	fmt.Printf("\r[  OK  ] ASK : %f\t BID : %f", ticker.BestAsk, ticker.BestBid)
+func printFetchTicker(beforeticker,ticker models.Ticker) {
+	var status, ltp string
+	okAtt := util.GetMultiColorAttribute(47,false)
+	ngAtt := util.GetMultiColorAttribute(160,false)
+	upAtt := util.GetMultiColorAttribute(20,false)
+	stayAtt := util.GetMultiColorAttribute(188,false)
+	downAtt := util.GetMultiColorAttribute(160,false)
+
+	if ticker.Message == "" {
+		status = util.ApplyAttribute("[  OK  ]",okAtt)
+	}else {
+		status = util.ApplyAttribute("[ FAIL ]",ngAtt )
+	}
+
+	ltp = fmt.Sprintf("%.2f",ticker.Ltp)
+	if beforeticker.Ltp < ticker.Ltp {
+	ltp = util.ApplyAttribute(ltp,upAtt)
+} else if beforeticker.Ltp > ticker.Ltp {
+	ltp = util.ApplyAttribute(ltp,downAtt)
+} else {
+	ltp = util.ApplyAttribute(ltp,stayAtt)
+}
+
+	fmt.Printf("\r%s  %s  |  LTP : %s", status,ticker.DateTime().Format(time.RFC3339),ltp)
 }

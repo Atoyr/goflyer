@@ -73,17 +73,18 @@ func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	return cs.GetCandleOHLCs()
 }
 
-func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(models.Ticker)) {
+func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var tickerChannl = make(chan models.Ticker)
-
+	
+	before := models.Ticker{}
 	go e.client.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
 	for ticker := range tickerChannl {
-		e.db.UpdateTicker(ticker)
 		for i := range callbacks {
-			callbacks[i](ticker)
+			callbacks[i](before, ticker)
 		}
+		before = ticker
 	}
 }
 
@@ -92,8 +93,10 @@ func (e *executor) GetTicker(count int, before, after float64) ([]models.Ticker,
 	return tickers, err
 }
 
-func (e *executor) SaveTicker(ticker models.Ticker) {
-	e.db.UpdateTicker(ticker)
+func (e *executor) SaveTicker(beforeticker,ticker models.Ticker) {
+	if ticker.Message == "" {
+		e.db.UpdateTicker(ticker)
+	}
 }
 
 func (e *executor) MigrationDB(db db.DB) error {
