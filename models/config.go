@@ -84,7 +84,7 @@ func (c *config) AppPath() string {
 }
 
 func (c *config) DBFile() string {
-	return c.dbfile
+	return filepath.Join(c.appPath,c.dbfile)
 }
 
 func (c *config) Timeoutmsec() int64 {
