@@ -30,5 +30,6 @@ func AppendHandler(e *echo.Echo) *echo.Echo {
 	})
 	e.GET("/v1/DataFrame/BTC_JPY/:duration", handleDataFrame)
 	e.GET("/v1/Candlestick/BTC_JPY/:duration", handleCandlestick)
+	e.GET("/v1/Ticler", handleTicker)
 	return e
-} 
+}

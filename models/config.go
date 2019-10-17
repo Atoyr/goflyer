@@ -6,12 +6,14 @@ import (
 
 	"encoding/json"
 
+	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/util"
 )
 
 type config struct {
 	appPath     string
 	apikey      string
+	dbtype      string
 	dbfile      string
 	timeoutmsec int64
 	retrymsec   int64
@@ -20,6 +22,7 @@ type config struct {
 type outconfig struct {
 	AppPath     string `json:"app_path"`
 	Apikey      string `json:"apikey"`
+	Dbtype      string `json:"dbtype"`
 	Dbfile      string `json:"dbfile"`
 	Timeoutmsec int64  `json:"timeoutmsec"`
 	Retrymsec   int64  `json:"retrymsec"`
@@ -52,11 +55,13 @@ func GetConfig() (config, error) {
 		}
 		c.appPath = out.AppPath
 		c.apikey = out.Apikey
+		c.dbtype = out.Dbtype
 		c.dbfile = out.Dbfile
 		c.timeoutmsec = out.Timeoutmsec
 		c.retrymsec = out.Retrymsec
 	} else {
 		c.appPath = appPath
+		c.dbtype = "bolt"
 		c.dbfile = dbName
 		c.timeoutmsec = 5000
 		c.timeoutmsec = 60000
@@ -72,6 +77,7 @@ func (c *config) Save() error {
 	out := outconfig{
 		AppPath:     c.appPath,
 		Apikey:      c.apikey,
+		Dbtype:      c.dbtype,
 		Dbfile:      c.dbfile,
 		Timeoutmsec: c.timeoutmsec,
 		Retrymsec:   c.retrymsec,
@@ -84,7 +90,21 @@ func (c *config) AppPath() string {
 }
 
 func (c *config) DBFile() string {
-	return filepath.Join(c.appPath,c.dbfile)
+	return filepath.Join(c.appPath, c.dbfile)
+}
+
+func (c *config) GetDB() db.DB {
+	switch c.dbtype {
+	case "bolt":
+		dbfile = filepath.Join(c.appPath, c.dbfile)
+		db, err := db.GetBolt(dbfilr)
+		if err != nil {
+			return nil
+		}
+		return db
+	default:
+		return nil
+	}
 }
 
 func (c *config) Timeoutmsec() int64 {
