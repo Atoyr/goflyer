@@ -24,7 +24,7 @@ type APIClient struct {
 	key        string
 	secret     string
 	httpClient *http.Client
-	config     *apiConfig
+	config     *configs.ClientConfig
 }
 
 type JsonRPC2 struct {
@@ -45,7 +45,7 @@ func New(key, secret string) *APIClient {
 	client.key = key
 	client.secret = secret
 	client.httpClient = new(http.Client)
-	client.config = newAPIConfig()
+	client.config = configs.NewClientConfig()
 
 	return client
 }
@@ -98,7 +98,7 @@ func (api *APIClient) doRequest(method, urlPath string, query map[string]string,
 }
 
 func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) {
-	c, _, err := websocket.DefaultDialer.Dial(api.config.websocket.String(), nil)
+	c, _, err := websocket.DefaultDialer.Dial(api.config.GetWebsocketString(), nil)
 	if err != nil {
 		log.Fatalf("function=APIClient.doWebsocketRequest, action=Websocket Dial, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
