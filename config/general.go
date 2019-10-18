@@ -1,4 +1,4 @@
-package models
+package generalConfig
 
 import (
 	"io/ioutil"
@@ -10,7 +10,7 @@ import (
 	"github.com/atoyr/goflyer/util"
 )
 
-type config struct {
+type generalConfig struct {
 	appPath     string
 	apikey      string
 	dbtype      string
@@ -19,7 +19,7 @@ type config struct {
 	retrymsec   int64
 }
 
-type outconfig struct {
+type outGeneralConfig struct {
 	AppPath     string `json:"app_path"`
 	Apikey      string `json:"apikey"`
 	Dbtype      string `json:"dbtype"`
@@ -30,28 +30,28 @@ type outconfig struct {
 
 const (
 	appName    = "goflyer"
-	configName = "config"
-	dbName     = "goflyer.db"
+	generalConfigFileName = "general.config"
+	dbFileName     = "goflyer.db"
 )
 
-// GetConfig is Getting config
-// if path is empty this use default config path
-func GetConfig() (config, error) {
-	var c config
+// GetConfig is Getting generalConfig
+// if path is empty this use default generalConfig path
+func GetConfig() (generalConfig, error) {
+	var c generalConfig
 	appPath, err := util.CreateConfigDirectoryIfNotExists(appName)
 	if err != nil {
-		return config{}, err
+		return generalConfig{}, err
 	}
-	configFile := filepath.Join(appPath, configName)
-	if util.FileExists(configFile) {
-		raw, err := ioutil.ReadFile(configFile)
+	generalConfigFile := filepath.Join(appPath, generalConfigFileName)
+	if util.FileExists(generalConfigFile) {
+		raw, err := ioutil.ReadFile(generalConfigFile)
 		if err != nil {
-			return config{}, err
+			return generalConfig{}, err
 		}
-		var out outconfig
+		var out outGeneralConfig
 		err = json.Unmarshal(raw, &out)
 		if err != nil {
-			return config{}, err
+			return generalConfig{}, err
 		}
 		c.appPath = out.AppPath
 		c.apikey = out.Apikey
@@ -62,7 +62,7 @@ func GetConfig() (config, error) {
 	} else {
 		c.appPath = appPath
 		c.dbtype = "bolt"
-		c.dbfile = dbName
+		c.dbfile = dbFileName
 		c.timeoutmsec = 5000
 		c.timeoutmsec = 60000
 		err := c.Save()
@@ -73,8 +73,8 @@ func GetConfig() (config, error) {
 	return c, nil
 }
 
-func (c *config) Save() error {
-	out := outconfig{
+func (c *generalConfig) Save() error {
+	out := outGeneralConfig{
 		AppPath:     c.appPath,
 		Apikey:      c.apikey,
 		Dbtype:      c.dbtype,
@@ -82,18 +82,18 @@ func (c *config) Save() error {
 		Timeoutmsec: c.timeoutmsec,
 		Retrymsec:   c.retrymsec,
 	}
-	return util.SaveJsonMarshalIndent(out, filepath.Join(c.appPath, configName))
+	return util.SaveJsonMarshalIndent(out, filepath.Join(c.appPath, generalConfigFileName))
 }
 
-func (c *config) AppPath() string {
+func (c *generalConfig) AppPath() string {
 	return c.appPath
 }
 
-func (c *config) DBFile() string {
+func (c *generalConfig) DBFile() string {
 	return filepath.Join(c.appPath, c.dbfile)
 }
 
-func (c *config) GetDB() db.DB {
+func (c *generalConfig) GetDB() db.DB {
 	switch c.dbtype {
 	case "bolt":
 		dbfile = filepath.Join(c.appPath, c.dbfile)
@@ -107,10 +107,11 @@ func (c *config) GetDB() db.DB {
 	}
 }
 
-func (c *config) Timeoutmsec() int64 {
+func (c *generalConfig) Timeoutmsec() int64 {
 	return c.timeoutmsec
 }
 
-func (c *config) Retrymsec() int64 {
+func (c *generalConfig) Retrymsec() int64 {
 	return c.retrymsec
 }
+

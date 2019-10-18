@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/config"
 	"github.com/gorilla/websocket"
 )
 
@@ -108,7 +109,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
-	config, err := models.GetConfig()
+	config, err := config.GetGeneralConfig()
 	if err != nil {
 		log.Fatalf("function=APIClient,doWebsocketRequest, action=Get Config, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
