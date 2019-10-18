@@ -24,7 +24,6 @@ type APIClient struct {
 	key        string
 	secret     string
 	httpClient *http.Client
-	config     *configs.ClientConfig
 }
 
 type JsonRPC2 struct {
@@ -45,7 +44,6 @@ func New(key, secret string) *APIClient {
 	client.key = key
 	client.secret = secret
 	client.httpClient = new(http.Client)
-	client.config = configs.NewClientConfig()
 
 	return client
 }
@@ -67,7 +65,11 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 }
 
 func (api *APIClient) doRequest(method, urlPath string, query map[string]string, data []byte) (body []byte, err error) {
-	endpoint, err := api.config.GetEndpoint(urlPath)
+	config ,err := configs.GetGeneralConfig()
+	if err != nil {
+		return nil, err
+	}
+	endpoint, err := config.GetEndpoint(urlPath)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +100,11 @@ func (api *APIClient) doRequest(method, urlPath string, query map[string]string,
 }
 
 func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) {
-	c, _, err := websocket.DefaultDialer.Dial(api.config.GetWebsocketString(), nil)
+	config, err := configs.GetGeneralConfig()
+	if err != nil {
+		return
+	}
+	c, _, err := websocket.DefaultDialer.Dial(config.GetWebsocketString(), nil)
 	if err != nil {
 		log.Fatalf("function=APIClient.doWebsocketRequest, action=Websocket Dial, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
@@ -109,7 +115,6 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
-	config, err := configs.GetGeneralConfig()
 	if err != nil {
 		log.Fatalf("function=APIClient,doWebsocketRequest, action=Get Config, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
