@@ -16,18 +16,18 @@ type Bolt struct {
 }
 
 // Bucket layout
-// - TickerBucket
+// - tickerBucket
 // - DurationBucket
 //   - CandleBucket
 //   - SmasBucket
 //   - EmasBucket
 
 const (
-	TickerBucket   = "Ticker"
-	DurationBucket = "Duration"
-	CandleBucketk  = "Candle"
-	SmasBucket     = "Smas"
-	EmasBucket     = "Emas"
+	tickerBucket   = "Ticker"
+	durationBucket = "Duration"
+	candleBucket   = "Candle"
+	smasBucket     = "Smas"
+	emasBucket     = "Emas"
 )
 
 func GetBolt(dbFile string) (Bolt, error) {
@@ -35,6 +35,11 @@ func GetBolt(dbFile string) (Bolt, error) {
 	b.dbFile = dbFile
 	err := b.init()
 	return b, err
+}
+
+func getCandleBucketName(duration int64) string{
+	d := time.Duration(duration)
+	return fmt.Sprintf("%s_%s",durationBucket,models.GetDuraitonString(d))
 }
 
 func (b *Bolt) db() *bolt.DB {
@@ -49,23 +54,7 @@ func (b *Bolt) init() error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(TickerBucket))
-		if err != nil {
-			return err
-		}
-		durationBucket, err := tx.CreateBucketIfNotExists([]byte(DurationBucket))
-		if err != nil {
-			return err
-		}
-		_, err = durationBucket.CreateBucketIfNotExists([]byte(CandleBucketk))
-		if err != nil {
-			return err
-		}
-		_, err = durationBucket.CreateBucketIfNotExists([]byte(SmasBucket))
-		if err != nil {
-			return err
-		}
-		_, err = durationBucket.CreateBucketIfNotExists([]byte(EmasBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(tickerBucket))
 		if err != nil {
 			return err
 		}
@@ -81,7 +70,7 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(TickerBucket))
+		bucket := tx.Bucket([]byte(tickerBucket))
 		marshalID := util.Float64ToBytes(t.TickID)
 		if buf, err := json.Marshal(t); err != nil {
 			return err
@@ -102,7 +91,7 @@ func (b *Bolt) GetTicker(tickID float64) (models.Ticker, error) {
 	defer db.Close()
 	ticker := new(models.Ticker)
 	err := db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(TickerBucket)).Cursor()
+		c := tx.Bucket([]byte(tickerBucket)).Cursor()
 
 		marshalID := util.Float64ToBytes(tickID)
 
@@ -125,7 +114,7 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 	defer db.Close()
 	tickers := make([]models.Ticker, 0)
 	err := db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(TickerBucket)).Cursor()
+		c := tx.Bucket([]byte(tickerBucket)).Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			var t models.Ticker
@@ -144,10 +133,16 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 func (b *Bolt) UpdateCandle(c models.Candle) error {
 	db := b.db()
 	defer db.Close()
-	duration := c.Duration
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucketName := fmt.Sprintf("Candle_%s", c.Key())
-		bucket := tx.Bucket([]byte(bucketName))
+		bucketName := getCandleBucketName(c.Duration)
+		durationBucket, err := tx.CreateBucketIfNotExists([]byte(bucketName ))
+		if err != nil {
+			return err
+		}
+		bucket,err := durationBucket.CreateBucketIfNotExists([]byte(candleBucket))
+		if err != nil {
+			return err
+		}
 		if buf, err := json.Marshal(c); err != nil {
 			return err
 		} else if err = bucket.Put([]byte(c.Key()), buf); err != nil {
