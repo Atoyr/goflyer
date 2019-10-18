@@ -49,3 +49,34 @@ func GetDuration(duration string) time.Duration {
 	}
 	return d
 }
+
+func GetDurationString(duration time.Duration) {
+	d := ""
+	switch duration {
+	case 1 * time.Minute:
+		d = "1m"
+	case 3 * time.Minute:
+		d = "3m"
+	case 5 * time.Minute:
+		d = "5m"
+	case "10m":
+		d = 10 * time.Minute
+	case "15m":
+		d = 15 * time.Minute
+	case "30m":
+		d = 30 * time.Minute
+	case "1h":
+		d = 1 * time.Hour
+	case "2h":
+		d = 2 * time.Hour
+	case "4h":
+		d = 4 * time.Hour
+	case "6h":
+		d = 6 * time.Hour
+	case "12h":
+		d = 12 * time.Hour
+	case "24h":
+		d = 24 * time.Hour
+	}
+	return d
+}

@@ -144,6 +144,7 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 func (b *Bolt) UpdateCandle(c models.Candle) error {
 	db := b.db()
 	defer db.Close()
+	duration := c.Duration
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucketName := fmt.Sprintf("Candle_%s", c.Key())
 		bucket := tx.Bucket([]byte(bucketName))
