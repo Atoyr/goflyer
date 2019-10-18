@@ -1,15 +1,16 @@
 package configs
 
 import (
-"net/url"
+	"net/url"
 )
+
 const base_url = "https://api.bitflyer.com/v1/"
 const websocketScheme = "wss"
 const websocketHost = "ws.lightstream.bitflyer.com"
 const websocketPath = "/json-rpc"
 
 type ClientConfig struct {
-	baseURL           string
+	baseURL   string
 	websocket url.URL
 }
 
@@ -30,9 +31,9 @@ func (c *ClientConfig) GetEndpoint(urlPath string) (endpoint string, err error) 
 	if err != nil {
 		return "", err
 	}
-	return   baseURL.ResolveReference(apipath).String(),nil
+	return baseURL.ResolveReference(apipath).String(), nil
 }
 
-func (c *ClientConfig) GetWebsocketString() string{
+func (c *ClientConfig) GetWebsocketString() string {
 	return c.websocket.String()
 }

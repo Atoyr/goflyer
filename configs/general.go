@@ -29,9 +29,9 @@ type outGeneralConfig struct {
 }
 
 const (
-	appName    = "goflyer"
+	appName               = "goflyer"
 	generalConfigFileName = "general.config"
-	dbFileName     = "goflyer.db"
+	dbFileName            = "goflyer.db"
 )
 
 // GetConfig is Getting generalConfig
@@ -114,4 +114,3 @@ func (c *generalConfig) Timeoutmsec() int64 {
 func (c *generalConfig) Retrymsec() int64 {
 	return c.retrymsec
 }
-
