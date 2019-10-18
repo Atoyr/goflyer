@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -39,7 +40,7 @@ func GetBolt(dbFile string) (Bolt, error) {
 
 func getCandleBucketName(duration int64) string{
 	d := time.Duration(duration)
-	return fmt.Sprintf("%s_%s",durationBucket,models.GetDuraitonString(d))
+	return fmt.Sprintf("%s_%s",durationBucket,models.GetDurationString(d))
 }
 
 func (b *Bolt) db() *bolt.DB {

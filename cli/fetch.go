@@ -10,6 +10,7 @@ import (
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
+	"github.com/atoyr/goflyer/configs"
 	urfavecli "github.com/urfave/cli"
 )
 
@@ -40,7 +41,7 @@ func fetchAction(c *urfavecli.Context) error {
 func fetchTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	config, err := models.GetConfig()
+	config, err := configs.GetGeneralConfig()
 	if err != nil {
 		log.Fatal(err)
 		return err

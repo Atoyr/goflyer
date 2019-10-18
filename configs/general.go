@@ -1,4 +1,4 @@
-package generalConfig
+package configs
 
 import (
 	"io/ioutil"
@@ -36,7 +36,7 @@ const (
 
 // GetConfig is Getting generalConfig
 // if path is empty this use default generalConfig path
-func GetConfig() (generalConfig, error) {
+func GetGeneralConfig() (generalConfig, error) {
 	var c generalConfig
 	appPath, err := util.CreateConfigDirectoryIfNotExists(appName)
 	if err != nil {
@@ -96,12 +96,12 @@ func (c *generalConfig) DBFile() string {
 func (c *generalConfig) GetDB() db.DB {
 	switch c.dbtype {
 	case "bolt":
-		dbfile = filepath.Join(c.appPath, c.dbfile)
-		db, err := db.GetBolt(dbfilr)
+		dbfile := filepath.Join(c.appPath, c.dbfile)
+		db, err := db.GetBolt(dbfile)
 		if err != nil {
 			return nil
 		}
-		return db
+		return &db
 	default:
 		return nil
 	}
