@@ -69,7 +69,7 @@ func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	} else {
 		dataFrame = e.dataFrames["24h"]
 	}
-	cs = dataFrame.Candles
+	cs.AppendCandle(dataFrame.Candles...)
 	return cs.GetCandleOHLCs()
 }
 

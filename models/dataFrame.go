@@ -64,13 +64,13 @@ func (df *DataFrame) Name() string {
 func (df *DataFrame) AddTicker(ticker Ticker) error {
 	dt := ticker.TruncateDateTime(df.Duration)
 	if tail := len(df.Candles) - 1; tail < 0 {
-		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker))
+		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume))
 	} else if dt.Equal(df.Candles[tail].Time) {
 		df.Candles[tail].AddTicker(ticker)
 	} else if dt.After(df.Candles[tail].Time) {
-		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker))
+		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume))
 	} else if tail == 0 {
-		c := []Candle{*NewCandle(df.ProductCode, df.Duration, ticker)}
+		c := []Candle{*NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)}
 		df.Candles = append(c, df.Candles...)
 	} else {
 		beforeTime := df.Candles[tail].Time
@@ -79,7 +79,7 @@ func (df *DataFrame) AddTicker(ticker Ticker) error {
 				df.Candles[i].AddTicker(ticker)
 			}
 			if dt.After(df.Candles[i].Time) && dt.Before(beforeTime) {
-				df.Candles = append(df.Candles[:i], *NewCandle(df.ProductCode, df.Duration, ticker))
+				df.Candles = append(df.Candles[:i], *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)) 
 				df.Candles = append(df.Candles, df.Candles[i+1:]...)
 			}
 		}

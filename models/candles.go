@@ -25,3 +25,7 @@ func (cs Candles) GetCandleOHLCs() []CandleOHLC {
 
 	return ohlcs
 }
+
+func (cs Candles) AppendCandle(candles ...Candle) {
+	cs.candles = append(cs.candles,candles...)
+}

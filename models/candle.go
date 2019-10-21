@@ -20,19 +20,19 @@ type Candle struct {
 	LastID        float64   `json:"last_id"`
 }
 
-func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candle {
+func NewCandle(productCode string, duration time.Duration, time time.Time,id, price ,volume float64) *Candle {
 	c := new(Candle)
 	c.ProductCode = productCode
 	c.Duration = duration.Nanoseconds()
-	c.Time = ticker.TruncateDateTime(duration)
-	c.Open = ticker.GetMidPrice()
-	c.Close = ticker.GetMidPrice()
-	c.High = ticker.GetMidPrice()
-	c.Low = ticker.GetMidPrice()
-	c.Volume = ticker.Volume
-	c.OpenDateTime = ticker.DateTime()
-	c.CloseDateTime = ticker.DateTime()
-	c.LastID = ticker.TickID
+	c.Time = time.Truncate(duration)
+	c.Open = price
+	c.Close = price
+	c.High = price
+	c.Low = price
+	c.Volume = volume
+	c.OpenDateTime = time
+	c.CloseDateTime = time
+	c.LastID = id
 	return c
 }
 
