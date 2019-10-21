@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/atoyr/goflyer/configs"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
-	"github.com/atoyr/goflyer/configs"
 	urfavecli "github.com/urfave/cli"
 )
 
@@ -51,7 +51,7 @@ func fetchTickerAction(c *urfavecli.Context) error {
 		return err
 	}
 	exe := executor.GetExecutor(&boltdb)
-	f := make([]func(beforeticker,ticker models.Ticker), 0)
+	f := make([]func(beforeticker, ticker models.Ticker), 0)
 	f = append(f, printFetchTicker)
 	if c.Bool("save") {
 		f = append(f, exe.SaveTicker)
@@ -61,28 +61,46 @@ func fetchTickerAction(c *urfavecli.Context) error {
 	return nil
 }
 
-func printFetchTicker(beforeticker,ticker models.Ticker) {
-	var status, ltp string
-	okAtt := util.GetMultiColorAttribute(47,false)
-	ngAtt := util.GetMultiColorAttribute(160,false)
-	upAtt := util.GetMultiColorAttribute(20,false)
-	stayAtt := util.GetMultiColorAttribute(188,false)
-	downAtt := util.GetMultiColorAttribute(160,false)
+func printFetchTicker(beforeticker, ticker models.Ticker) {
+	var status, ltp, ask, bid string
+	okAtt := util.GetMultiColorAttribute(47, false)
+	ngAtt := util.GetMultiColorAttribute(160, false)
+	upAtt := util.GetMultiColorAttribute(20, false)
+	stayAtt := util.GetMultiColorAttribute(188, false)
+	downAtt := util.GetMultiColorAttribute(160, false)
 
 	if ticker.Message == "" {
-		status = util.ApplyAttribute("[  OK  ]",okAtt)
-	}else {
-		status = util.ApplyAttribute("[ FAIL ]",ngAtt )
+		status = util.ApplyAttribute("[  OK  ]", okAtt)
+	} else {
+		status = util.ApplyAttribute("[ FAIL ]", ngAtt)
 	}
 
-	ltp = fmt.Sprintf("%.2f",ticker.Ltp)
+	ltp = fmt.Sprintf("%.2f", ticker.Ltp)
 	if beforeticker.Ltp < ticker.Ltp {
-	ltp = util.ApplyAttribute(ltp,upAtt)
-} else if beforeticker.Ltp > ticker.Ltp {
-	ltp = util.ApplyAttribute(ltp,downAtt)
-} else {
-	ltp = util.ApplyAttribute(ltp,stayAtt)
-}
+		ltp = util.ApplyAttribute(ltp, upAtt)
+	} else if beforeticker.Ltp > ticker.Ltp {
+		ltp = util.ApplyAttribute(ltp, downAtt)
+	} else {
+		ltp = util.ApplyAttribute(ltp, stayAtt)
+	}
 
-	fmt.Printf("\r%s  %s  |  LTP : %s", status,ticker.DateTime().Format(time.RFC3339),ltp)
+	ask = fmt.Sprintf("%.2f", ticker.BestAsk)
+	if beforeticker.BestAsk < ticker.BestAsk {
+		ask = util.ApplyAttribute(ask, upAtt)
+	} else if beforeticker.BestAsk > ticker.BestAsk {
+		ask = util.ApplyAttribute(ask, downAtt)
+	} else {
+		ask = util.ApplyAttribute(ask, stayAtt)
+	}
+
+	bid = fmt.Sprintf("%.2f", ticker.BestBid)
+	if beforeticker.BestBid < ticker.BestBid {
+		bid = util.ApplyAttribute(bid, upAtt)
+	} else if beforeticker.BestBid > ticker.BestBid {
+		bid = util.ApplyAttribute(bid, downAtt)
+	} else {
+		bid = util.ApplyAttribute(bid, stayAtt)
+	}
+
+	fmt.Printf("\r%s  %s  |  ASK : %s  |  BID : %s  |  LTP : %s", status, ticker.DateTime().Format(time.RFC3339), ask, bid, ltp)
 }
