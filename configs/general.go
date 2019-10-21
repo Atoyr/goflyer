@@ -2,8 +2,8 @@ package configs
 
 import (
 	"io/ioutil"
-	"path/filepath"
 	"net/url"
+	"path/filepath"
 
 	"encoding/json"
 
@@ -12,12 +12,12 @@ import (
 )
 
 type generalConfig struct {
-	appPath     string
-	apikey      string
-	dbtype      string
-	dbfile      string
-	timeoutmsec int64
-	retrymsec   int64
+	appPath         string
+	apikey          string
+	dbtype          string
+	dbfile          string
+	timeoutmsec     int64
+	retrymsec       int64
 	baseURL         string
 	websocketScheme string
 	websocketHost   string
@@ -25,12 +25,12 @@ type generalConfig struct {
 }
 
 type outGeneralConfig struct {
-	AppPath     string `json:"app_path"`
-	Apikey      string `json:"apikey"`
-	Dbtype      string `json:"dbtype"`
-	Dbfile      string `json:"dbfile"`
-	Timeoutmsec int64  `json:"timeoutmsec"`
-	Retrymsec   int64  `json:"retrymsec"`
+	AppPath         string `json:"app_path"`
+	Apikey          string `json:"apikey"`
+	Dbtype          string `json:"dbtype"`
+	Dbfile          string `json:"dbfile"`
+	Timeoutmsec     int64  `json:"timeoutmsec"`
+	Retrymsec       int64  `json:"retrymsec"`
 	BaseURL         string `json:"base_url"`
 	WebsocketScheme string `json:"websocket_scheme"`
 	WebsocketHost   string `json:"websocket_host"`
@@ -41,10 +41,10 @@ const (
 	appName               = "goflyer"
 	generalConfigFileName = "general.config"
 	dbFileName            = "goflyer.db"
-	base_url = "https://api.bitflyer.com/v1/"
-	websocketScheme = "wss"
-	websocketHost = "ws.lightstream.bitflyer.com"
-	websocketPath = "/json-rpc"
+	base_url              = "https://api.bitflyer.com/v1/"
+	websocketScheme       = "wss"
+	websocketHost         = "ws.lightstream.bitflyer.com"
+	websocketPath         = "/json-rpc"
 )
 
 // GetConfig is Getting generalConfig
@@ -85,7 +85,7 @@ func GetGeneralConfig() (generalConfig, error) {
 		c.baseURL = base_url
 		c.websocketScheme = websocketScheme
 		c.websocketHost = websocketHost
-		c.websocketPath= websocketPath
+		c.websocketPath = websocketPath
 		err := c.Save()
 		if err != nil {
 			return c, err
@@ -96,16 +96,16 @@ func GetGeneralConfig() (generalConfig, error) {
 
 func (c *generalConfig) Save() error {
 	out := outGeneralConfig{
-		AppPath:     c.appPath,
-		Apikey:      c.apikey,
-		Dbtype:      c.dbtype,
-		Dbfile:      c.dbfile,
-		Timeoutmsec: c.timeoutmsec,
-		Retrymsec:   c.retrymsec,
-	BaseURL: c.baseURL,
-WebsocketScheme: c.websocketScheme,
-WebsocketHost: c.websocketHost,
-WebsocketPath : c.websocketPath,
+		AppPath:         c.appPath,
+		Apikey:          c.apikey,
+		Dbtype:          c.dbtype,
+		Dbfile:          c.dbfile,
+		Timeoutmsec:     c.timeoutmsec,
+		Retrymsec:       c.retrymsec,
+		BaseURL:         c.baseURL,
+		WebsocketScheme: c.websocketScheme,
+		WebsocketHost:   c.websocketHost,
+		WebsocketPath:   c.websocketPath,
 	}
 	return util.SaveJsonMarshalIndent(out, filepath.Join(c.appPath, generalConfigFileName))
 }
