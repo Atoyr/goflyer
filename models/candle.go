@@ -17,9 +17,8 @@ type Candle struct {
 	Volume        float64   `json:"volume"`
 	OpenDateTime  time.Time `json:"open_date_time"`
 	CloseDateTime time.Time `json:"close_date_time"`
-	LastExecutionID    float64   `json:"last_execution_id"`
+	LastID        float64   `json:"last_id"`
 }
-
 
 func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candle {
 	c := new(Candle)
@@ -33,7 +32,7 @@ func NewCandle(productCode string, duration time.Duration, ticker Ticker) *Candl
 	c.Volume = ticker.Volume
 	c.OpenDateTime = ticker.DateTime()
 	c.CloseDateTime = ticker.DateTime()
-	c.LastExecutionID = ticker.TickID
+	c.LastID = ticker.TickID
 	return c
 }
 
@@ -87,10 +86,10 @@ func (c *Candle) AddTicker(ticker Ticker) error {
 			c.OpenDateTime = tickerTime
 			c.Open = price
 		}
-		if c.LastExecutionID < ticker.TickID {
+		if c.LastID < ticker.TickID {
 			c.CloseDateTime = tickerTime
 			c.Close = price
-			c.LastExecutionID = ticker.TickID
+			c.LastID = ticker.TickID
 		}
 		return nil
 	} else {
@@ -108,4 +107,3 @@ func (c *Candle) GetCandleOHLC() CandleOHLC {
 	ohlc.Close = c.Close
 	return *ohlc
 }
-
