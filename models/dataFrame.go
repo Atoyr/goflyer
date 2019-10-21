@@ -66,7 +66,7 @@ func (df *DataFrame) AddTicker(ticker Ticker) error {
 	if tail := len(df.Candles) - 1; tail < 0 {
 		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume))
 	} else if dt.Equal(df.Candles[tail].Time) {
-		df.Candles[tail].AddTicker(ticker)
+		df.Candles[tail].Add(ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)
 	} else if dt.After(df.Candles[tail].Time) {
 		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume))
 	} else if tail == 0 {
@@ -76,7 +76,7 @@ func (df *DataFrame) AddTicker(ticker Ticker) error {
 		beforeTime := df.Candles[tail].Time
 		for i := tail - 1; i >= 0; i-- {
 			if dt.Equal(df.Candles[i].Time) {
-				df.Candles[i].AddTicker(ticker)
+				df.Candles[i].Add(ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)
 			}
 			if dt.After(df.Candles[i].Time) && dt.Before(beforeTime) {
 				df.Candles = append(df.Candles[:i], *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)) 

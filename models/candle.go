@@ -70,26 +70,24 @@ func (c *Candle) GetDuration() time.Duration {
 	return time.Duration(c.Duration)
 }
 
-func (c *Candle) AddTicker(ticker Ticker) error {
+func (c *Candle) Add(time time.Time, id,price,volume float64) error {
 	toTime := c.Time.Add(c.GetDuration())
-	tickerTime := ticker.DateTime()
-	if !c.Time.After(tickerTime) && tickerTime.Before(toTime) {
-		price := ticker.GetMidPrice()
+	if !c.Time.After(time) && toTime.Before(time) {
 		if c.High < price {
 			c.High = price
 		}
 		if c.Low > price {
 			c.Low = price
 		}
-		c.Volume += ticker.Volume
-		if tickerTime.Before(c.OpenDateTime) {
-			c.OpenDateTime = tickerTime
+		c.Volume += volume
+		if time.Before(c.OpenDateTime) {
+			c.OpenDateTime = time
 			c.Open = price
 		}
-		if c.LastID < ticker.TickID {
-			c.CloseDateTime = tickerTime
+		if c.LastID < id {
+			c.CloseDateTime = time
 			c.Close = price
-			c.LastID = ticker.TickID
+			c.LastID = id
 		}
 		return nil
 	} else {
