@@ -13,7 +13,7 @@ type DataFrames map[string]DataFrame
 type DataFrame struct {
 	ProductCode string
 	Duration    time.Duration
-	Candles     []Candle
+	Candles     Candles
 
 	Smas          []Sma
 	Emas          []Ema
@@ -42,49 +42,13 @@ func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
 	return dataFrame, nil
 }
 
-func (df *DataFrame) GetCountDataFrame(count int) *DataFrame{
-	start  := len(df.Candles) - count
-	if start < 0 {
-		start = 0
-	}
-	ret := new(DataFrame) 
-	ret.ProductCode = df.ProductCode
-	ret.Duration = df.Duration
-	ret.Candles = df.Candles[start:]
-	ret.refreshChart()
-
-	return ret
-}
-
 func (df *DataFrame) Name() string {
 	fmt.Printf("%s_%s", df.ProductCode, df.Duration)
 	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
 }
 
-func (df *DataFrame) AddTicker(ticker Ticker) error {
-	dt := ticker.TruncateDateTime(df.Duration)
-	if tail := len(df.Candles) - 1; tail < 0 {
-		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume))
-	} else if dt.Equal(df.Candles[tail].Time) {
-		df.Candles[tail].Add(ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)
-	} else if dt.After(df.Candles[tail].Time) {
-		df.Candles = append(df.Candles, *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume))
-	} else if tail == 0 {
-		c := []Candle{*NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)}
-		df.Candles = append(c, df.Candles...)
-	} else {
-		beforeTime := df.Candles[tail].Time
-		for i := tail - 1; i >= 0; i-- {
-			if dt.Equal(df.Candles[i].Time) {
-				df.Candles[i].Add(ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)
-			}
-			if dt.After(df.Candles[i].Time) && dt.Before(beforeTime) {
-				df.Candles = append(df.Candles[:i], *NewCandle(df.ProductCode, df.Duration, ticker.DateTime(),ticker.TickID,ticker.GetMidPrice(),ticker.Volume)) 
-				df.Candles = append(df.Candles, df.Candles[i+1:]...)
-			}
-		}
-	}
-	return nil
+func (df *DataFrame) AddTicker(ticker Ticker) {
+	df.Candles.Add(ticker.DateTime(), ticker.TickID, ticker.GetMidPrice(), ticker.Volume)
 }
 
 func (df *DataFrame) MergeCandle(candle Candle) error {
