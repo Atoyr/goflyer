@@ -41,6 +41,10 @@ func (cs Candles) Add(datetime time.Time, id, price, volume float64) {
 	}
 }
 
+func (cs *Candles) Candles() []Candle {
+	return cs.candles
+}
+
 func (cs Candles) GetCandleOHLCs() []CandleOHLC {
 	ohlcs := make([]CandleOHLC, len(cs.candles))
 	for i := range cs.candles {
@@ -52,6 +56,10 @@ func (cs Candles) GetCandleOHLCs() []CandleOHLC {
 
 func (cs Candles) AppendCandle(candles ...Candle) {
 	cs.candles = append(cs.candles, candles...)
+}
+
+func (cs *Candles) Len() int {
+	return len(cs.candles)
 }
 
 func (cs *Candles) whereCandle(datetime time.Time) (candle *Candle, index int, ok bool) {

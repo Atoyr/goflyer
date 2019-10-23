@@ -51,52 +51,14 @@ func (df *DataFrame) AddTicker(ticker Ticker) {
 	df.Candles.Add(ticker.DateTime(), ticker.TickID, ticker.GetMidPrice(), ticker.Volume)
 }
 
-func (df *DataFrame) MergeCandle(candle Candle) error {
-	if candle.GetDuration() != df.Duration {
-		// TODO return error
-		return nil
-	}
-	if len(df.Candles) == 0 {
-		df.Candles = []Candle{candle}
-		df.updateChart()
-		return nil
-	}
-
-	max := len(df.Candles) - 1
-	beforeTime := df.Candles[max].Time
-	if candle.Time.Equal(beforeTime) {
-		df.Candles[max] = candle
-		df.refreshChart()
-	} else if candle.Time.Before(df.Candles[max].Time) {
-		for i := range df.Candles {
-			if candle.Time.Equal(df.Candles[max-i].Time) {
-				df.Candles[len(df.Candles)-1-i] = candle
-				df.refreshChart()
-				break
-			} else if candle.Time.Before(beforeTime) && candle.Time.After(df.Candles[max-i].Time) {
-				before := df.Candles[:max-i]
-				after := df.Candles[max-i+1:]
-				df.Candles = append(before, candle)
-				df.Candles = append(df.Candles, after...)
-				df.refreshChart()
-				break
-			}
-		}
-	} else {
-		df.Candles = append(df.Candles, candle)
-		df.updateChart()
-	}
-	return nil
-}
-
 func (df *DataFrame) Alls() (opens, closes, highs, lows, volumes []float64) {
-	opens = make([]float64, len(df.Candles))
-	closes = make([]float64, len(df.Candles))
-	highs = make([]float64, len(df.Candles))
-	lows = make([]float64, len(df.Candles))
-	volumes = make([]float64, len(df.Candles))
+	opens = make([]float64, df.Candles.Len())
+	closes = make([]float64, df.Candles.Len())
+	highs = make([]float64, df.Candles.Len())
+	lows = make([]float64, df.Candles.Len())
+	volumes = make([]float64, df.Candles.Len())
 
-	for i, v := range df.Candles {
+	for i, v := range df.Candles.Candles() {
 		opens[i] = v.Open
 		closes[i] = v.Close
 		highs[i] = v.High
@@ -112,31 +74,31 @@ func (df *DataFrame) Values(valueType string) []float64 {
 }
 
 func (df *DataFrame) LastOfValues(valueType string, from int) ([]float64, error) {
-	if len(df.Candles) <= from {
+	if df.Candles.Len() <= from {
 		// TODO return error
 		return nil, nil
 	}
 	// 123456 012345
-	ret := make([]float64, len(df.Candles)-from)
+	ret := make([]float64, df.Candles.Len()-from)
 	switch valueType {
 	case Open:
-		for i, v := range df.Candles[from:] {
+		for i, v := range df.Candles.Candles()[from:] {
 			ret[i] = v.Open
 		}
 	case Close:
-		for i, v := range df.Candles[from:] {
+		for i, v := range df.Candles.Candles()[from:] {
 			ret[i] = v.Close
 		}
 	case High:
-		for i, v := range df.Candles[from:] {
+		for i, v := range df.Candles.Candles()[from:] {
 			ret[i] = v.High
 		}
 	case Low:
-		for i, v := range df.Candles[from:] {
+		for i, v := range df.Candles.Candles()[from:] {
 			ret[i] = v.Low
 		}
 	case Volume:
-		for i, v := range df.Candles[from:] {
+		for i, v := range df.Candles.Candles()[from:] {
 			ret[i] = v.Volume
 		}
 	default:
@@ -170,10 +132,10 @@ func (df *DataFrame) updateSmas() {
 
 func (df *DataFrame) refreshSmas() {
 	for i, sma := range df.Smas {
-		if len(df.Candles) > sma.Period {
+		if df.Candles.Len() > sma.Period {
 			df.Smas[i].Values = talib.Sma(df.Values(Close), sma.Period)
 		} else {
-			df.Smas[i].Values = make([]float64, len(df.Candles))
+			df.Smas[i].Values = make([]float64, df.Candles.Len())
 		}
 	}
 }
@@ -192,10 +154,10 @@ func (df *DataFrame) updateEmas() {
 
 func (df *DataFrame) refreshEmas() {
 	for i, ema := range df.Emas {
-		if len(df.Candles) > ema.Period {
+		if df.Candles.Len() > ema.Period {
 			df.Emas[i].Values = talib.Ema(df.Values(Close), ema.Period)
 		} else {
-			df.Emas[i].Values = make([]float64, len(df.Candles))
+			df.Emas[i].Values = make([]float64, df.Candles.Len())
 		}
 	}
 }
@@ -206,7 +168,7 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 	bb.N = n
 	bb.K1 = k1
 	bb.K2 = k2
-	if n <= len(df.Candles) {
+	if n <= df.Candles.Len() {
 		closes := df.Values(Close)
 		up1, center, down1 := talib.BBands(closes, n, k1, k1, 0)
 		up2, center, down2 := talib.BBands(closes, n, k2, k2, 0)
@@ -216,11 +178,11 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 		bb.Down1 = down1
 		bb.Down2 = down2
 	} else {
-		bb.Up2 = make([]float64, len(df.Candles))
-		bb.Up1 = make([]float64, len(df.Candles))
-		bb.Center = make([]float64, len(df.Candles))
-		bb.Down1 = make([]float64, len(df.Candles))
-		bb.Down2 = make([]float64, len(df.Candles))
+		bb.Up2 = make([]float64, df.Candles.Len())
+		bb.Up1 = make([]float64, df.Candles.Len())
+		bb.Center = make([]float64, df.Candles.Len())
+		bb.Down1 = make([]float64, df.Candles.Len())
+		bb.Down2 = make([]float64, df.Candles.Len())
 	}
 	df.BollingerBand = bb
 }
