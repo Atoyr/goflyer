@@ -78,7 +78,6 @@ func (df *DataFrame) LastOfValues(valueType string, from int) ([]float64, error)
 		// TODO return error
 		return nil, nil
 	}
-	// 123456 012345
 	ret := make([]float64, df.Candles.Len()-from)
 	switch valueType {
 	case Open:

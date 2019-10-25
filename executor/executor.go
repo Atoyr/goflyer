@@ -58,7 +58,6 @@ func (e *executor) GetDataFrame(key string) models.DataFrame {
 }
 
 func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
-	var cs models.Candles
 	var dataFrame models.DataFrame
 	if df, ok := e.dataFrames[key]; ok {
 		tickers, _ := e.db.GetTickerAll()
@@ -69,8 +68,7 @@ func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	} else {
 		dataFrame = e.dataFrames["24h"]
 	}
-	cs.AppendCandle(dataFrame.Candles...)
-	return cs.GetCandleOHLCs()
+	return dataFrame.Candles.GetCandleOHLCs()
 }
 
 func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
