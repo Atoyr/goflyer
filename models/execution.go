@@ -7,9 +7,9 @@ import (
 )
 
 type Execution struct {
-	ID                         int     `json:"id"`
+	ID                         float64 `json:"id"`
 	Side                       string  `json:"side"`
-	Price                      int64   `json:"price"`
+	Price                      float64 `json:"price"`
 	Size                       float64 `json:"size"`
 	ExecDate                   string  `json:"exec_date"`
 	BuyChildOrderAcceptanceID  string  `json:"buy_child_order_acceptance_id"`

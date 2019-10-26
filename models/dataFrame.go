@@ -51,6 +51,10 @@ func (df *DataFrame) AddTicker(ticker Ticker) {
 	df.Candles.Add(ticker.DateTime(), ticker.TickID, ticker.GetMidPrice(), ticker.Volume)
 }
 
+func (df *DataFrame) AddExecution(execution Execution) {
+	df.Candles.Add(execution.DateTime(), execution.ID, execution.Price,execution.Size)
+}
+
 func (df *DataFrame) Alls() (opens, closes, highs, lows, volumes []float64) {
 	opens = make([]float64, df.Candles.Len())
 	closes = make([]float64, df.Candles.Len())
