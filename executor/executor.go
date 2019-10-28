@@ -114,6 +114,10 @@ func (e *executor) SaveTicker(beforeticker,ticker models.Ticker) {
 	}
 }
 
+func (e *executor) SaveExecution(beforeexecution,execution models.Execution) {
+		e.db.UpdateExecution(execution)
+}
+
 func (e *executor) MigrationDB(db db.DB) error {
 	tickers, err := e.db.GetTickerAll()
 	if err != nil {
