@@ -10,7 +10,8 @@ import (
 	"github.com/atoyr/goflyer/models"
 )
 
-type executor struct {
+// Executor is singleton
+type Executor struct {
 	dataFrames models.DataFrames
 	db         db.DB
 	client     client.APIClient
@@ -18,12 +19,13 @@ type executor struct {
 
 var (
 	once sync.Once
-	exe  *executor
+	exe  *Executor
 )
 
-func GetExecutor(db db.DB) *executor {
+// GetExecutor is getting executor. executor is singleton
+func GetExecutor(db db.DB) *Executor {
 	once.Do(func() {
-		e := new(executor)
+		e := new(Executor)
 		e.dataFrames = make(map[string]models.DataFrame, 0)
 		e.client = *client.New("", "")
 
@@ -35,6 +37,7 @@ func GetExecutor(db db.DB) *executor {
 	return exe
 }
 
+// RunClient is running Executor
 func RunClient() {
 	client := client.New("", "")
 	var tickerChannl = make(chan models.Ticker)
@@ -46,7 +49,8 @@ func RunClient() {
 	}
 }
 
-func (e *executor) GetDataFrame(key string) models.DataFrame {
+// GetDataFrame is getting dataframe?
+func (e *Executor) GetDataFrame(key string) models.DataFrame {
 	if df, ok := e.dataFrames[key]; ok {
 		tickers, _ := e.db.GetTickerAll()
 		for i := range tickers {
@@ -57,7 +61,7 @@ func (e *executor) GetDataFrame(key string) models.DataFrame {
 	return e.dataFrames["24h"]
 }
 
-func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
+func (e *Executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	var dataFrame models.DataFrame
 	if df, ok := e.dataFrames[key]; ok {
 		tickers, _ := e.db.GetTickerAll()
@@ -71,7 +75,7 @@ func (e *executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	return dataFrame.Candles.GetCandleOHLCs()
 }
 
-func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
+func (e *Executor) FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var tickerChannl = make(chan models.Ticker)
@@ -86,7 +90,7 @@ func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(before
 	}
 }
 
-func (e *executor) FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, execution models.Execution)) {
+func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, execution models.Execution)) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var executionChannl = make(chan []models.Execution)
@@ -103,22 +107,22 @@ func (e *executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 	}
 }
 
-func (e *executor) GetTicker(count int, before, after float64) ([]models.Ticker, error) {
+func (e *Executor) GetTicker(count int, before, after float64) ([]models.Ticker, error) {
 	tickers, err := e.db.GetTickerAll()
 	return tickers, err
 }
 
-func (e *executor) SaveTicker(beforeticker,ticker models.Ticker) {
+func (e *Executor) SaveTicker(beforeticker,ticker models.Ticker) {
 	if ticker.Message == "" {
 		e.db.UpdateTicker(ticker)
 	}
 }
 
-func (e *executor) SaveExecution(beforeexecution,execution models.Execution) {
+func (e *Executor) SaveExecution(beforeexecution,execution models.Execution) {
 		e.db.UpdateExecution(execution)
 }
 
-func (e *executor) MigrationDB(db db.DB) error {
+func (e *Executor) MigrationDB(db db.DB) error {
 	tickers, err := e.db.GetTickerAll()
 	if err != nil {
 		return err
