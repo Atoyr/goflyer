@@ -61,6 +61,28 @@ func fetchTickerAction(c *urfavecli.Context) error {
 	return nil
 }
 
+func fetchExecutionAction(c *urfavecli.Context) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	config, err := configs.GetGeneralConfig()
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	boltdb, err := db.GetBolt(config.DBFile())
+	if err != nil {
+		return err
+	}
+	exe := executor.GetExecutor(&boltdb)
+	f := make([]func(beforeexecution, execution models.Execution), 0)
+	if c.Bool("save") {
+		// f = append(f, exe.SaveTicker)
+	}
+	exe.FetchExecutionAsync(ctx, f)
+
+	return nil
+}
+
 func printFetchTicker(beforeticker, ticker models.Ticker) {
 	var status, ltp, ask, bid string
 	okAtt := util.GetMultiColorAttribute(47, false)

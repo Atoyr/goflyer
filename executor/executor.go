@@ -86,6 +86,23 @@ func (e *executor) FetchTickerAsync(ctx context.Context, callbacks []func(before
 	}
 }
 
+func (e *executor) FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, execution models.Execution)) {
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var executionChannl = make(chan []models.Execution)
+	
+	before := models.Execution{}
+	go e.client.GetRealtimeExecutions(childctx, executionChannl, "BTC_JPY")
+	for executions := range executionChannl{
+		for i := range executions{
+			for j := range callbacks {
+				callbacks[j](before, executions[i])
+			}
+			before = executions[i]
+		}
+	}
+}
+
 func (e *executor) GetTicker(count int, before, after float64) ([]models.Ticker, error) {
 	tickers, err := e.db.GetTickerAll()
 	return tickers, err
