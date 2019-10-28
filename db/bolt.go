@@ -24,11 +24,12 @@ type Bolt struct {
 //   - EmasBucket
 
 const (
-	tickerBucket   = "Ticker"
-	durationBucket = "Duration"
-	candleBucket   = "Candle"
-	smasBucket     = "Smas"
-	emasBucket     = "Emas"
+	tickerBucket      = "Ticker"
+	executionBucket   = "Execution"
+	durationBucket    = "Duration"
+	candleBucket      = "Candle"
+	smasBucket        = "Smas"
+	emasBucket        = "Emas"
 )
 
 func GetBolt(dbFile string) (Bolt, error) {
@@ -56,6 +57,10 @@ func (b *Bolt) init() error {
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(tickerBucket))
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(executionBucket))
 		if err != nil {
 			return err
 		}
@@ -129,6 +134,26 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 		return nil, err
 	}
 	return tickers, nil
+}
+
+func (b *Bolt) UpdateExecution(execution models.Execution) error {
+	db := b.db()
+	defer db.Close()
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(executionBucket))
+		marshalID := util.Float64ToBytes(execution.ID)
+		if buf, err := json.Marshal(execution); err != nil {
+			return err
+		} else if err = bucket.Put(marshalID, buf); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil 
 }
 
 func (b *Bolt) UpdateCandle(c models.Candle) error {
