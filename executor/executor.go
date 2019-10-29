@@ -118,6 +118,7 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 }
 
 func (e *Executor) GetTicker(count int, before, after float64) ([]models.Ticker, error) {
+	// TODO Ticker is getting filter
 	tickers, err := e.db.GetTickerAll()
 	return tickers, err
 }
