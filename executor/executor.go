@@ -29,7 +29,17 @@ func GetExecutor(db db.DB) *Executor {
 		e.dataFrames = make(map[string]models.DataFrame, 0)
 		e.client = *client.New("", "")
 
+		e.dataFrames["1m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("1m"))
 		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m"))
+		e.dataFrames["5m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("5m"))
+		e.dataFrames["10m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("10m"))
+		e.dataFrames["15m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("15m"))
+		e.dataFrames["30m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("30m"))
+		e.dataFrames["1h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("1h"))
+		e.dataFrames["2h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("2h"))
+		e.dataFrames["4h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("4h"))
+		e.dataFrames["6h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("6h"))
+		e.dataFrames["12h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("12h"))
 		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("24h"))
 		exe = e
 	})
