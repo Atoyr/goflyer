@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
@@ -114,6 +115,12 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 			}
 			before = executions[i]
 		}
+	}
+}
+
+func (e *Executor)AddValue(datetime time.Time, id, price, volume float64) {
+	for k := range e.dataFrames {
+		e.dataFrames[k].Candles.Add(datetime , id, price, volume )
 	}
 }
 

@@ -47,12 +47,10 @@ func (df *DataFrame) Name() string {
 	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
 }
 
-func (df *DataFrame) AddTicker(ticker Ticker) {
-	df.Candles.Add(ticker.DateTime(), ticker.TickID, ticker.GetMidPrice(), ticker.Volume)
-}
 
-func (df *DataFrame) AddExecution(execution Execution) {
-	df.Candles.Add(execution.DateTime(), execution.ID, execution.Price,execution.Size)
+func (df *DataFrame)AddValue(datetime time.Time, id, price, volume float64) {
+	df.Candles.Add(datetime , id, price, volume )
+	df.updateChart()
 }
 
 func (df *DataFrame) Alls() (opens, closes, highs, lows, volumes []float64) {
