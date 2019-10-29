@@ -63,10 +63,6 @@ func RunClient() {
 // GetDataFrame is getting dataframe?
 func (e *Executor) GetDataFrame(key string) models.DataFrame {
 	if df, ok := e.dataFrames[key]; ok {
-		tickers, _ := e.db.GetTickerAll()
-		for i := range tickers {
-			df.AddTicker(tickers[i])
-		}
 		return df
 	}
 	return e.dataFrames["24h"]
@@ -75,10 +71,6 @@ func (e *Executor) GetDataFrame(key string) models.DataFrame {
 func (e *Executor) GetCandleOHLCs(key string) []models.CandleOHLC {
 	var dataFrame models.DataFrame
 	if df, ok := e.dataFrames[key]; ok {
-		tickers, _ := e.db.GetTickerAll()
-		for i := range tickers {
-			df.AddTicker(tickers[i])
-		}
 		dataFrame = df
 	} else {
 		dataFrame = e.dataFrames["24h"]
@@ -120,7 +112,7 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 
 func (e *Executor)AddValue(datetime time.Time, id, price, volume float64) {
 	for k := range e.dataFrames {
-		e.dataFrames[k].Candles.Add(datetime , id, price, volume )
+		e.dataFrames[k].AddValue(datetime , id, price, volume )
 	}
 }
 
