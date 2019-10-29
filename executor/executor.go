@@ -112,7 +112,8 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 
 func (e *Executor)AddValue(datetime time.Time, id, price, volume float64) {
 	for k := range e.dataFrames {
-		e.dataFrames[k].AddValue(datetime , id, price, volume )
+		df := e.dataFrames[k]
+		df.AddValue(datetime , id, price, volume )
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"strings"
 
 	"github.com/atoyr/goflyer/configs"
 	"github.com/atoyr/goflyer/db"
@@ -22,7 +23,7 @@ func fetchCommand() urfavecli.Command {
 	command.Flags = []urfavecli.Flag{
 		urfavecli.StringFlag{
 			Name:     "target , t",
-			Usage:    "target choose ticker ...",
+			Usage:    "target choose ticker ,executoin ...",
 			Value:    "fetch target",
 			Required: true,
 		},
@@ -35,7 +36,15 @@ func fetchCommand() urfavecli.Command {
 }
 
 func fetchAction(c *urfavecli.Context) error {
-	return fetchTickerAction(c)
+	target := c.String("target")
+	switch strings.ToLower(target) {
+	case "ticker":
+		return fetchTickerAction(c)
+	case "execution":
+		return fetchExecutionAction(c)
+	default:
+		return fmt.Errorf("target not found")
+	} 
 }
 
 func fetchTickerAction(c *urfavecli.Context) error {
@@ -75,8 +84,9 @@ func fetchExecutionAction(c *urfavecli.Context) error {
 	}
 	exe := executor.GetExecutor(&boltdb)
 	f := make([]func(beforeexecution, execution models.Execution), 0)
+	f = append(f, printFetchExecution)
 	if c.Bool("save") {
-		// f = append(f, exe.SaveTicker)
+		f = append(f, exe.SaveExecution)
 	}
 	exe.FetchExecutionAsync(ctx, f)
 
@@ -125,4 +135,8 @@ func printFetchTicker(beforeticker, ticker models.Ticker) {
 	}
 
 	fmt.Printf("\r%s  %s  |  ASK : %s  |  BID : %s  |  LTP : %s", status, ticker.DateTime().Format(time.RFC3339), ask, bid, ltp)
+}
+
+func printFetchExecution(beforeexecution, execution models.Execution) {
+	fmt.Printf("%s | %.0f |  %s | Price %.2f \n",execution.DateTime().Format(time.RFC3339),execution.ID,execution.Side, execution.Price)
 }

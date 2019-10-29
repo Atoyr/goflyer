@@ -60,3 +60,8 @@ func ExportJsonForTickers(db DB, path string) error {
 	}
 	return util.SaveJsonMarshalIndent(tickers, path)
 }
+
+
+func (j *JsonDB)UpdateExecution(execution models.Execution) error{
+	return nil
+}
