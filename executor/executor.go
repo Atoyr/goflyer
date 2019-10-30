@@ -9,6 +9,7 @@ import (
 	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/configs"
 )
 
 // Executor is singleton
@@ -24,11 +25,15 @@ var (
 )
 
 // GetExecutor is getting executor. executor is singleton
-func GetExecutor(db db.DB) *Executor {
+func GetExecutor() *Executor {
 	once.Do(func() {
+		config ,err := configs.GetGeneralConfig()
+		if err != nil {
+			panic(err)
+		}
 		e := new(Executor)
 		e.dataFrames = make(map[string]models.DataFrame, 0)
-		e.client = *client.New("", "")
+		e.client = *client.New(config.Apikey(),config.Secretkey())
 
 		e.dataFrames["1m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("1m"))
 		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m"))
@@ -42,22 +47,10 @@ func GetExecutor(db db.DB) *Executor {
 		e.dataFrames["6h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("6h"))
 		e.dataFrames["12h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("12h"))
 		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("24h"))
+		e.db = config.GetDB()
 		exe = e
 	})
-	exe.db = db
 	return exe
-}
-
-// RunClient is running Executor
-func RunClient() {
-	client := client.New("", "")
-	var tickerChannl = make(chan models.Ticker)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	client.GetRealtimeTicker(ctx, tickerChannl, "BTC_JPY")
-	for ticker := range tickerChannl {
-		fmt.Println(ticker)
-	}
 }
 
 // GetDataFrame is getting dataframe?
