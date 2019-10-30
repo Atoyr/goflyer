@@ -175,6 +175,34 @@ func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
 	}
 	return executions, nil
 }
+func (b *Bolt)GetCandles(duration string) (models.Candles,error){
+	db := b.db()
+	defer db.Close()
+	err :=  db.View(func(tx *bolt.Tx) error {
+		bucketName := getCandleBucketName(duration)
+		durationBucket := tx.Bucket([]byte(bucketName ))
+		if durationBucket == nil{
+			return fmt.Errorf("bucket not found")
+		}
+		bucket,err := durationBucket.CreateBucketIfNotExists([]byte(candleBucket))
+		if err != nil {
+			return err
+		}
+		if buf, err := json.Marshal(c); err != nil {
+			return err
+		} else if err = bucket.Put([]byte(c.Key()), buf); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
+
+}
+
 
 func (b *Bolt) UpdateCandle(c models.Candle) error {
 	db := b.db()

@@ -136,6 +136,21 @@ func (e *Executor) SaveExecution(beforeexecution,execution models.Execution) {
 		e.db.UpdateExecution(execution)
 }
 
+func (e *Executor) GetCandles(duration string) (models.Candles,error){
+	c := e.db.Get
+	return models.Candles{},fmt.Errorf("duration not found")
+}
+
+func (e *Executor)SaveCandles() {
+	for k := range e.dataFrames {
+		df := e.dataFrames[k]
+		cs := df.Candles.Candles()
+		for i := range cs {
+			e.db.UpdateCandle(cs[i])
+		}
+	}
+}
+
 func (e *Executor) MigrationDB(db db.DB) error {
 	tickers, err := e.db.GetTickerAll()
 	if err != nil {
