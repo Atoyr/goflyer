@@ -9,6 +9,7 @@ type DB interface {
 	GetTicker(tickerID float64) (models.Ticker, error)
 	GetTickerAll() ([]models.Ticker, error)
 	UpdateExecution(execution models.Execution) error
+	GetExecutionAll() ([]models.Execution, error)
 	//	MergeCandle(candle models.Candle)
 	//	GetCandles(productCode string) ([]models.Candle, error)
 }

@@ -155,6 +155,26 @@ func (b *Bolt) UpdateExecution(execution models.Execution) error {
 	}
 	return nil 
 }
+func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
+	db := b.db()
+	defer db.Close()
+	executions := make([]models.Execution, 0)
+	err := db.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte(executionBucket)).Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			var e models.Execution
+			json.Unmarshal(v, &e)
+			executions = append(executions, e)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return executions, nil
+}
 
 func (b *Bolt) UpdateCandle(c models.Candle) error {
 	db := b.db()

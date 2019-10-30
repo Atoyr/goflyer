@@ -65,3 +65,6 @@ func ExportJsonForTickers(db DB, path string) error {
 func (j *JsonDB)UpdateExecution(execution models.Execution) error{
 	return nil
 }
+func (j *JsonDB) GetExecutionAll() ([]models.Execution, error) {
+	return nil,nil
+}

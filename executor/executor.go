@@ -129,6 +129,12 @@ func (e *Executor) SaveTicker(beforeticker,ticker models.Ticker) {
 	}
 }
 
+func (e *Executor) GetExecution(count int, before, after float64) ([]models.Execution, error) {
+	// TODO Execution is getting filter
+	executions, err := e.db.GetExecutionAll()
+	return executions, err
+}
+
 func (e *Executor) SaveExecution(beforeexecution,execution models.Execution) {
 		e.db.UpdateExecution(execution)
 }
