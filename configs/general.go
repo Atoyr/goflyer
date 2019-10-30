@@ -14,6 +14,7 @@ import (
 type generalConfig struct {
 	appPath         string
 	apikey          string
+	secretkey       string
 	dbtype          string
 	dbfile          string
 	timeoutmsec     int64
@@ -27,6 +28,7 @@ type generalConfig struct {
 type outGeneralConfig struct {
 	AppPath         string `json:"app_path"`
 	Apikey          string `json:"apikey"`
+	Secretkey       string `json:"secret_key"`
 	Dbtype          string `json:"dbtype"`
 	Dbfile          string `json:"dbfile"`
 	Timeoutmsec     int64  `json:"timeoutmsec"`
@@ -68,6 +70,7 @@ func GetGeneralConfig() (generalConfig, error) {
 		}
 		c.appPath = out.AppPath
 		c.apikey = out.Apikey
+		c.secretkey = out.Secretkey
 		c.dbtype = out.Dbtype
 		c.dbfile = out.Dbfile
 		c.timeoutmsec = out.Timeoutmsec
@@ -98,6 +101,7 @@ func (c *generalConfig) Save() error {
 	out := outGeneralConfig{
 		AppPath:         c.appPath,
 		Apikey:          c.apikey,
+		Secretkey:       c.secretkey,
 		Dbtype:          c.dbtype,
 		Dbfile:          c.dbfile,
 		Timeoutmsec:     c.timeoutmsec,
@@ -112,6 +116,14 @@ func (c *generalConfig) Save() error {
 
 func (c *generalConfig) AppPath() string {
 	return c.appPath
+}
+
+func (c *generalConfig) Apikey() string {
+	return c.apikey
+}
+
+func (c *generalConfig) Secretkey() string {
+	return c.secretkey
 }
 
 func (c *generalConfig) DBFile() string {
