@@ -28,7 +28,8 @@ func handleCandlestick(c echo.Context) error {
 		count = c
 	}
 	jsondb ,_ := db.GetJsonDB()
-	exe := executor.GetExecutor(&jsondb)
+	exe := executor.GetExecutor()
+	exe.ChangeDB(&jsondb)
 	cs := exe.GetCandleOHLCs(duration)
 	start := len(cs) - count
 	if start < 0 {

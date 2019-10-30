@@ -32,7 +32,8 @@ func migrationDBAction(c *urfavecli.Context) error {
 	if err != nil {
 		return err
 	}
-	exe := executor.GetExecutor(&jsonDB)
+	exe := executor.GetExecutor()
+	exe.ChangeDB(&jsonDB)
 	fmt.Println("Start")
 	exe.MigrationDB(&boltdb)
 	fmt.Println("end")

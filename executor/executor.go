@@ -53,6 +53,10 @@ func GetExecutor() *Executor {
 	return exe
 }
 
+func (e *Executor) ChangeDB(db db.DB) {
+	e.db = db
+}
+
 // GetDataFrame is getting dataframe?
 func (e *Executor) GetDataFrame(key string) models.DataFrame {
 	if df, ok := e.dataFrames[key]; ok {

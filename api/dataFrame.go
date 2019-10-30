@@ -28,7 +28,8 @@ func handleDataFrame(c echo.Context) error {
 		count = c
 	}
 	jsondb ,_ := db.GetJsonDB()
-	exe := executor.GetExecutor(&jsondb)
+	exe := executor.GetExecutor()
+	exe.ChangeDB(&jsondb)
 	df := exe.GetDataFrame(duration)
 	fmt.Println(count)
 	

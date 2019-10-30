@@ -3,12 +3,9 @@ package cli
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 	"strings"
 
-	"github.com/atoyr/goflyer/configs"
-	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -50,16 +47,7 @@ func fetchAction(c *urfavecli.Context) error {
 func fetchTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	config, err := configs.GetGeneralConfig()
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	boltdb, err := db.GetBolt(config.DBFile())
-	if err != nil {
-		return err
-	}
-	exe := executor.GetExecutor(&boltdb)
+	exe := executor.GetExecutor()
 	f := make([]func(beforeticker, ticker models.Ticker), 0)
 	f = append(f, printFetchTicker)
 	if c.Bool("save") {
@@ -73,16 +61,7 @@ func fetchTickerAction(c *urfavecli.Context) error {
 func fetchExecutionAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	config, err := configs.GetGeneralConfig()
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	boltdb, err := db.GetBolt(config.DBFile())
-	if err != nil {
-		return err
-	}
-	exe := executor.GetExecutor(&boltdb)
+	exe := executor.GetExecutor()
 	f := make([]func(beforeexecution, execution models.Execution), 0)
 	f = append(f, printFetchExecution)
 	if c.Bool("save") {
