@@ -11,7 +11,7 @@ type DB interface {
 	UpdateExecution(execution models.Execution) error
 	GetExecutionAll() ([]models.Execution, error)
 	UpdateCandle(c models.Candle) error 
-	GetCandles(duration string) (models.Candles,error)
+	GetCandles(duration int64) (models.Candles,error)
 	//	MergeCandle(candle models.Candle)
 	//	GetCandles(productCode string) ([]models.Candle, error)
 }

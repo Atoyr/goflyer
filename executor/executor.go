@@ -136,10 +136,10 @@ func (e *Executor) SaveExecution(beforeexecution,execution models.Execution) {
 		e.db.UpdateExecution(execution)
 }
 
-func (e *Executor) GetCandles(duration string) (models.Candles,error){
+func (e *Executor) GetCandles(duration int64) (models.Candles,error){
 	c, err := e.db.GetCandles(duration)
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 	return c, nil
 }

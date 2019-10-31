@@ -68,3 +68,11 @@ func (j *JsonDB)UpdateExecution(execution models.Execution) error{
 func (j *JsonDB) GetExecutionAll() ([]models.Execution, error) {
 	return nil,nil
 }
+
+func (j *JsonDB)UpdateCandle(c models.Candle) error {
+	return nil
+}
+
+func (j *JsonDB)GetCandles(duration int64) (models.Candles,error){
+	return models.Candles{},nil
+}

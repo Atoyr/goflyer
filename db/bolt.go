@@ -175,32 +175,38 @@ func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
 	}
 	return executions, nil
 }
-func (b *Bolt)GetCandles(duration string) (models.Candles,error){
+func (b *Bolt)GetCandles(duration int64) (models.Candles,error){
 	db := b.db()
 	defer db.Close()
+	cs := models.NewCandles("BTC_JPY",duration)
 	err :=  db.View(func(tx *bolt.Tx) error {
 		bucketName := getCandleBucketName(duration)
 		durationBucket := tx.Bucket([]byte(bucketName ))
 		if durationBucket == nil{
 			return fmt.Errorf("bucket not found")
 		}
-		bucket,err := durationBucket.CreateBucketIfNotExists([]byte(candleBucket))
-		if err != nil {
-			return err
+		bucket := durationBucket.Bucket([]byte(candleBucket))
+		if bucket == nil {
+			return fmt.Errorf("candle bucket not found")
 		}
-		if buf, err := json.Marshal(c); err != nil {
-			return err
-		} else if err = bucket.Put([]byte(c.Key()), buf); err != nil {
+		err := bucket.ForEach(func (k, v []byte) error {
+			c , err := models.JsonUnmarshalCandle(v)
+			if err != nil {
+				return err
+			}
+			cs.AppendCandle(*c)
+			return nil
+		})
+		if err != nil {
 			return err
 		}
 		return nil
 	})
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return cs, err
 	}
-	return nil
-
+	return cs, nil 
 }
 
 
@@ -229,10 +235,6 @@ func (b *Bolt) UpdateCandle(c models.Candle) error {
 		return err
 	}
 	return nil
-}
-
-func (b *Bolt) GetCandle(duration string) models.Candle {
-	return models.Candle{}
 }
 
 func (b *Bolt) GetCandleCollection() {
