@@ -137,8 +137,11 @@ func (e *Executor) SaveExecution(beforeexecution,execution models.Execution) {
 }
 
 func (e *Executor) GetCandles(duration string) (models.Candles,error){
-	c := e.db.Get
-	return models.Candles{},fmt.Errorf("duration not found")
+	c, err := e.db.GetCandles(duration)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
 }
 
 func (e *Executor)SaveCandles() {
