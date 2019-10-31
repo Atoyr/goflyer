@@ -13,6 +13,7 @@ func NewCli() *urfavecli.App {
 	app.Commands = append(app.Commands, runWebappsCommand())
 	app.Commands = append(app.Commands, fetchCommand())
 	app.Commands = append(app.Commands, migrationDBCommand())
+	app.Commands = append(app.Commands, runCommand())
 
 	return app
 }

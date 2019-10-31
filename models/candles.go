@@ -63,6 +63,9 @@ func (cs *Candles) Len() int {
 }
 
 func (cs *Candles) whereCandle(datetime time.Time) (candle *Candle, index int, ok bool) {
+	if cs.Len() == 0 {
+		return nil, len(cs.candles), false
+	}
 	truncateTime := datetime.Truncate(time.Duration(cs.duration))
 	// no find and truncateTime position is tail
 	if cs.candles[len(cs.candles)-1].Time.Before(truncateTime) {
