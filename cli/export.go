@@ -16,6 +16,7 @@ func exportCommand() urfavecli.Command {
 	command.Aliases = []string{"e"}
 	command.Subcommands = append(command.Subcommands, exportTickersCommand())
 	command.Subcommands = append(command.Subcommands, exportExecutionsCommand())
+	command.Subcommands = append(command.Subcommands, exportCandlesCommand())
 
 	return command
 }
@@ -59,6 +60,38 @@ func exportExecutionsAction(c *urfavecli.Context) error {
 	}
 	exe := executor.GetExecutor()
 	executions,err := exe.GetExecution(0,0,0)
+	if err != nil {
+		return err
+	}
+	err = util.SaveJsonMarshalIndent(executions,path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func exportCandlesCommand() urfavecli.Command {
+	var command urfavecli.Command
+	command.Name = "candles"
+	command.Action = exportCandlesAction
+	command.Flags = []urfavecli.Flag{
+		urfavecli.StringFlag{
+			Name: "path, p",
+			Value: "export file path",
+		},
+	}
+
+	return command
+}
+
+func exportCandlesAction(c *urfavecli.Context) error {
+		
+	path := c.String("path")
+	if path == "" {
+		return fmt.Errorf("export file path not found")
+	}
+	exe := executor.GetExecutor()
+	executions,err := exe.GetCandles(int64(models.GetDuration(models.Duration_3m)))
 	if err != nil {
 		return err
 	}
