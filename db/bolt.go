@@ -183,7 +183,7 @@ func (b *Bolt)GetCandles(duration int64) (models.Candles,error){
 		bucketName := getCandleBucketName(duration)
 		durationBucket := tx.Bucket([]byte(bucketName ))
 		if durationBucket == nil{
-			return fmt.Errorf("bucket not found")
+			return fmt.Errorf("%s bucket not found",bucketName)
 		}
 		bucket := durationBucket.Bucket([]byte(candleBucket))
 		if bucket == nil {

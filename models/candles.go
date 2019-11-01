@@ -17,7 +17,7 @@ func NewCandles(productCode string, duration int64) Candles {
 	return c
 }
 
-func (cs Candles) Add(datetime time.Time, id, price, volume float64) {
+func (cs *Candles) Add(datetime time.Time, id, price, volume float64) {
 	if c, index, ok := cs.whereCandle(datetime); ok {
 		c.Add(datetime, id, price, volume)
 	} else {
@@ -45,7 +45,7 @@ func (cs *Candles) Candles() []Candle {
 	return cs.candles
 }
 
-func (cs Candles) GetCandleOHLCs() []CandleOHLC {
+func (cs *Candles) GetCandleOHLCs() []CandleOHLC {
 	ohlcs := make([]CandleOHLC, len(cs.candles))
 	for i := range cs.candles {
 		ohlcs[i] = cs.candles[i].GetCandleOHLC()
@@ -54,7 +54,7 @@ func (cs Candles) GetCandleOHLCs() []CandleOHLC {
 	return ohlcs
 }
 
-func (cs Candles) AppendCandle(candles ...Candle) {
+func (cs *Candles) AppendCandle(candles ...Candle) {
 	cs.candles = append(cs.candles, candles...)
 }
 
@@ -68,11 +68,11 @@ func (cs *Candles) whereCandle(datetime time.Time) (candle *Candle, index int, o
 	}
 	truncateTime := datetime.Truncate(time.Duration(cs.duration))
 	// no find and truncateTime position is tail
-	if cs.candles[len(cs.candles)-1].Time.Before(truncateTime) {
-		return nil, len(cs.candles), false
+	if cs.candles[cs.Len()-1].Time.Before(truncateTime) {
+		return nil, cs.Len(), false
 	}
-	for i := 0; i < len(cs.candles); i++ {
-		index := len(cs.candles) - i
+	for i := 0; i < cs.Len(); i++ {
+		index := cs.Len()-1 - i
 		if cs.candles[index].Time.Equal(truncateTime) {
 			return &cs.candles[index], index, true
 		}

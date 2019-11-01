@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
@@ -30,7 +31,11 @@ func handleCandlestick(c echo.Context) error {
 	jsondb ,_ := db.GetJsonDB()
 	exe := executor.GetExecutor()
 	exe.ChangeDB(&jsondb)
-	cs := exe.GetCandleOHLCs(duration)
+  d, err := strconv.ParseInt(duration,10,64)
+  if err != nil {
+  	return err
+  }
+	cs := exe.GetCandleOHLCs(time.Duration(d))
 	start := len(cs) - count
 	if start < 0 {
 		start = 0

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
@@ -30,7 +31,11 @@ func handleDataFrame(c echo.Context) error {
 	jsondb ,_ := db.GetJsonDB()
 	exe := executor.GetExecutor()
 	exe.ChangeDB(&jsondb)
-	df := exe.GetDataFrame(duration)
+  d, err := strconv.ParseInt(duration,10,64)
+  if err != nil {
+  	return err
+  }
+	df := exe.GetDataFrame(time.Duration(d))
 	fmt.Println(count)
 	
 	return c.JSON(http.StatusOK, df)

@@ -14,7 +14,7 @@ import (
 
 // Executor is singleton
 type Executor struct {
-	dataFrames models.DataFrames
+	dataFrames []models.DataFrame
 	db         db.DB
 	client     client.APIClient
 }
@@ -32,21 +32,21 @@ func GetExecutor() *Executor {
 			panic(err)
 		}
 		e := new(Executor)
-		e.dataFrames = make(map[string]models.DataFrame, 0)
+		e.dataFrames = make([]models.DataFrame, 0)
 		e.client = *client.New(config.Apikey(),config.Secretkey())
 
-		e.dataFrames["1m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("1m"))
-		e.dataFrames["3m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m"))
-		e.dataFrames["5m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("5m"))
-		e.dataFrames["10m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("10m"))
-		e.dataFrames["15m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("15m"))
-		e.dataFrames["30m"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("30m"))
-		e.dataFrames["1h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("1h"))
-		e.dataFrames["2h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("2h"))
-		e.dataFrames["4h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("4h"))
-		e.dataFrames["6h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("6h"))
-		e.dataFrames["12h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("12h"))
-		e.dataFrames["24h"] = models.NewDataFrame(models.BTC_JPY, models.GetDuration("24h"))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("1m")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("3m")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("5m")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("10m")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("15m")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("30m")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("1h")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("2h")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("4h")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("6h")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("12h")))
+		e.dataFrames = append(e.dataFrames, models.NewDataFrame(models.BTC_JPY, models.GetDuration("24h")))
 		e.db = config.GetDB()
 		exe = e
 	})
@@ -58,21 +58,19 @@ func (e *Executor) ChangeDB(db db.DB) {
 }
 
 // GetDataFrame is getting dataframe?
-func (e *Executor) GetDataFrame(key string) models.DataFrame {
-	if df, ok := e.dataFrames[key]; ok {
-		return df
+func (e *Executor) GetDataFrame(duration time.Duration) models.DataFrame {
+	var df models.DataFrame
+	for i := range e.dataFrames {
+		if e.dataFrames[i].Duration == duration {
+			df = e.dataFrames[i]
+		}
 	}
-	return e.dataFrames["24h"]
+	return df
 }
 
-func (e *Executor) GetCandleOHLCs(key string) []models.CandleOHLC {
-	var dataFrame models.DataFrame
-	if df, ok := e.dataFrames[key]; ok {
-		dataFrame = df
-	} else {
-		dataFrame = e.dataFrames["24h"]
-	}
-	return dataFrame.Candles.GetCandleOHLCs()
+func (e *Executor) GetCandleOHLCs(duration time.Duration) []models.CandleOHLC {
+	df := e.GetDataFrame(duration)
+	return df.Candles.GetCandleOHLCs()
 }
 
 func (e *Executor) FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
@@ -108,10 +106,10 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 }
 
 func (e *Executor)AddValue(datetime time.Time, id, price, volume float64) {
-	for k := range e.dataFrames {
-		df := e.dataFrames[k]
-		df.AddValue(datetime , id, price, volume )
+	for i := range e.dataFrames {
+		e.dataFrames[i].AddValue(datetime,id,price,volume)
 	}
+	fmt.Println(e.dataFrames[1])
 }
 
 func (e *Executor) GetTicker(count int, before, after float64) ([]models.Ticker, error) {

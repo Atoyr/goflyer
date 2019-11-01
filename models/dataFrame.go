@@ -8,8 +8,6 @@ import (
 	"github.com/atoyr/go-talib"
 )
 
-type DataFrames map[string]DataFrame
-
 type DataFrame struct {
 	ProductCode string
 	Duration    time.Duration
@@ -30,6 +28,8 @@ const Volume = "Volume"
 
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{ProductCode: productCode, Duration: duration}
+	df.Candles = NewCandles(productCode,int64(duration))
+
 	return df
 }
 
