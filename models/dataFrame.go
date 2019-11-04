@@ -9,9 +9,15 @@ import (
 )
 
 type DataFrame struct {
-	ProductCode string
-	Duration    time.Duration
-	Candles     Candles
+	productCode string
+	duration time.Duration
+	candles Candles
+
+	opens []float64
+	closes []float64
+	highs []float64
+	lows []float64
+	volumes []float64
 
 	Smas          []Sma
 	Emas          []Ema
@@ -20,15 +26,9 @@ type DataFrame struct {
 	Macd          []MovingAverageConvergenceDivergence
 }
 
-const Open = "Open"
-const Close = "Close"
-const High = "High"
-const Low = "Low"
-const Volume = "Volume"
-
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
-	df := DataFrame{ProductCode: productCode, Duration: duration}
-	df.Candles = NewCandles(productCode,int64(duration))
+	df := DataFrame{productCode: productCode, duration: duration}
+	df.candles = NewCandles(productCode,int64(duration))
 
 	return df
 }
@@ -43,68 +43,15 @@ func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
 }
 
 func (df *DataFrame) Name() string {
-	fmt.Printf("%s_%s", df.ProductCode, df.Duration)
-	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
+	return fmt.Sprintf("%s_%s", df.productCode, df.duration)
 }
 
-
-func (df *DataFrame)AddValue(datetime time.Time, id, price, volume float64) {
-	df.Candles.Add(datetime , id, price, volume )
+func (df *DataFrame)AddValue(datetime time.Time, price, volume float64) { 
+	c := NewCandle(df.duration,datetime,price)
+	df.candles.Add(c) 
+	// TODO UPDATE open ~ close data
+	// TODO UPDATE volumes
 	df.updateChart()
-}
-
-func (df *DataFrame) Alls() (opens, closes, highs, lows, volumes []float64) {
-	opens = make([]float64, df.Candles.Len())
-	closes = make([]float64, df.Candles.Len())
-	highs = make([]float64, df.Candles.Len())
-	lows = make([]float64, df.Candles.Len())
-	volumes = make([]float64, df.Candles.Len())
-
-	for i, v := range df.Candles.Candles() {
-		opens[i] = v.Open
-		closes[i] = v.Close
-		highs[i] = v.High
-		lows[i] = v.Low
-		volumes[i] = v.Volume
-	}
-	return
-}
-
-func (df *DataFrame) Values(valueType string) []float64 {
-	ret, _ := df.LastOfValues(valueType, 0)
-	return ret
-}
-
-func (df *DataFrame) LastOfValues(valueType string, from int) ([]float64, error) {
-	if df.Candles.Len() <= from {
-		// TODO return error
-		return nil, nil
-	}
-	ret := make([]float64, df.Candles.Len()-from)
-	switch valueType {
-	case Open:
-		for i, v := range df.Candles.Candles()[from:] {
-			ret[i] = v.Open
-		}
-	case Close:
-		for i, v := range df.Candles.Candles()[from:] {
-			ret[i] = v.Close
-		}
-	case High:
-		for i, v := range df.Candles.Candles()[from:] {
-			ret[i] = v.High
-		}
-	case Low:
-		for i, v := range df.Candles.Candles()[from:] {
-			ret[i] = v.Low
-		}
-	case Volume:
-		for i, v := range df.Candles.Candles()[from:] {
-			ret[i] = v.Volume
-		}
-	default:
-	}
-	return ret, nil
 }
 
 func (df *DataFrame) updateChart() {
@@ -121,22 +68,22 @@ func (df *DataFrame) refreshChart() {
 
 // SMA
 func (df *DataFrame) AddSmas(period int) {
-	sma := NewSma(df.Values(Close), period)
+	sma := NewSma(df.closes, period)
 	df.Smas = append(df.Smas, sma)
 }
 
 func (df *DataFrame) updateSmas() {
 	for i := range df.Smas {
-		df.Smas[i].Update(df.Values(Close))
+		df.Smas[i].Update(df.closes)
 	}
 }
 
 func (df *DataFrame) refreshSmas() {
 	for i, sma := range df.Smas {
-		if df.Candles.Len() > sma.Period {
-			df.Smas[i].Values = talib.Sma(df.Values(Close), sma.Period)
+		if len(df.candles.candles) > sma.Period {
+			df.Smas[i].Values = NewSma(df.closes,df.Smas[i].Period).Values
 		} else {
-			df.Smas[i].Values = make([]float64, df.Candles.Len())
+			df.Smas[i].Values = make([]float64, len(df.candles.candles))
 		}
 	}
 }

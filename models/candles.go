@@ -1,7 +1,7 @@
 package models
 
 import (
-	"time"
+	"fmt"
 )
 
 type Candles struct {
@@ -17,72 +17,49 @@ func NewCandles(productCode string, duration int64) Candles {
 	return c
 }
 
-func (cs *Candles) Add(datetime time.Time, id, price, volume float64) {
-	if c, index, ok := cs.whereCandle(datetime); ok {
-		c.Add(datetime, id, price, volume)
-	} else {
-		c := NewCandle(cs.productCode, time.Duration(cs.duration), datetime, id, price, volume)
-		if index == 0 {
+func (cs *Candles) Add(c Candle) {
+	if length := len(cs.candles); length == 0 {
+			cs.candles = append(cs.candles, c)
+		} else {
+			length--
+			for i := range cs.candles {
+				index := length - i
+				if cs.candles[index].Time.Before(c.Time) {
+					if index == length {
+						cs.candles = append(cs.candles,c)
+					}else {
+						temp := cs.candles[index + 1:]
+						cs.candles = append(cs.candles[:index],c)
+						cs.candles = append(cs.candles,temp...)
+					}
+					return
+				}
+			}
 			// append HEAD
-			if cap(cs.candles) == 0 {
-				cs.candles = append(cs.candles, *c)
-			} else {
-				cs.candles, cs.candles[0] = append(cs.candles[:1], cs.candles[0:]...), *c
-			}
-		} else if index == len(cs.candles) {
-			// append TAIL
-			cs.candles = append(cs.candles, *c)
-		} else {
-			// insert
-			temp := cs.candles[index:]
-			cs.candles = append(cs.candles[:index-1], *c)
-			cs.candles = append(cs.candles, temp...)
+			cs.candles, cs.candles[0] = append(cs.candles[:1], cs.candles[0:]...), c
 		}
-	}
 }
 
-func (cs *Candles) Candles() []Candle {
-	return cs.candles
-}
-
-func (cs *Candles) GetCandleOHLCs() []CandleOHLC {
-	ohlcs := make([]CandleOHLC, len(cs.candles))
-	for i := range cs.candles {
-		ohlcs[i] = cs.candles[i].GetCandleOHLC()
+func (cs *Candles) Get(from,to int) (*Candles ,error ){
+	ret := NewCandles(cs.productCode,cs.duration)
+	if from > to {
+		return &ret, fmt.Errorf("from value is large of to")
 	}
-
-	return ohlcs
-}
-
-func (cs *Candles) AppendCandle(candles ...Candle) {
-	cs.candles = append(cs.candles, candles...)
-}
-
-func (cs *Candles) Len() int {
-	return len(cs.candles)
-}
-
-func (cs *Candles) whereCandle(datetime time.Time) (candle *Candle, index int, ok bool) {
-	if cs.Len() == 0 {
-		return nil, len(cs.candles), false
+	if len(cs.candles) == 0 {
+		return &ret, nil
 	}
-	truncateTime := datetime.Truncate(time.Duration(cs.duration))
-	// no find and truncateTime position is tail
-	if cs.candles[cs.Len()-1].Time.Before(truncateTime) {
-		return nil, cs.Len(), false
+	f, t := from,to
+
+	if f < 0 {
+		f = 0
+	} else if f >= len(cs.candles) {
+		f = len(cs.candles) -1
 	}
-	for i := 0; i < cs.Len(); i++ {
-		index := cs.Len()-1 - i
-		if cs.candles[index].Time.Equal(truncateTime) {
-			return &cs.candles[index], index, true
-		}
-		if index > 0 {
-			if cs.candles[index].Time.After(truncateTime) {
-				return nil, index, false
-			}
-		} else {
-			return nil, index, false
-		}
+	if t < 0 {
+		t = 0
+	} else if t >= len(cs.candles) {
+		t = len(cs.candles) -1
 	}
-	return nil, len(cs.candles), false
+	ret.candles = cs.candles[f:t]
+	return &ret, nil
 }
