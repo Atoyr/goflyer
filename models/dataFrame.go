@@ -10,14 +10,15 @@ import (
 
 type DataFrame struct {
 	productCode string
-	duration time.Duration
-	candles Candles
+	duration    time.Duration
+	candles     Candles
 
-	opens []float64
-	closes []float64
-	highs []float64
-	lows []float64
-	volumes []float64
+	datetimes []time.Time
+	opens     []float64
+	closes    []float64
+	highs     []float64
+	lows      []float64
+	volumes   []float64
 
 	Smas          []Sma
 	Emas          []Ema
@@ -28,7 +29,7 @@ type DataFrame struct {
 
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{productCode: productCode, duration: duration}
-	df.candles = NewCandles(productCode,int64(duration))
+	df.candles = NewCandles(productCode, int64(duration))
 
 	return df
 }
@@ -46,9 +47,9 @@ func (df *DataFrame) Name() string {
 	return fmt.Sprintf("%s_%s", df.productCode, df.duration)
 }
 
-func (df *DataFrame)AddValue(datetime time.Time, price, volume float64) { 
-	c := NewCandle(df.duration,datetime,price)
-	df.candles.Add(c) 
+func (df *DataFrame) AddValue(datetime time.Time, price, volume float64) {
+	c := NewCandle(df.duration, datetime, price)
+	df.candles.Add(c)
 	// TODO UPDATE open ~ close data
 	// TODO UPDATE volumes
 	df.updateChart()
@@ -81,7 +82,7 @@ func (df *DataFrame) updateSmas() {
 func (df *DataFrame) refreshSmas() {
 	for i, sma := range df.Smas {
 		if len(df.candles.candles) > sma.Period {
-			df.Smas[i].Values = NewSma(df.closes,df.Smas[i].Period).Values
+			df.Smas[i].Values = NewSma(df.closes, df.Smas[i].Period).Values
 		} else {
 			df.Smas[i].Values = make([]float64, len(df.candles.candles))
 		}
@@ -90,22 +91,22 @@ func (df *DataFrame) refreshSmas() {
 
 // EMA
 func (df *DataFrame) AddEmas(period int) {
-	ema := NewEma(df.Values(Close), period)
+	ema := NewEma(df.closes, period)
 	df.Emas = append(df.Emas, ema)
 }
 
 func (df *DataFrame) updateEmas() {
 	for i := range df.Emas {
-		df.Emas[i].Update(df.Values(Close))
+		df.Emas[i].Update(df.closes)
 	}
 }
 
 func (df *DataFrame) refreshEmas() {
 	for i, ema := range df.Emas {
-		if df.Candles.Len() > ema.Period {
-			df.Emas[i].Values = talib.Ema(df.Values(Close), ema.Period)
+		if len(df.candles.candles) > ema.Period {
+			df.Emas[i].Values = talib.Ema(df.closes, ema.Period)
 		} else {
-			df.Emas[i].Values = make([]float64, df.Candles.Len())
+			df.Emas[i].Values = make([]float64, len(df.candles.candles))
 		}
 	}
 }
@@ -116,8 +117,8 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 	bb.N = n
 	bb.K1 = k1
 	bb.K2 = k2
-	if n <= df.Candles.Len() {
-		closes := df.Values(Close)
+	if n <= len(df.candles.candles) {
+		closes := df.closes
 		up1, center, down1 := talib.BBands(closes, n, k1, k1, 0)
 		up2, center, down2 := talib.BBands(closes, n, k2, k2, 0)
 		bb.Up2 = up2
@@ -126,24 +127,24 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 		bb.Down1 = down1
 		bb.Down2 = down2
 	} else {
-		bb.Up2 = make([]float64, df.Candles.Len())
-		bb.Up1 = make([]float64, df.Candles.Len())
-		bb.Center = make([]float64, df.Candles.Len())
-		bb.Down1 = make([]float64, df.Candles.Len())
-		bb.Down2 = make([]float64, df.Candles.Len())
+		bb.Up2 = make([]float64, len(df.candles.candles))
+		bb.Up1 = make([]float64, len(df.candles.candles))
+		bb.Center = make([]float64, len(df.candles.candles))
+		bb.Down1 = make([]float64, len(df.candles.candles))
+		bb.Down2 = make([]float64, len(df.candles.candles))
 	}
 	df.BollingerBand = bb
 }
 
 // RSI
 func (df *DataFrame) AddRsis(period int) {
-	rsi := NewRelativeStrengthIndex(df.Values(Close), period)
+	rsi := NewRelativeStrengthIndex(df.closes, period)
 	df.Rsis = append(df.Rsis, rsi)
 }
 
 func (df *DataFrame) updateRsis() {
 	for i := range df.Rsis {
-		df.Rsis[i].Update(df.Values(Close))
+		df.Rsis[i].Update(df.closes)
 	}
 }
 
@@ -152,13 +153,13 @@ func (df *DataFrame) refreshRsis() {
 
 // MACD
 func (df *DataFrame) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
-	closes := df.Values(Close)
+	closes := df.closes
 	macd := NewMovingAverageConvergenceDivergence(closes, fastPeriod, slowPeriod, signalPeriod)
 	df.Macd = append(df.Macd, macd)
 }
 
 func (df *DataFrame) updateMacd() {
 	for i := range df.Macd {
-		df.Macd[i].Update(df.Values(Close))
+		df.Macd[i].Update(df.closes)
 	}
 }
