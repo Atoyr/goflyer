@@ -29,7 +29,7 @@ type DataFrame struct {
 
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{productCode: productCode, duration: duration}
-	df.candles = NewCandles(productCode, int64(duration))
+	df.candles = NewCandles(productCode, duration)
 
 	return df
 }
@@ -48,8 +48,7 @@ func (df *DataFrame) Name() string {
 }
 
 func (df *DataFrame) AddValue(datetime time.Time, price, volume float64) {
-	c := NewCandle(df.duration, datetime, price)
-	df.candles.Add(c)
+	df.candles.Add(datetime,price)
 	// TODO UPDATE open ~ close data
 	// TODO UPDATE volumes
 	df.updateChart()

@@ -45,7 +45,7 @@ func (c *Candle) GetTimeString() string {
 	return c.Time.Format(time.RFC3339)
 }
 
-func (c *Candle) Add(time time.Time, id,price float64)  {
+func (c *Candle) Add(price float64)  {
 	if c.High < price {
 		c.High = price
 	}
