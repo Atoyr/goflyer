@@ -19,7 +19,7 @@ func handleCandlestick(c echo.Context) error {
 		return fmt.Errorf("duration is required")
 	}
 
-	count := 100
+	 count := 100
 
 	if countparam := context.QueryParam("count"); countparam != "" {
 		c, err := strconv.Atoi(countparam)
@@ -35,12 +35,11 @@ func handleCandlestick(c echo.Context) error {
   if err != nil {
   	return err
   }
-	cs := exe.GetCandleOHLCs(time.Duration(d))
-	start := len(cs) - count
-	if start < 0 {
-		start = 0
+	cs ,err := exe.GetCandles(time.Duration(d))
+	if err != nil {
+		return err
 	}
-	
-	return c.JSON(http.StatusOK, cs[start:])
+	fmt.Println(count)
+	return c.JSON(http.StatusOK, cs)
 }
 

@@ -11,7 +11,6 @@ import (
 type DataFrame struct {
 	productCode string
 	duration    time.Duration
-	candles     Candles
 
 	datetimes []time.Time
 	opens     []float64
@@ -29,7 +28,7 @@ type DataFrame struct {
 
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{productCode: productCode, duration: duration}
-	df.candles = NewCandles(productCode, duration)
+	// df.candles = NewCandles(productCode, duration)
 
 	return df
 }
@@ -52,10 +51,67 @@ func (df *DataFrame) Name() string {
 }
 
 func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
-	df.candles.Add(datetime,price)
-	// TODO UPDATE open ~ close data
-	// TODO UPDATE volumes
+	dt := datetime.Truncate(df.duration)
+	for i := range df.datetimes {
+		index := len(df.datetimes) - i -1
+		if df.datetimes[index].Equal(dt) {
+			df.closes[index] = price
+			if df.highs[index] < price {
+				df.highs[index] = price
+			}else if df.lows[index] > price {
+				df.lows[index] = price
+			}
+			df.volumes[index] += volume
+		}else if df.datetimes[index].Before(dt){
+			if i == 0 {
+				df.datetimes = append(df.datetimes, dt)
+				df.opens = append(df.opens, price)
+				df.closes = append(df.closes,price)
+				df.highs = append(df.highs, price)
+				df.lows  = append(df.lows, price ) 
+				df.volumes  = append(df.volumes, volume) 
+			}else {
+				tdates := df.datetimes[index +1 :]
+				df.datetimes , df.datetimes = append(df.datetimes[:index],dt), append(df.datetimes,tdates...)
+				topens := df.opens[index +1 :]
+				df.opens , df.opens = append(df.opens[:index],price), append(df.opens,topens...)
+				tcloses := df.closes[index +1 :]
+				df.closes , df.closes = append(df.closes[:index],price), append(df.closes,tcloses...)
+				thighs := df.highs[index +1 :]
+				df.highs , df.highs = append(df.highs[:index],price), append(df.highs,thighs...)
+				tlows := df.lows[index +1 :]
+				df.lows , df.lows = append(df.lows[:index],price), append(df.lows,tlows...)
+				tvolumes := df.volumes[index +1 :]
+				df.volumes , df.volumes = append(df.volumes[:index],price), append(df.volumes,tvolumes...)
+			}
+		}else if index == 0 {
+			// append HEAD
+			df.datetimes , df.datetimes[0] = append(df.datetimes[:1],df.datetimes[0:]...), dt
+			df.opens , df.opens[0] = append(df.opens[:1],df.opens[0:]...), price
+			df.closes , df.closes[0] = append(df.closes[:1],df.closes[0:]...), price
+			df.highs , df.highs[0] = append(df.highs[:1],df.highs[0:]...), price
+			df.lows , df.lows[0] = append(df.lows[:1],df.lows[0:]...), price 
+			df.volumes , df.volumes[0] = append(df.volumes[:1],df.volumes[0:]...), volume
+		}
+	}
+	if len(df.datetimes) == 0 {
+		df.datetimes = append(df.datetimes, dt)
+		df.opens = append(df.opens, price)
+		df.closes = append(df.closes,price)
+		df.highs = append(df.highs, price)
+		df.lows  = append(df.lows, price ) 
+		df.volumes  = append(df.volumes, volume) 
+	}
 	df.updateChart()
+}
+
+func (df *DataFrame) GetCandles() Candles {
+	cs := NewCandles(df.productCode,df.duration)
+	for i := range df.datetimes {
+		c := Candle{Time: df.datetimes[i],Open: df.opens[i], Close: df.closes[i], High: df.highs[i],Low : df.lows[i]}
+		cs.candles = append(cs.candles,c)
+	}
+	return cs
 }
 
 func (df *DataFrame) updateChart() {
@@ -84,10 +140,10 @@ func (df *DataFrame) updateSmas() {
 
 func (df *DataFrame) refreshSmas() {
 	for i, sma := range df.Smas {
-		if len(df.candles.candles) > sma.Period {
+		if len(df.datetimes) > sma.Period {
 			df.Smas[i].Values = NewSma(df.closes, df.Smas[i].Period).Values
 		} else {
-			df.Smas[i].Values = make([]float64, len(df.candles.candles))
+			df.Smas[i].Values = make([]float64, len(df.datetimes))
 		}
 	}
 }
@@ -106,10 +162,10 @@ func (df *DataFrame) updateEmas() {
 
 func (df *DataFrame) refreshEmas() {
 	for i, ema := range df.Emas {
-		if len(df.candles.candles) > ema.Period {
+		if len(df.datetimes) > ema.Period {
 			df.Emas[i].Values = talib.Ema(df.closes, ema.Period)
 		} else {
-			df.Emas[i].Values = make([]float64, len(df.candles.candles))
+			df.Emas[i].Values = make([]float64, len(df.datetimes))
 		}
 	}
 }
@@ -120,7 +176,7 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 	bb.N = n
 	bb.K1 = k1
 	bb.K2 = k2
-	if n <= len(df.candles.candles) {
+	if n <= len(df.datetimes) {
 		closes := df.closes
 		up1, center, down1 := talib.BBands(closes, n, k1, k1, 0)
 		up2, center, down2 := talib.BBands(closes, n, k2, k2, 0)
@@ -130,11 +186,11 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 		bb.Down1 = down1
 		bb.Down2 = down2
 	} else {
-		bb.Up2 = make([]float64, len(df.candles.candles))
-		bb.Up1 = make([]float64, len(df.candles.candles))
-		bb.Center = make([]float64, len(df.candles.candles))
-		bb.Down1 = make([]float64, len(df.candles.candles))
-		bb.Down2 = make([]float64, len(df.candles.candles))
+		bb.Up2 = make([]float64, len(df.datetimes))
+		bb.Up1 = make([]float64, len(df.datetimes))
+		bb.Center = make([]float64, len(df.datetimes))
+		bb.Down1 = make([]float64, len(df.datetimes))
+		bb.Down2 = make([]float64, len(df.datetimes))
 	}
 	df.BollingerBand = bb
 }
