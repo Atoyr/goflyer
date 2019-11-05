@@ -43,6 +43,10 @@ func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
 	return dataFrame, nil
 }
 
+func (df *DataFrame) Duration() time.Duration {
+	return df.duration
+}
+
 func (df *DataFrame) Name() string {
 	return fmt.Sprintf("%s_%s", df.productCode, df.duration)
 }
