@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"sync"
 )
 
 const (
@@ -18,6 +19,30 @@ const (
 	Duration_12h = "12h"
 	Duration_24h = "24h"
 )
+
+var (
+	once sync.Once
+	durations []string
+)
+
+func Durations() []string{
+	once.Do(func() {
+		durations = make([]string,12)
+		durations[0] = Duration_1m  
+		durations[1] = Duration_3m  
+		durations[2] = Duration_5m  
+		durations[3] = Duration_10m 
+		durations[4] = Duration_15m 
+		durations[5] = Duration_30m 
+		durations[6] = Duration_1h  
+		durations[7] = Duration_2h  
+		durations[8] = Duration_4h  
+		durations[9] = Duration_6h  
+		durations[10] = Duration_12h 
+		durations[11] = Duration_24h 
+	})
+	return durations
+}
 
 func GetDuration(duration string) time.Duration {
 	d := 24 * time.Hour

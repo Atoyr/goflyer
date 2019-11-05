@@ -18,10 +18,12 @@ type Bolt struct {
 
 // Bucket layout
 // - tickerBucket
-// - DurationBucket
-//   - CandleBucket
-//   - SmasBucket
-//   - EmasBucket
+// - executionBuclet
+// - N - DurationBucket
+//   - OpenBucket
+//   - CloseBucket
+//   - HighBucket
+//   - LowBucket
 
 const (
 	tickerBucket      = "Ticker"
@@ -62,6 +64,32 @@ func (b *Bolt) init() error {
 		_, err = tx.CreateBucketIfNotExists([]byte(executionBucket))
 		if err != nil {
 			return err
+		}
+		for _ , v := range models.Durations() {
+			dbucket  , err := tx.CreateBucketIfNotExists([]byte(v))
+			if err != nil {
+				return err
+			} 
+			_ ,err = dbucket.CreateBucketIfNotExists([]byte("open"))
+			if err != nil {
+				return err
+			}
+			_ ,err = dbucket.CreateBucketIfNotExists([]byte("close"))
+			if err != nil {
+				return err
+			}
+			_ ,err = dbucket.CreateBucketIfNotExists([]byte("higi"))
+			if err != nil {
+				return err
+			}
+			_ ,err = dbucket.CreateBucketIfNotExists([]byte("low"))
+			if err != nil {
+				return err
+			}
+			_ ,err = dbucket.CreateBucketIfNotExists([]byte("volume"))
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
