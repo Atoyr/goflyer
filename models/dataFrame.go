@@ -51,7 +51,7 @@ func (df *DataFrame) Name() string {
 	return fmt.Sprintf("%s_%s", df.productCode, df.duration)
 }
 
-func (df *DataFrame) AddValue(datetime time.Time, price, volume float64) {
+func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 	df.candles.Add(datetime,price)
 	// TODO UPDATE open ~ close data
 	// TODO UPDATE volumes

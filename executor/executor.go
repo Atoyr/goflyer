@@ -61,16 +61,11 @@ func (e *Executor) ChangeDB(db db.DB) {
 func (e *Executor) GetDataFrame(duration time.Duration) models.DataFrame {
 	var df models.DataFrame
 	for i := range e.dataFrames {
-		if e.dataFrames[i].Duration == duration {
+		if e.dataFrames[i].Duration() == duration {
 			df = e.dataFrames[i]
 		}
 	}
 	return df
-}
-
-func (e *Executor) GetCandleOHLCs(duration time.Duration) []models.CandleOHLC {
-	df := e.GetDataFrame(duration)
-	return df.Candles.GetCandleOHLCs()
 }
 
 func (e *Executor) FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
@@ -105,9 +100,9 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 	}
 }
 
-func (e *Executor)AddValue(datetime time.Time, id, price, volume float64) {
+func (e *Executor)AddValue(datetime time.Time, price, volume float64) {
 	for i := range e.dataFrames {
-		e.dataFrames[i].AddValue(datetime,id,price,volume)
+		e.dataFrames[i].Add(datetime,price,volume)
 	}
 	fmt.Println(e.dataFrames[1])
 }
@@ -134,7 +129,7 @@ func (e *Executor) SaveExecution(beforeexecution,execution models.Execution) {
 		e.db.UpdateExecution(execution)
 }
 
-func (e *Executor) GetCandles(duration int64) (models.Candles,error){
+func (e *Executor) GetCandles(duration time.Duration) (models.Candles,error){
 	c, err := e.db.GetCandles(duration)
 	if err != nil {
 		return c, err
@@ -143,13 +138,14 @@ func (e *Executor) GetCandles(duration int64) (models.Candles,error){
 }
 
 func (e *Executor)SaveCandles() {
-	for k := range e.dataFrames {
-		df := e.dataFrames[k]
-		cs := df.Candles.Candles()
-		for i := range cs {
-			e.db.UpdateCandle(cs[i])
-		}
-	}
+	// TODO savecandles
+/// 	for k := range e.dataFrames {
+/// 		df := e.dataFrames[k]
+/// 		cs := df.Candles.Candles()
+/// 		for i := range cs {
+/// 			e.db.UpdateCandle(cs[i])
+/// 		}
+/// 	}
 }
 
 func (e *Executor) MigrationDB(db db.DB) error {
