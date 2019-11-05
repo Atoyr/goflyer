@@ -1,13 +1,13 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/atoyr/go-talib"
 )
 
+// DataFrame is goflyer chart data framework
 type DataFrame struct {
 	productCode string
 	duration    time.Duration
@@ -26,30 +26,32 @@ type DataFrame struct {
 	Macd          []MovingAverageConvergenceDivergence
 }
 
+// NewDataFrame is getting CreateDataFrame
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{productCode: productCode, duration: duration}
-	// df.candles = NewCandles(productCode, duration)
-
 	return df
 }
 
-func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
-	var dataFrame = new(DataFrame)
-	err := json.Unmarshal(row, dataFrame)
-	if err != nil {
-		return nil, err
-	}
-	return dataFrame, nil
-}
+// func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
+// 	var dataFrame = new(DataFrame)
+// 	err := json.Unmarshal(row, dataFrame)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return dataFrame, nil
+// }
 
+// Duration is duration getter
 func (df *DataFrame) Duration() time.Duration {
 	return df.duration
 }
 
+// Name is getting productCode_duration
 func (df *DataFrame) Name() string {
 	return fmt.Sprintf("%s_%s", df.productCode, df.duration)
 }
 
+// Add is Add value 
 func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 	dt := datetime.Truncate(df.duration)
 	for i := range df.datetimes {
@@ -105,6 +107,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 	df.updateChart()
 }
 
+// GetCandle is Export Candles data
 func (df *DataFrame) GetCandles() Candles {
 	cs := NewCandles(df.productCode,df.duration)
 	for i := range df.datetimes {
@@ -127,6 +130,8 @@ func (df *DataFrame) refreshChart() {
 }
 
 // SMA
+
+// AddSmas is added Smas setting 
 func (df *DataFrame) AddSmas(period int) {
 	sma := NewSma(df.closes, period)
 	df.Smas = append(df.Smas, sma)
@@ -149,6 +154,8 @@ func (df *DataFrame) refreshSmas() {
 }
 
 // EMA
+
+// AddEmas is Added Emas setting
 func (df *DataFrame) AddEmas(period int) {
 	ema := NewEma(df.closes, period)
 	df.Emas = append(df.Emas, ema)
@@ -171,6 +178,8 @@ func (df *DataFrame) refreshEmas() {
 }
 
 // BollingerBand
+
+// AddBollingerBand is added setting
 func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 	bb := new(BollingerBand)
 	bb.N = n
@@ -196,6 +205,8 @@ func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
 }
 
 // RSI
+
+// AddEsis is added Rsis setting
 func (df *DataFrame) AddRsis(period int) {
 	rsi := NewRelativeStrengthIndex(df.closes, period)
 	df.Rsis = append(df.Rsis, rsi)
@@ -211,6 +222,8 @@ func (df *DataFrame) refreshRsis() {
 }
 
 // MACD
+
+// AddMacd is added Macd setting
 func (df *DataFrame) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
 	closes := df.closes
 	macd := NewMovingAverageConvergenceDivergence(closes, fastPeriod, slowPeriod, signalPeriod)
