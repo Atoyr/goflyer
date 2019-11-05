@@ -3,6 +3,7 @@ package db
 import (
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -69,10 +70,10 @@ func (j *JsonDB) GetExecutionAll() ([]models.Execution, error) {
 	return nil,nil
 }
 
-func (j *JsonDB)UpdateCandle(c models.Candle) error {
+func (j *JsonDB)UpdateCandle(duration time.Duration,c models.Candle) error {
 	return nil
 }
 
-func (j *JsonDB)GetCandles(duration int64) (models.Candles,error){
+func (j *JsonDB)GetCandles(duration time.Duration) (models.Candles,error){
 	return models.Candles{},nil
 }

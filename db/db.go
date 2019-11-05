@@ -1,6 +1,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/atoyr/goflyer/models"
 )
 
@@ -10,8 +12,8 @@ type DB interface {
 	GetTickerAll() ([]models.Ticker, error)
 	UpdateExecution(execution models.Execution) error
 	GetExecutionAll() ([]models.Execution, error)
-	UpdateCandle(c models.Candle) error 
-	GetCandles(duration int64) (models.Candles,error)
+	UpdateCandle(duration time.Duration, c models.Candle) error 
+	GetCandles(duration time.Duration) (models.Candles,error)
 	//	MergeCandle(candle models.Candle)
 	//	GetCandles(productCode string) ([]models.Candle, error)
 }

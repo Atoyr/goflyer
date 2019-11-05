@@ -39,9 +39,8 @@ func GetBolt(dbFile string) (Bolt, error) {
 	return b, err
 }
 
-func getCandleBucketName(duration int64) string{
-	d := time.Duration(duration)
-	return fmt.Sprintf("%s_%s",durationBucket,models.GetDurationString(d))
+func getCandleBucketName(duration time.Duration) string{
+	return fmt.Sprintf("%s_%s",durationBucket,models.GetDurationString(duration))
 }
 
 func (b *Bolt) db() *bolt.DB {
@@ -175,10 +174,10 @@ func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
 	}
 	return executions, nil
 }
-func (b *Bolt)GetCandles(duration int64) (models.Candles,error){
+func (b *Bolt)GetCandles(duration time.Duration) (models.Candles,error){
 	db := b.db()
 	defer db.Close()
-	cs := models.NewCandles("BTC_JPY",duration)
+	cs := models.NewCandles("BTC_JPY",time.Duration(duration))
 	err :=  db.View(func(tx *bolt.Tx) error {
 		bucketName := getCandleBucketName(duration)
 		durationBucket := tx.Bucket([]byte(bucketName ))
@@ -190,11 +189,11 @@ func (b *Bolt)GetCandles(duration int64) (models.Candles,error){
 			return fmt.Errorf("candle bucket not found")
 		}
 		err := bucket.ForEach(func (k, v []byte) error {
-			c , err := models.JsonUnmarshalCandle(v)
+			_ , err := models.JsonUnmarshalCandle(v)
 			if err != nil {
 				return err
 			}
-			cs.AppendCandle(*c)
+			// TODO append candle for candles
 			return nil
 		})
 		if err != nil {
@@ -210,11 +209,11 @@ func (b *Bolt)GetCandles(duration int64) (models.Candles,error){
 }
 
 
-func (b *Bolt) UpdateCandle(c models.Candle) error {
+func (b *Bolt) UpdateCandle(duration time.Duration,c models.Candle) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucketName := getCandleBucketName(c.Duration)
+		bucketName := getCandleBucketName(duration)
 		durationBucket, err := tx.CreateBucketIfNotExists([]byte(bucketName ))
 		if err != nil {
 			return err
@@ -225,7 +224,7 @@ func (b *Bolt) UpdateCandle(c models.Candle) error {
 		}
 		if buf, err := json.Marshal(c); err != nil {
 			return err
-		} else if err = bucket.Put([]byte(c.Key()), buf); err != nil {
+		} else if err = bucket.Put([]byte(fmt.Sprintf("%v",c)), buf); err != nil {
 			return err
 		}
 		return nil
