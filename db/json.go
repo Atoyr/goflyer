@@ -77,3 +77,9 @@ func (j *JsonDB)UpdateCandle(duration time.Duration,c models.Candle) error {
 func (j *JsonDB)GetCandles(duration time.Duration) (models.Candles,error){
 	return models.Candles{},nil
 }
+func (j *JsonDB) UpdateDataFrame(models.DataFrame) {
+
+}
+func (j *JsonDB) GetDataFrame(duration time.Duration) models.DataFrame {
+	return models.DataFrame{}
+}

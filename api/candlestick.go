@@ -35,10 +35,7 @@ func handleCandlestick(c echo.Context) error {
   if err != nil {
   	return err
   }
-	cs ,err := exe.GetCandles(time.Duration(d))
-	if err != nil {
-		return err
-	}
+	cs  := exe.GetCandles(time.Duration(d))
 	fmt.Println(count)
 	return c.JSON(http.StatusOK, cs)
 }

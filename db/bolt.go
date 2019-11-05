@@ -267,3 +267,10 @@ func (b *Bolt) UpdateCandle(duration time.Duration,c models.Candle) error {
 func (b *Bolt) GetCandleCollection() {
 
 }
+
+func (b *Bolt) UpdateDataFrame(models.DataFrame) {
+
+}
+func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
+	return models.DataFrame{}
+}

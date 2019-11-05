@@ -61,7 +61,7 @@ func (e *Executor) ChangeDB(db db.DB) {
 func (e *Executor) GetDataFrame(duration time.Duration) models.DataFrame {
 	var df models.DataFrame
 	for i := range e.dataFrames {
-		if e.dataFrames[i].Duration() == duration {
+		if e.dataFrames[i].Duration == duration {
 			df = e.dataFrames[i]
 		}
 	}
