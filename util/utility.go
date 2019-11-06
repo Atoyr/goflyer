@@ -3,6 +3,8 @@ package util
 import (
 	"bytes"
 	"os"
+	"math"
+
 	"encoding/binary"
 	"encoding/json"
 	"io/ioutil"
@@ -32,10 +34,14 @@ func FileExists(filepath string) bool {
 }
 
 func Float64ToBytes(f float64) []byte {
-	var buf bytes.Buffer
-	err := binary.Write(&buf, binary.BigEndian, f)
-	if err != nil {
-		return nil
-	}
-	return buf.Bytes()
+	bits := math.Float64bits(f)
+	bytes := make([]byte,8)
+	binary.LittleEndian.PutUint64(bytes,bits)
+	return bytes
+}
+
+func BytesToFloat64(bytes []byte) float64 {
+	bits := binary.LittleEndian.Uint64(bytes)
+	f := math.Float64frombits(bits)
+	return f
 }
