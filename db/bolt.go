@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"errors"
 
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -265,12 +266,186 @@ func (b *Bolt) UpdateCandle(duration time.Duration,c models.Candle) error {
 }
 
 func (b *Bolt) GetCandleCollection() {
-
 }
 
-func (b *Bolt) UpdateDataFrame(models.DataFrame) {
+func (b *Bolt) UpdateDataFrame(df models.DataFrame) error {
+	if len(df.Datetimes) == 0 {
+		return nil
+	}
+	db := b.db()
+	defer db.Close()
+	err := db.Update(func(tx *bolt.Tx) error {
+		durationBucket, err := tx.CreateBucketIfNotExists([]byte(models.GetDurationString(df.Duration)))
+		if err != nil {
+			return err
+		}
+		fromIndex := -1
+		lastTime := durationBucket.Get([]byte("tail"))
+		if lastTime != nil {
+			var t time.Time
+			err = t.UnmarshalBinary(lastTime)
+			if err != nil {
+				return err
+			}
+			for i := range df.Datetimes {
+				if t.Before(df.Datetimes[i]){
+					fromIndex = i
+					break
+				}
+			}
+			if fromIndex < 0 {
+				return nil
+			}
+		}else {
+			fromIndex = 0
+		}
+		openBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("open"))
+		if err != nil {
+			return err
+		}
+		closeBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("close"))
+		if err != nil {
+			return err
+		}
+		highBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("high"))
+		if err != nil {
+			return err
+		}
+		lowBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("low"))
+		if err != nil {
+			return err
+		}
+		volumeBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("volume"))
+		if err != nil {
+			return err
+		}
 
+    for i := range df.Datetimes[fromIndex:] {
+      key ,err := df.Datetimes[i].MarshalBinary()
+      if err != nil {
+        return err
+      }
+			open := util.Float64ToBytes(df.Opens[i])
+			close := util.Float64ToBytes(df.Closes[i])
+			high := util.Float64ToBytes(df.Highs[i])
+			low := util.Float64ToBytes(df.Lows[i])
+			volume := util.Float64ToBytes(df.Volumes[i])
+      err = openBucket.Put(key,[]byte(open))
+      if err != nil {
+        return err
+      }
+      err = closeBucket.Put(key,[]byte(close))
+      if err != nil {
+        return err
+      }
+      err = highBucket.Put(key,[]byte(high))
+      if err != nil {
+        return err
+      }
+      err = lowBucket.Put(key,[]byte(low))
+      if err != nil {
+        return err
+      }
+      err = volumeBucket.Put(key,[]byte(volume))
+      if err != nil {
+        return err
+      }
+    }
+		tailTime,err := df.Datetimes[len(df.Datetimes)-1].MarshalBinary()
+		if err != nil {
+			return err
+		}
+		durationBucket.Put([]byte("tail"),tailTime)
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil 
 }
+
 func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
-	return models.DataFrame{}
+	df := models.NewDataFrame("BTC_JPY",duration)
+	db := b.db()
+	defer db.Close()
+	err := db.View(func(tx *bolt.Tx) error {
+		durationBucket := tx.Bucket([]byte(models.GetDurationString(df.Duration)))
+		if durationBucket == nil {
+			return errors.New("duration bucket not found")
+		}
+		openBucket  := durationBucket.Bucket([]byte("open"))
+		if openBucket == nil {
+			return errors.New("open bucket not found")
+		}
+		closeBucket := durationBucket.Bucket([]byte("close"))
+		if closeBucket == nil {
+			return errors.New("close bucket not found")
+		}
+		highBucket := durationBucket.Bucket([]byte("high"))
+		if highBucket == nil {
+			return errors.New("high bucket not found")
+		}
+		lowBucket := durationBucket.Bucket([]byte("low"))
+		if lowBucket == nil {
+			return errors.New("low bucket not found")
+		}
+		volumeBucket := durationBucket.Bucket([]byte("volume"))
+		if volumeBucket == nil {
+			return errors.New("volume bucket not found")
+		}
+		datetimes := make([]time.Time,0)
+		opens := make([]float64,0)
+		closes := make([]float64,0)
+		highs := make([]float64,0)
+		lows := make([]float64,0)
+		volumes := make([]float64,0)
+		openBucket.ForEach(func(k,v []byte) error {
+			var t time.Time
+			err := t.UnmarshalBinary(k)
+			if err != nil {
+				return err
+			}
+			datetimes = append(datetimes,t)
+			o := util.BytesToFloat64(v)
+			opens = append(opens,o)
+			return nil
+		})
+		openBucket.ForEach(func(k,v []byte) error {
+			o := util.BytesToFloat64(v)
+			opens = append(opens,o)
+			return nil
+		})
+		closeBucket.ForEach(func(k,v []byte) error {
+			c := util.BytesToFloat64(v)
+			closes = append(closes,c)
+			return nil
+		})
+		highBucket.ForEach(func(k,v []byte) error {
+			h := util.BytesToFloat64(v)
+			highs = append(highs,h)
+			return nil
+		})
+		lowBucket.ForEach(func(k,v []byte) error {
+			l := util.BytesToFloat64(v)
+			lows = append(lows,l)
+			return nil
+		})
+		volumeBucket.ForEach(func(k,v []byte) error {
+			vol := util.BytesToFloat64(v)
+			volumes = append(volumes,vol)
+			return nil
+		})
+		df.Datetimes = datetimes
+		df.Opens = opens
+		df.Closes = closes
+		df.Highs = highs
+		df.Lows = lows
+		df.Volumes = volumes 
+		return nil
+	})
+	if err != nil {
+		log.Println(err)
+	}
+	return df
 }

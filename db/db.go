@@ -12,7 +12,7 @@ type DB interface {
 	GetTickerAll() ([]models.Ticker, error)
 	UpdateExecution(execution models.Execution) error
 	GetExecutionAll() ([]models.Execution, error)
-	UpdateDataFrame(models.DataFrame)
+	UpdateDataFrame(models.DataFrame) error
 	GetDataFrame(duration time.Duration) models.DataFrame
 // 	UpdateCandle(duration time.Duration, c models.Candle) error 
 // 	GetCandles(duration time.Duration) (models.Candles,error)
