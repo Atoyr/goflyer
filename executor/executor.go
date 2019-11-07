@@ -18,7 +18,7 @@ type executor struct {
 
 var (
 	once sync.Once
-	exe  *Executor
+	exe  *executor
 )
 
 func getExecutor() *executor {
@@ -27,7 +27,7 @@ func getExecutor() *executor {
 		if err != nil {
 			panic(err)
 		}
-		e := new(Executor)
+		e := new(executor)
 		e.dataFrames = make([]models.DataFrame, 0)
 		e.client = *client.New(config.Apikey(),config.Secretkey())
 
