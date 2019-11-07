@@ -12,5 +12,5 @@ func RunAsync(ctx context.Context) {
 		Add(ticker.DateTime(), ticker.GetMidPrice(),ticker.Volume)
 		SaveDataFrame()
 	})
-	exe.FetchTickerAsync(ctx, callback )
+	FetchTickerAsync(ctx, callback )
 } 
