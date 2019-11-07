@@ -74,7 +74,7 @@ func (e *Executor) FetchTickerAsync(ctx context.Context, callbacks []func(before
 	var tickerChannl = make(chan models.Ticker)
 	
 	before := models.Ticker{}
-	go e.client.GetRealtimeTicker(childctx, tickerChannl, "BTC_JPY")
+	go e.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
 	for ticker := range tickerChannl {
 		for i := range callbacks {
 			callbacks[i](before, ticker)
@@ -89,7 +89,7 @@ func (e *Executor) FetchExecutionAsync(ctx context.Context, callbacks []func(bef
 	var executionChannl = make(chan []models.Execution)
 	
 	before := models.Execution{}
-	go e.client.GetRealtimeExecutions(childctx, executionChannl, "BTC_JPY")
+	go e.client.GetRealtimeExecutions(childctx, executionChannl, models.BTC_JPY)
 	for executions := range executionChannl{
 		for i := range executions{
 			for j := range callbacks {
