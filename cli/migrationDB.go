@@ -2,11 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"path/filepath"
-
-	"github.com/atoyr/goflyer/db"
-	"github.com/atoyr/goflyer/executor"
-	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
 
@@ -19,23 +14,6 @@ func migrationDBCommand() urfavecli.Command {
 }
 
 func migrationDBAction(c *urfavecli.Context) error {
-	jsonDB, err := db.GetJsonDB()
-	if err != nil {
-		return err
-	}
-	dirPath, err := util.CreateConfigDirectoryIfNotExists("goflyer")
-	if err != nil {
-		return err
-	}
-	dbfile := filepath.Join(dirPath, "goflyer.db")
-	boltdb, err := db.GetBolt(dbfile)
-	if err != nil {
-		return err
-	}
-	exe := executor.GetExecutor()
-	exe.ChangeDB(&jsonDB)
-	fmt.Println("Start")
-	exe.MigrationDB(&boltdb)
-	fmt.Println("end")
+	fmt.Println("not implement")
 	return nil
 }

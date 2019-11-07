@@ -47,13 +47,12 @@ func fetchAction(c *urfavecli.Context) error {
 func fetchTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	exe := executor.GetExecutor()
 	f := make([]func(beforeticker, ticker models.Ticker), 0)
 	f = append(f, printFetchTicker)
 	if c.Bool("save") {
-		f = append(f, exe.SaveTicker)
+		f = append(f, executor.SaveTicker)
 	}
-	exe.FetchTickerAsync(ctx, f)
+	executor.FetchTickerAsync(ctx, f)
 
 	return nil
 }
@@ -61,13 +60,12 @@ func fetchTickerAction(c *urfavecli.Context) error {
 func fetchExecutionAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	exe := executor.GetExecutor()
 	f := make([]func(beforeexecution, execution models.Execution), 0)
 	f = append(f, printFetchExecution)
 	if c.Bool("save") {
-		f = append(f, exe.SaveExecution)
+		f = append(f, executor.SaveExecution)
 	}
-	exe.FetchExecutionAsync(ctx, f)
+	executor.FetchExecutionAsync(ctx, f)
 
 	return nil
 }

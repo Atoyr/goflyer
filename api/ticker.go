@@ -9,8 +9,7 @@ import (
 
 func handleTicker(c echo.Context) error {
 
-	exe := executor.GetExecutor()
-	tickers, err := exe.GetTicker(0, 0, 0)
+	tickers, err := executor.GetTicker(0, 0, 0)
 	if err != nil {
 		return err
 	}

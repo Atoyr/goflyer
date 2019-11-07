@@ -29,13 +29,12 @@ func handleCandlestick(c echo.Context) error {
 		count = c
 	}
 	jsondb ,_ := db.GetJsonDB()
-	exe := executor.GetExecutor()
-	exe.ChangeDB(&jsondb)
+	executor.ChangeDB(&jsondb)
   d, err := strconv.ParseInt(duration,10,64)
   if err != nil {
   	return err
   }
-	cs  := exe.GetCandles(time.Duration(d))
+	cs  := executor.GetCandles(time.Duration(d))
 	fmt.Println(count)
 	return c.JSON(http.StatusOK, cs)
 }

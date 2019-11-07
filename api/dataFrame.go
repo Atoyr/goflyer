@@ -29,13 +29,12 @@ func handleDataFrame(c echo.Context) error {
 		count = c
 	}
 	jsondb ,_ := db.GetJsonDB()
-	exe := executor.GetExecutor()
-	exe.ChangeDB(&jsondb)
+	executor.ChangeDB(&jsondb)
   d, err := strconv.ParseInt(duration,10,64)
   if err != nil {
   	return err
   }
-	df := exe.GetDataFrame(time.Duration(d))
+	df := executor.DataFrame(time.Duration(d))
 	fmt.Println(count)
 	
 	return c.JSON(http.StatusOK, df)

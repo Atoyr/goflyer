@@ -32,8 +32,7 @@ func exportTickersCommand() urfavecli.Command {
 func exportTickersAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	exe := executor.GetExecutor()
-	exe.FetchTickerAsync(ctx, make([]func(beforeticker, ticker models.Ticker), 0))
+	executor.FetchTickerAsync(ctx, make([]func(beforeticker, ticker models.Ticker), 0))
 
 	return nil
 }
@@ -58,8 +57,7 @@ func exportExecutionsAction(c *urfavecli.Context) error {
 	if path == "" {
 		return fmt.Errorf("export file path not found")
 	}
-	exe := executor.GetExecutor()
-	executions,err := exe.GetExecution(0,0,0)
+	executions,err := executor.GetExecution(0,0,0)
 	if err != nil {
 		return err
 	}
@@ -90,8 +88,7 @@ func exportCandlesAction(c *urfavecli.Context) error {
 	if path == "" {
 		return fmt.Errorf("export file path not found")
 	}
-	exe := executor.GetExecutor()
-	candles := exe.GetCandles(models.GetDuration(models.Duration_3m))
+	candles := executor.GetCandles(models.GetDuration(models.Duration_3m))
 	err := util.SaveJsonMarshalIndent(candles,path)
 	if err != nil {
 	fmt.Println(err)
