@@ -79,7 +79,7 @@ func (b *Bolt) init() error {
 			if err != nil {
 				return err
 			}
-			_ ,err = dbucket.CreateBucketIfNotExists([]byte("higi"))
+			_ ,err = dbucket.CreateBucketIfNotExists([]byte("high"))
 			if err != nil {
 				return err
 			}
@@ -92,6 +92,7 @@ func (b *Bolt) init() error {
 				return err
 			}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -288,12 +289,18 @@ func (b *Bolt) UpdateDataFrame(df models.DataFrame) error {
 				return err
 			}
 			for i := range df.Datetimes {
+				// TODO bug it !!!
 				if t.Before(df.Datetimes[i]){
+					fromIndex = i
+					break
+				}
+				if t.Equal(df.Datetimes[i]) {
 					fromIndex = i
 					break
 				}
 			}
 			if fromIndex < 0 {
+				fmt.Println(t)
 				return nil
 			}
 		}else {
