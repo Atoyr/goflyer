@@ -107,7 +107,7 @@ func (df *DataFrame) GetCandles() Candles {
 	cs := NewCandles(df.ProductCode,df.Duration)
 	for i := range df.Datetimes {
 		c := Candle{Time: df.Datetimes[i],Open: df.Opens[i], Close: df.Closes[i], High: df.Highs[i],Low : df.Lows[i]}
-		cs.candles = append(cs.candles,c)
+		cs.Candles = append(cs.Candles,c)
 	}
 	return cs
 }
