@@ -53,6 +53,18 @@ func FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, 
 	}
 }
 
+func FetchDataFrameAsync(ctx context.Context) {
+	exe := getExecutor()
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var tickerChannl = make(chan models.Ticker)
+	go exe.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
+	for ticker := range tickerChannl {
+		Add(ticker.DateTime(),ticker.Ltp,ticker.Volume)
+	}
+}
+
 func Add(datetime time.Time, price, volume float64) {
 	exe := getExecutor()
 	for i := range exe.dataFrames {
