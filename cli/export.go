@@ -88,7 +88,7 @@ func exportCandlesAction(c *urfavecli.Context) error {
 	if path == "" {
 		return fmt.Errorf("export file path not found")
 	}
-	candles := executor.GetCandles(models.GetDuration(models.Duration_3m))
+	candles := executor.GetCandles(models.GetDuration(models.Duration_1m))
 	err := util.SaveJsonMarshalIndent(candles,path)
 	if err != nil {
 	fmt.Println(err)
