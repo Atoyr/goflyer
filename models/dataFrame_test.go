@@ -100,8 +100,8 @@ func TestAddTickerSmall(t *testing.T) {
 
 	cc := models.NewDataFrame("test", 3*time.Minute)
 	for i := range tickers {
-		cc.AddTicker(tickers[i])
-		t.Logf("%v", cc.Candles)
+		cc.Add(tickers[i].DateTime(),tickers[i].Ltp,tickers[i].Volume)
+		t.Logf("%v", cc.Datetimes)
 	}
 }
 func TestAddTicker(t *testing.T) {
@@ -124,6 +124,6 @@ func TestAddTicker(t *testing.T) {
 	}
 
 	for i := range tickers {
-		cc.AddTicker(tickers[i])
+		cc.Add(tickers[i].DateTime(),tickers[i].Ltp,tickers[i].Volume)
 	}
 }
