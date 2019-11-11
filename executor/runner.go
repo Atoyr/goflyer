@@ -9,7 +9,7 @@ import (
 func RunAsync(ctx context.Context) {
 	callback := make([]func(beforeticker,ticker models.Ticker),0)
 	callback = append(callback , func(beforeticker,ticker models.Ticker) {
-		Add(ticker.DateTime(), ticker.GetMidPrice(),ticker.Volume)
+		Add(ticker.DateTime(), ticker.Ltp,ticker.Volume)
 		SaveDataFrame()
 	})
 	FetchTickerAsync(ctx, callback )
