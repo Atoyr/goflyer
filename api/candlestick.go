@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
-	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
+	"github.com/atoyr/goflyer/models"
 	"github.com/labstack/echo"
 )
 
@@ -16,7 +15,7 @@ func handleCandlestick(c echo.Context) error {
 	duration := context.Param("duration")
 
 	if duration == "" {
-		return fmt.Errorf("duration is required")
+		duration = "1m"
 	}
 
 	 count := 100
@@ -28,13 +27,7 @@ func handleCandlestick(c echo.Context) error {
 		}
 		count = c
 	}
-	jsondb ,_ := db.GetJsonDB()
-	executor.ChangeDB(&jsondb)
-  d, err := strconv.ParseInt(duration,10,64)
-  if err != nil {
-  	return err
-  }
-	cs  := executor.GetCandles(time.Duration(d))
+	cs  := executor.GetCandles(models.GetDuration(duration))
 	fmt.Println(count)
 	return c.JSON(http.StatusOK, cs)
 }
