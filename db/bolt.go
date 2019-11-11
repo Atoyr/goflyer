@@ -418,11 +418,6 @@ func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
 			opens = append(opens,o)
 			return nil
 		})
-		openBucket.ForEach(func(k,v []byte) error {
-			o := util.BytesToFloat64(v)
-			opens = append(opens,o)
-			return nil
-		})
 		closeBucket.ForEach(func(k,v []byte) error {
 			c := util.BytesToFloat64(v)
 			closes = append(closes,c)
