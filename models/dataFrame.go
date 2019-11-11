@@ -43,23 +43,24 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 
 // Name is getting productCode_duration
 func (df *DataFrame) Name() string {
-	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
+return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
 }
 
 // Add is Add value 
 func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
-	dt := datetime.Truncate(df.Duration)
-	for i := range df.Datetimes {
-		index := len(df.Datetimes) - i -1
-		if df.Datetimes[index].Equal(dt) {
-			df.Closes[index] = price
-			if df.Highs[index] < price {
-				df.Highs[index] = price
-			}else if df.Lows[index] > price {
-				df.Lows[index] = price
-			}
-			df.Volumes[index] += volume
-		}else if df.Datetimes[index].Before(dt){
+dt := datetime.Truncate(df.Duration)
+for i := range df.Datetimes {
+	index := len(df.Datetimes) - i -1
+	if df.Datetimes[index].Equal(dt) {
+		df.Closes[index] = price
+		if df.Highs[index] < price {
+			df.Highs[index] = price
+		}else if df.Lows[index] > price {
+			df.Lows[index] = price
+		}
+		df.Volumes[index] += volume 
+		break
+	}else if df.Datetimes[index].Before(dt){
 			if i == 0 {
 				df.Datetimes = append(df.Datetimes, dt)
 				df.Opens = append(df.Opens, price)
@@ -81,6 +82,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 				tVolumes := df.Volumes[index +1 :]
 				df.Volumes , df.Volumes = append(df.Volumes[:index],price), append(df.Volumes,tVolumes...)
 			}
+			break
 		}else if index == 0 {
 			// append HEAD
 			df.Datetimes , df.Datetimes[0] = append(df.Datetimes[:1],df.Datetimes[0:]...), dt
@@ -89,6 +91,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 			df.Highs , df.Highs[0] = append(df.Highs[:1],df.Highs[0:]...), price
 			df.Lows , df.Lows[0] = append(df.Lows[:1],df.Lows[0:]...), price 
 			df.Volumes , df.Volumes[0] = append(df.Volumes[:1],df.Volumes[0:]...), volume
+			break
 		}
 	}
 	if len(df.Datetimes) == 0 {
