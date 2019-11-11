@@ -328,15 +328,16 @@ func (b *Bolt) UpdateDataFrame(df models.DataFrame) error {
 		}
 
     for i := range df.Datetimes[fromIndex:] {
-      key ,err := df.Datetimes[i].MarshalBinary()
+			index := i + fromIndex
+      key ,err := df.Datetimes[index].MarshalBinary()
       if err != nil {
         return err
       }
-			open := util.Float64ToBytes(df.Opens[i])
-			close := util.Float64ToBytes(df.Closes[i])
-			high := util.Float64ToBytes(df.Highs[i])
-			low := util.Float64ToBytes(df.Lows[i])
-			volume := util.Float64ToBytes(df.Volumes[i])
+			open := util.Float64ToBytes(df.Opens[index])
+			close := util.Float64ToBytes(df.Closes[index])
+			high := util.Float64ToBytes(df.Highs[index])
+			low := util.Float64ToBytes(df.Lows[index])
+			volume := util.Float64ToBytes(df.Volumes[index])
       err = openBucket.Put(key,[]byte(open))
       if err != nil {
         return err
