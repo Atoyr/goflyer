@@ -6,22 +6,30 @@
       google.charts.setOnLoadCallback(drawChart);
 
   function drawChart() {
-    var data = google.visualization.arrayToDataTable([
-      ['Mon', 20, 28, 38, 45],
-      ['Tue', 31, 38, 55, 66],
-      ['Wed', 50, 55, 77, 80],
-      ['Thu', 77, 77, 66, 50],
-      ['Fri', 68, 66, 22, 15]
-      // Treat first row as data as well.
-    ], true);
+    var url = "http://localhost:8080/v1/Candlestick/BTC_JPY/1m"
 
-    var options = {
-      legend:'none'
-    };
+    fetch(url)
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(myJson) {
+            console.log(myJson);                                                      
+          var candles = myJson.candles;
+          var array = []
+          for(var i=0; i < candles.length; i++){
+            var data = [candles[i].time,candles[i].low,candles[i].open,candles[i].close,candles[i].high]
+            array.push(data)
+          }
+          var data = google.visualization.arrayToDataTable(array,true)
+          var options = {
+            legend:'none'
+          };
 
+          chart.draw(data, options);
+            // console.log(myJson.length);                                               
+      });
     var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));
 
-    chart.draw(data, options);
   }
     </script>
   </head>
