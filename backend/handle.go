@@ -6,7 +6,7 @@ import (
 
 func GetEcho() *echo.Echo {
 	e := echo.New()
-	e.Static("/", "public/")
+	e.File("/","public/index.html")
 
 	return e
 }
