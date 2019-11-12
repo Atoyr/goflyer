@@ -32,85 +32,76 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	return df
 }
 
-// func JsonUnmarshalDataFrame(row []byte) (*DataFrame, error) {
-// 	var dataFrame = new(DataFrame)
-// 	err := json.Unmarshal(row, dataFrame)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return dataFrame, nil
-// }
-
 // Name is getting productCode_duration
 func (df *DataFrame) Name() string {
-return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
+	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
 }
 
-// Add is Add value 
+// Add is Add value
 func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
-dt := datetime.Truncate(df.Duration)
-for i := range df.Datetimes {
-	index := len(df.Datetimes) - i -1
-	if df.Datetimes[index].Equal(dt) {
-		df.Closes[index] = price
-		if df.Highs[index] < price {
-			df.Highs[index] = price
-		}else if df.Lows[index] > price {
-			df.Lows[index] = price
-		}
-		df.Volumes[index] += volume 
-		break
-	}else if df.Datetimes[index].Before(dt){
+	dt := datetime.Truncate(df.Duration)
+	for i := range df.Datetimes {
+		index := len(df.Datetimes) - i - 1
+		if df.Datetimes[index].Equal(dt) {
+			df.Closes[index] = price
+			if df.Highs[index] < price {
+				df.Highs[index] = price
+			} else if df.Lows[index] > price {
+				df.Lows[index] = price
+			}
+			df.Volumes[index] += volume
+			break
+		} else if df.Datetimes[index].Before(dt) {
 			if i == 0 {
 				df.Datetimes = append(df.Datetimes, dt)
 				df.Opens = append(df.Opens, price)
-				df.Closes = append(df.Closes,price)
+				df.Closes = append(df.Closes, price)
 				df.Highs = append(df.Highs, price)
-				df.Lows  = append(df.Lows, price ) 
-				df.Volumes  = append(df.Volumes, volume) 
-			}else {
-				tdates := df.Datetimes[index +1 :]
-				df.Datetimes , df.Datetimes = append(df.Datetimes[:index],dt), append(df.Datetimes,tdates...)
-				tOpens := df.Opens[index +1 :]
-				df.Opens , df.Opens = append(df.Opens[:index],price), append(df.Opens,tOpens...)
-				tCloses := df.Closes[index +1 :]
-				df.Closes , df.Closes = append(df.Closes[:index],price), append(df.Closes,tCloses...)
-				tHighs := df.Highs[index +1 :]
-				df.Highs , df.Highs = append(df.Highs[:index],price), append(df.Highs,tHighs...)
-				tLows := df.Lows[index +1 :]
-				df.Lows , df.Lows = append(df.Lows[:index],price), append(df.Lows,tLows...)
-				tVolumes := df.Volumes[index +1 :]
-				df.Volumes , df.Volumes = append(df.Volumes[:index],price), append(df.Volumes,tVolumes...)
+				df.Lows = append(df.Lows, price)
+				df.Volumes = append(df.Volumes, volume)
+			} else {
+				tdates := df.Datetimes[index+1:]
+				df.Datetimes, df.Datetimes = append(df.Datetimes[:index], dt), append(df.Datetimes, tdates...)
+				tOpens := df.Opens[index+1:]
+				df.Opens, df.Opens = append(df.Opens[:index], price), append(df.Opens, tOpens...)
+				tCloses := df.Closes[index+1:]
+				df.Closes, df.Closes = append(df.Closes[:index], price), append(df.Closes, tCloses...)
+				tHighs := df.Highs[index+1:]
+				df.Highs, df.Highs = append(df.Highs[:index], price), append(df.Highs, tHighs...)
+				tLows := df.Lows[index+1:]
+				df.Lows, df.Lows = append(df.Lows[:index], price), append(df.Lows, tLows...)
+				tVolumes := df.Volumes[index+1:]
+				df.Volumes, df.Volumes = append(df.Volumes[:index], price), append(df.Volumes, tVolumes...)
 			}
 			break
-		}else if index == 0 {
+		} else if index == 0 {
 			// append HEAD
-			df.Datetimes , df.Datetimes[0] = append(df.Datetimes[:1],df.Datetimes[0:]...), dt
-			df.Opens , df.Opens[0] = append(df.Opens[:1],df.Opens[0:]...), price
-			df.Closes , df.Closes[0] = append(df.Closes[:1],df.Closes[0:]...), price
-			df.Highs , df.Highs[0] = append(df.Highs[:1],df.Highs[0:]...), price
-			df.Lows , df.Lows[0] = append(df.Lows[:1],df.Lows[0:]...), price 
-			df.Volumes , df.Volumes[0] = append(df.Volumes[:1],df.Volumes[0:]...), volume
+			df.Datetimes, df.Datetimes[0] = append(df.Datetimes[:1], df.Datetimes[0:]...), dt
+			df.Opens, df.Opens[0] = append(df.Opens[:1], df.Opens[0:]...), price
+			df.Closes, df.Closes[0] = append(df.Closes[:1], df.Closes[0:]...), price
+			df.Highs, df.Highs[0] = append(df.Highs[:1], df.Highs[0:]...), price
+			df.Lows, df.Lows[0] = append(df.Lows[:1], df.Lows[0:]...), price
+			df.Volumes, df.Volumes[0] = append(df.Volumes[:1], df.Volumes[0:]...), volume
 			break
 		}
 	}
 	if len(df.Datetimes) == 0 {
 		df.Datetimes = append(df.Datetimes, dt)
 		df.Opens = append(df.Opens, price)
-		df.Closes = append(df.Closes,price)
+		df.Closes = append(df.Closes, price)
 		df.Highs = append(df.Highs, price)
-		df.Lows  = append(df.Lows, price ) 
-		df.Volumes  = append(df.Volumes, volume) 
+		df.Lows = append(df.Lows, price)
+		df.Volumes = append(df.Volumes, volume)
 	}
 	df.updateChart()
 }
 
 // GetCandle is Export Candles data
 func (df *DataFrame) GetCandles() Candles {
-	cs := NewCandles(df.ProductCode,df.Duration)
+	cs := NewCandles(df.ProductCode, df.Duration)
 	for i := range df.Datetimes {
-		c := Candle{Time: df.Datetimes[i],Open: df.Opens[i], Close: df.Closes[i], High: df.Highs[i],Low : df.Lows[i]}
-		cs.Candles = append(cs.Candles,c)
+		c := Candle{Time: df.Datetimes[i], Open: df.Opens[i], Close: df.Closes[i], High: df.Highs[i], Low: df.Lows[i]}
+		cs.Candles = append(cs.Candles, c)
 	}
 	return cs
 }
@@ -129,7 +120,7 @@ func (df *DataFrame) refreshChart() {
 
 // SMA
 
-// AddSmas is added Smas setting 
+// AddSmas is added Smas setting
 func (df *DataFrame) AddSmas(period int) {
 	sma := NewSma(df.Closes, period)
 	df.Smas = append(df.Smas, sma)
