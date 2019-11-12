@@ -31,6 +31,7 @@ func getExecutor() *executor {
 		e.dataFrames = make([]models.DataFrame, 0)
 		e.client = *client.New(config.Apikey(),config.Secretkey())
 
+		// Get DataFrame for DB
 		e.db = config.GetDB()
 
 		e.dataFrames = append(e.dataFrames, e.db.GetDataFrame(models.GetDuration("1m")))
@@ -45,6 +46,9 @@ func getExecutor() *executor {
 		e.dataFrames = append(e.dataFrames, e.db.GetDataFrame(models.GetDuration("6h")))
 		e.dataFrames = append(e.dataFrames, e.db.GetDataFrame(models.GetDuration("12h")))
 		e.dataFrames = append(e.dataFrames, e.db.GetDataFrame(models.GetDuration("24h")))
+
+		// GetDataFrame config
+		// TODO 
 		exe = e
 	})
 	return exe
