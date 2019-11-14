@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
-	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/executor"
+	"github.com/atoyr/goflyer/models"
 	"github.com/labstack/echo"
 )
 
-func handleDataFrame(c echo.Context) error {
+func handleCandlestick(c echo.Context) error {
 	context := c.(*Context)
 	duration := context.Param("duration")
 
 	if duration == "" {
-		return fmt.Errorf("duration is required")
+		duration = "1m"
 	}
 
 	count := 100
@@ -28,14 +27,36 @@ func handleDataFrame(c echo.Context) error {
 		}
 		count = c
 	}
-	jsondb ,_ := db.GetJsonDB()
-	executor.ChangeDB(&jsondb)
-  d, err := strconv.ParseInt(duration,10,64)
-  if err != nil {
-  	return err
-  }
-	df := executor.DataFrame(time.Duration(d))
+	cs := executor.GetCandles(models.GetDuration(duration))
 	fmt.Println(count)
-	
-	return c.JSON(http.StatusOK, df)
+	return c.JSON(http.StatusOK, cs)
+}
+
+func handleSma(c echo.Context) error {
+	context := c.(*Context)
+	duration := context.Param("duration")
+
+	if duration == "" {
+		duration = "1m"
+	}
+
+	period := 4
+	count := 100
+
+	if periodparam := context.QueryParam("period"); periodparam != "" {
+		p, err := strconv.Atoi(periodparam)
+		if err != nil {
+			return err
+		}
+		period = p
+	}
+	if countparam := context.QueryParam("count"); countparam != "" {
+		c, err := strconv.Atoi(countparam)
+		if err != nil {
+			return err
+		}
+		count = c
+	}
+	cs := executor.GetCandles(models.GetDuration(duration))
+	return c.JSON(http.StatusOK, cs)
 }
