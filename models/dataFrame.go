@@ -122,6 +122,11 @@ func (df *DataFrame) refreshChart() {
 
 // AddSmas is added Smas setting
 func (df *DataFrame) AddSmas(period int) {
+	for i := range df.Smas {
+		if df.Smas[i].Period == period {
+			return
+		}
+	}
 	sma := NewSma(df.Closes, period)
 	df.Smas = append(df.Smas, sma)
 }
@@ -146,6 +151,11 @@ func (df *DataFrame) refreshSmas() {
 
 // AddEmas is Added Emas setting
 func (df *DataFrame) AddEmas(period int) {
+	for i := range df.Emas {
+		if df.Emas[i].Period == period {
+			return
+		}
+	}
 	ema := NewEma(df.Closes, period)
 	df.Emas = append(df.Emas, ema)
 }
