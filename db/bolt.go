@@ -3,10 +3,10 @@ package db
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
-	"errors"
 
 	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/util"
@@ -27,12 +27,10 @@ type Bolt struct {
 //   - LowBucket
 
 const (
-	tickerBucket      = "Ticker"
-	executionBucket   = "Execution"
-	durationBucket    = "Duration"
-	candleBucket      = "Candle"
-	smasBucket        = "Smas"
-	emasBucket        = "Emas"
+	tickerBucketName    = "Ticker"
+	executionBucketName = "Execution"
+	durationBucketName  = "Duration"
+	logBucketName       = "Log"
 )
 
 func GetBolt(dbFile string) (Bolt, error) {
@@ -42,8 +40,8 @@ func GetBolt(dbFile string) (Bolt, error) {
 	return b, err
 }
 
-func getCandleBucketName(duration time.Duration) string{
-	return fmt.Sprintf("%s_%s",durationBucket,models.GetDurationString(duration))
+func getCandleBucketName(duration time.Duration) string {
+	return fmt.Sprintf("%s_%s", durationBucketName, models.GetDurationString(duration))
 }
 
 func (b *Bolt) db() *bolt.DB {
@@ -58,39 +56,43 @@ func (b *Bolt) init() error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(tickerBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(tickerBucketName))
 		if err != nil {
 			return err
 		}
-		_, err = tx.CreateBucketIfNotExists([]byte(executionBucket))
+		_, err = tx.CreateBucketIfNotExists([]byte(executionBucketName))
 		if err != nil {
 			return err
 		}
-		for _ , v := range models.Durations() {
-			dbucket  , err := tx.CreateBucketIfNotExists([]byte(v))
-			if err != nil {
-				return err
-			} 
-			_ ,err = dbucket.CreateBucketIfNotExists([]byte("open"))
+		for _, v := range models.Durations() {
+			dbucket, err := tx.CreateBucketIfNotExists([]byte(v))
 			if err != nil {
 				return err
 			}
-			_ ,err = dbucket.CreateBucketIfNotExists([]byte("close"))
+			_, err = dbucket.CreateBucketIfNotExists([]byte("open"))
 			if err != nil {
 				return err
 			}
-			_ ,err = dbucket.CreateBucketIfNotExists([]byte("high"))
+			_, err = dbucket.CreateBucketIfNotExists([]byte("close"))
 			if err != nil {
 				return err
 			}
-			_ ,err = dbucket.CreateBucketIfNotExists([]byte("low"))
+			_, err = dbucket.CreateBucketIfNotExists([]byte("high"))
 			if err != nil {
 				return err
 			}
-			_ ,err = dbucket.CreateBucketIfNotExists([]byte("volume"))
+			_, err = dbucket.CreateBucketIfNotExists([]byte("low"))
 			if err != nil {
 				return err
 			}
+			_, err = dbucket.CreateBucketIfNotExists([]byte("volume"))
+			if err != nil {
+				return err
+			}
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(logBucketName))
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -105,7 +107,7 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(tickerBucket))
+		bucket := tx.Bucket([]byte(tickerBucketName))
 		marshalID := util.Float64ToBytes(t.TickID)
 		if buf, err := json.Marshal(t); err != nil {
 			return err
@@ -126,7 +128,7 @@ func (b *Bolt) GetTicker(tickID float64) (models.Ticker, error) {
 	defer db.Close()
 	ticker := new(models.Ticker)
 	err := db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(tickerBucket)).Cursor()
+		c := tx.Bucket([]byte(tickerBucketName)).Cursor()
 
 		marshalID := util.Float64ToBytes(tickID)
 
@@ -149,7 +151,7 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 	defer db.Close()
 	tickers := make([]models.Ticker, 0)
 	err := db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(tickerBucket)).Cursor()
+		c := tx.Bucket([]byte(tickerBucketName)).Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			var t models.Ticker
@@ -169,7 +171,7 @@ func (b *Bolt) UpdateExecution(execution models.Execution) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(executionBucket))
+		bucket := tx.Bucket([]byte(executionBucketName))
 		marshalID := util.Float64ToBytes(execution.ID)
 		if buf, err := json.Marshal(execution); err != nil {
 			return err
@@ -182,14 +184,14 @@ func (b *Bolt) UpdateExecution(execution models.Execution) error {
 		log.Println(err)
 		return err
 	}
-	return nil 
+	return nil
 }
 func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
 	db := b.db()
 	defer db.Close()
 	executions := make([]models.Execution, 0)
 	err := db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(executionBucket)).Cursor()
+		c := tx.Bucket([]byte(executionBucketName)).Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			var e models.Execution
@@ -204,22 +206,22 @@ func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
 	}
 	return executions, nil
 }
-func (b *Bolt)GetCandles(duration time.Duration) (models.Candles,error){
+func (b *Bolt) GetCandles(duration time.Duration) (models.Candles, error) {
 	db := b.db()
 	defer db.Close()
-	cs := models.NewCandles("BTC_JPY",time.Duration(duration))
-	err :=  db.View(func(tx *bolt.Tx) error {
+	cs := models.NewCandles("BTC_JPY", time.Duration(duration))
+	err := db.View(func(tx *bolt.Tx) error {
 		bucketName := getCandleBucketName(duration)
-		durationBucket := tx.Bucket([]byte(bucketName ))
-		if durationBucket == nil{
-			return fmt.Errorf("%s bucket not found",bucketName)
+		durationBucket := tx.Bucket([]byte(bucketName))
+		if durationBucket == nil {
+			return fmt.Errorf("%s bucket not found", bucketName)
 		}
-		bucket := durationBucket.Bucket([]byte(candleBucket))
+		bucket := durationBucket.Bucket([]byte(candleBucketName))
 		if bucket == nil {
 			return fmt.Errorf("candle bucket not found")
 		}
-		err := bucket.ForEach(func (k, v []byte) error {
-			_ , err := models.JsonUnmarshalCandle(v)
+		err := bucket.ForEach(func(k, v []byte) error {
+			_, err := models.JsonUnmarshalCandle(v)
 			if err != nil {
 				return err
 			}
@@ -235,26 +237,25 @@ func (b *Bolt)GetCandles(duration time.Duration) (models.Candles,error){
 		log.Fatal(err)
 		return cs, err
 	}
-	return cs, nil 
+	return cs, nil
 }
 
-
-func (b *Bolt) UpdateCandle(duration time.Duration,c models.Candle) error {
+func (b *Bolt) UpdateCandle(duration time.Duration, c models.Candle) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucketName := getCandleBucketName(duration)
-		durationBucket, err := tx.CreateBucketIfNotExists([]byte(bucketName ))
+		durationBucket, err := tx.CreateBucketIfNotExists([]byte(bucketName))
 		if err != nil {
 			return err
 		}
-		bucket,err := durationBucket.CreateBucketIfNotExists([]byte(candleBucket))
+		bucket, err := durationBucket.CreateBucketIfNotExists([]byte(candleBucketName))
 		if err != nil {
 			return err
 		}
 		if buf, err := json.Marshal(c); err != nil {
 			return err
-		} else if err = bucket.Put([]byte(fmt.Sprintf("%v",c)), buf); err != nil {
+		} else if err = bucket.Put([]byte(fmt.Sprintf("%v", c)), buf); err != nil {
 			return err
 		}
 		return nil
@@ -290,7 +291,7 @@ func (b *Bolt) UpdateDataFrame(df models.DataFrame) error {
 			}
 			for i := range df.Datetimes {
 				// TODO bug it !!!
-				if t.Before(df.Datetimes[i]){
+				if t.Before(df.Datetimes[i]) {
 					fromIndex = i
 					break
 				}
@@ -303,78 +304,78 @@ func (b *Bolt) UpdateDataFrame(df models.DataFrame) error {
 				fmt.Println(t)
 				return nil
 			}
-		}else {
+		} else {
 			fromIndex = 0
 		}
-		openBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("open"))
+		openBucket, err := durationBucket.CreateBucketIfNotExists([]byte("open"))
 		if err != nil {
 			return err
 		}
-		closeBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("close"))
+		closeBucket, err := durationBucket.CreateBucketIfNotExists([]byte("close"))
 		if err != nil {
 			return err
 		}
-		highBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("high"))
+		highBucket, err := durationBucket.CreateBucketIfNotExists([]byte("high"))
 		if err != nil {
 			return err
 		}
-		lowBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("low"))
+		lowBucket, err := durationBucket.CreateBucketIfNotExists([]byte("low"))
 		if err != nil {
 			return err
 		}
-		volumeBucket ,err := durationBucket.CreateBucketIfNotExists([]byte("volume"))
+		volumeBucket, err := durationBucket.CreateBucketIfNotExists([]byte("volume"))
 		if err != nil {
 			return err
 		}
 
-    for i := range df.Datetimes[fromIndex:] {
+		for i := range df.Datetimes[fromIndex:] {
 			index := i + fromIndex
-      key ,err := df.Datetimes[index].MarshalBinary()
-      if err != nil {
-        return err
-      }
+			key, err := df.Datetimes[index].MarshalBinary()
+			if err != nil {
+				return err
+			}
 			open := util.Float64ToBytes(df.Opens[index])
 			close := util.Float64ToBytes(df.Closes[index])
 			high := util.Float64ToBytes(df.Highs[index])
 			low := util.Float64ToBytes(df.Lows[index])
 			volume := util.Float64ToBytes(df.Volumes[index])
-      err = openBucket.Put(key,[]byte(open))
-      if err != nil {
-        return err
-      }
-      err = closeBucket.Put(key,[]byte(close))
-      if err != nil {
-        return err
-      }
-      err = highBucket.Put(key,[]byte(high))
-      if err != nil {
-        return err
-      }
-      err = lowBucket.Put(key,[]byte(low))
-      if err != nil {
-        return err
-      }
-      err = volumeBucket.Put(key,[]byte(volume))
-      if err != nil {
-        return err
-      }
-    }
-		tailTime,err := df.Datetimes[len(df.Datetimes)-1].MarshalBinary()
+			err = openBucket.Put(key, []byte(open))
+			if err != nil {
+				return err
+			}
+			err = closeBucket.Put(key, []byte(close))
+			if err != nil {
+				return err
+			}
+			err = highBucket.Put(key, []byte(high))
+			if err != nil {
+				return err
+			}
+			err = lowBucket.Put(key, []byte(low))
+			if err != nil {
+				return err
+			}
+			err = volumeBucket.Put(key, []byte(volume))
+			if err != nil {
+				return err
+			}
+		}
+		tailTime, err := df.Datetimes[len(df.Datetimes)-1].MarshalBinary()
 		if err != nil {
 			return err
 		}
-		durationBucket.Put([]byte("tail"),tailTime)
+		durationBucket.Put([]byte("tail"), tailTime)
 		return nil
 	})
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	return nil 
+	return nil
 }
 
 func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
-	df := models.NewDataFrame("BTC_JPY",duration)
+	df := models.NewDataFrame("BTC_JPY", duration)
 	db := b.db()
 	defer db.Close()
 	err := db.View(func(tx *bolt.Tx) error {
@@ -382,7 +383,7 @@ func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
 		if durationBucket == nil {
 			return errors.New("duration bucket not found")
 		}
-		openBucket  := durationBucket.Bucket([]byte("open"))
+		openBucket := durationBucket.Bucket([]byte("open"))
 		if openBucket == nil {
 			return errors.New("open bucket not found")
 		}
@@ -402,41 +403,41 @@ func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
 		if volumeBucket == nil {
 			return errors.New("volume bucket not found")
 		}
-		datetimes := make([]time.Time,0)
-		opens := make([]float64,0)
-		closes := make([]float64,0)
-		highs := make([]float64,0)
-		lows := make([]float64,0)
-		volumes := make([]float64,0)
-		openBucket.ForEach(func(k,v []byte) error {
+		datetimes := make([]time.Time, 0)
+		opens := make([]float64, 0)
+		closes := make([]float64, 0)
+		highs := make([]float64, 0)
+		lows := make([]float64, 0)
+		volumes := make([]float64, 0)
+		openBucket.ForEach(func(k, v []byte) error {
 			var t time.Time
 			err := t.UnmarshalBinary(k)
 			if err != nil {
 				return err
 			}
-			datetimes = append(datetimes,t)
+			datetimes = append(datetimes, t)
 			o := util.BytesToFloat64(v)
-			opens = append(opens,o)
+			opens = append(opens, o)
 			return nil
 		})
-		closeBucket.ForEach(func(k,v []byte) error {
+		closeBucket.ForEach(func(k, v []byte) error {
 			c := util.BytesToFloat64(v)
-			closes = append(closes,c)
+			closes = append(closes, c)
 			return nil
 		})
-		highBucket.ForEach(func(k,v []byte) error {
+		highBucket.ForEach(func(k, v []byte) error {
 			h := util.BytesToFloat64(v)
-			highs = append(highs,h)
+			highs = append(highs, h)
 			return nil
 		})
-		lowBucket.ForEach(func(k,v []byte) error {
+		lowBucket.ForEach(func(k, v []byte) error {
 			l := util.BytesToFloat64(v)
-			lows = append(lows,l)
+			lows = append(lows, l)
 			return nil
 		})
-		volumeBucket.ForEach(func(k,v []byte) error {
+		volumeBucket.ForEach(func(k, v []byte) error {
 			vol := util.BytesToFloat64(v)
-			volumes = append(volumes,vol)
+			volumes = append(volumes, vol)
 			return nil
 		})
 		df.Datetimes = datetimes
@@ -444,7 +445,7 @@ func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
 		df.Closes = closes
 		df.Highs = highs
 		df.Lows = lows
-		df.Volumes = volumes 
+		df.Volumes = volumes
 		return nil
 	})
 	if err != nil {
