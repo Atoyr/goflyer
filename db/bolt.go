@@ -453,3 +453,62 @@ func (b *Bolt) GetDataFrame(duration time.Duration) models.DataFrame {
 	}
 	return df
 }
+
+func (b *Bolt) AddLog(datetime time.Time, log models.Log) error {
+	db := b.db()
+	defer db.Close()
+	err := db.Update(func(tx *bolt.Tx) error {
+		logBucket, err := tx.CreateBucketIfNotExists([]byte(logBucketName))
+		if err != nil {
+			return err
+		}
+		key, err := datetime.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		marshalLog, err := json.Marshal(log)
+		if err != nil {
+			return err
+		}
+		logBucket.Put(key, marshalLog)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Bolt) GetLog(from, to time.Time) ([]models.Log, error) {
+	db := b.db()
+	defer db.Close()
+	logs := make([]models.Log, 0)
+	err := db.View(func(tx *bolt.Tx) error {
+		logBucket := tx.Bucket([]byte(logBucketName))
+		if logBucket == nil {
+			return fmt.Errorf("log Bucket not found")
+		}
+		f, err := from.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		t, err := to.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		c := logBucket.Cursor()
+		for k, v := c.Seek(f); k != nil && bytes.Compare(k, t) <= 0; k, v = c.Next() {
+			log, err := models.JsonUnmarshalLog(v)
+			if err != nil {
+				return err
+			}
+			logs = append(logs, *log)
+		}
+		return nil
+	})
+	if err != nil {
+		return logs, err
+	}
+	return logs, nil
+
+}
