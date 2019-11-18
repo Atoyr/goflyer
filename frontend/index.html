@@ -5,59 +5,75 @@
       google.charts.load('current', {'packages':['corechart','controls','table']});
       google.charts.setOnLoadCallback(drawChart);
 
-
-  function drawChart() {
-    var baseurl = "http://localhost:8080/v1/";
-    var candleurl = baseurl + "Candlestick/BTC_JPY/3m";
-    var dashdiv = document.getElementById('dashboard_div');
-    var dashboard = new google.visualization.Dashboard(dashdiv);
-    var chartWrapper = new google.visualization.ChartWrapper({
-      chartType: 'CandlestickChart',
-      containerId: 'chart_div',
-      options: {
-        backgroundColor : '#1c1c1c'
-      } 
-    });
-    var controlWrapper = new google.visualization.ControlWrapper({
-      'controlType' : 'ChartRangeFilter',
-      'containerId' : 'filter_div',
-      'options' : {
-        'filterColumnIndex': 0,
-        'ui': {
-          'chartType' : 'LineChart',
-          'chartView' : {
-            'columns' : [0,4]
-          }
-        }
+      var config = {
+        candlestick:{
+          duration : '1m',
+        } 
       }
-    });
-    dashboard.bind(controlWrapper,[chartWrapper]);
 
-    fetch(candleurl)
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(myJson) {
-            console.log(myJson);                                                      
-          var candles = myJson.candles;
-          var array = []
-          for(var i=0; i < candles.length; i++){
-            var data = [new Date(candles[i].time),candles[i].low,candles[i].open,candles[i].close,candles[i].high]
-            array.push(data)
+        var baseurl = "http://localhost:8080/v1/";
+        var candleurl = baseurl + "Candlestick/BTC_JPY/3m";
+
+      function send(){
+        fetch(candleurl)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(myJson) {
+                console.log(myJson);                                                      
+              var candles = myJson.candles;
+              var array = []
+              for(var i=0; i < candles.length; i++){
+                var data = [new Date(candles[i].time),candles[i].low,candles[i].open,candles[i].close,candles[i].high]
+                array.push(data)
+              }
+              var data = google.visualization.arrayToDataTable(array,true)
+              drawChart()
+          });
+      }
+
+      function drawChart() {
+        var dashdiv = document.getElementById('dashboard_div');
+        var dashboard = new google.visualization.Dashboard(dashdiv);
+        var chartWrapper = new google.visualization.ChartWrapper({
+          chartType: 'CandlestickChart',
+          containerId: 'chart_div',
+          options: {
+            backgroundColor : '#1c1c1c'
+          } 
+        });
+        var controlWrapper = new google.visualization.ControlWrapper({
+          'controlType' : 'ChartRangeFilter',
+          'containerId' : 'filter_div',
+          'options' : {
+            'filterColumnIndex': 0,
+            'ui': {
+              'chartType' : 'LineChart',
+              'chartView' : {
+                'columns' : [0,4]
+              }
+            }
           }
-          var data = google.visualization.arrayToDataTable(array,true)
-          var options = {
-            legend:'none'
-          };
+        });
+        dashboard.bind(controlWrapper,[chartWrapper]); 
+        dashboard.draw()
+      }
 
-          dashboard.draw(data);
-            // console.log(myJson.length);                                               
-      });
 
-  }
+      function changeDuration(d) {
+        config.candlestick.duration = d;
+        send();
+      }
+
+      send();
     </script>
   </head>
   <body>
+    <div>
+        <button onclick="changeDuration('1s');">1s</button>
+        <button onclick="changeDuration('1m');">1m</button>
+        <button onclick="changeDuration('1h');">1h</button>
+    </div>
     <div id="dashboard_div" >
       <div id="chart_div" style="width: 900px; height: 500px;"></div>
       <div id="filter_div" style="width: 900px; height: 100px;"></div>
