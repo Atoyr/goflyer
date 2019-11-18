@@ -57,6 +57,11 @@ func handleSma(c echo.Context) error {
 		}
 		count = c
 	}
-	cs := executor.GetCandles(models.GetDuration(duration))
-	return c.JSON(http.StatusOK, cs)
+	df := executor.DataFrame(models.GetDuration(duration))
+	sma := df.GetSma(period)
+	if l := len(sma.Values) ; l > count {
+		sma.Values = sma.Values[l - count :]
+	}
+
+	return c.JSON(http.StatusOK, sma)
 }

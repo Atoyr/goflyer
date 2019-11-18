@@ -7,14 +7,15 @@
 
 
   function drawChart() {
-    var url = "http://localhost:8080/v1/Candlestick/BTC_JPY/3m";
+    var baseurl = "http://localhost:8080/v1/";
+    var candleurl = baseurl + "Candlestick/BTC_JPY/3m";
     var dashdiv = document.getElementById('dashboard_div');
     var dashboard = new google.visualization.Dashboard(dashdiv);
     var chartWrapper = new google.visualization.ChartWrapper({
       chartType: 'CandlestickChart',
       containerId: 'chart_div',
       options: {
-        backgroundColor : '#888888'
+        backgroundColor : '#1c1c1c'
       } 
     });
     var controlWrapper = new google.visualization.ControlWrapper({
@@ -32,7 +33,7 @@
     });
     dashboard.bind(controlWrapper,[chartWrapper]);
 
-    fetch(url)
+    fetch(candleurl)
         .then(function(response) {
             return response.json();
         })

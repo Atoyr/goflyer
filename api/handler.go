@@ -28,8 +28,8 @@ func AppendHandler(e *echo.Echo) *echo.Echo {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
 	})
-	e.GET("/v1/DataFrame/BTC_JPY/:duration", handleDataFrame)
 	e.GET("/v1/Candlestick/BTC_JPY/:duration", handleCandlestick)
+	e.GET("/v1/Sma/BTC_JPY/:duration", handleSma)
 	e.GET("/v1/Ticler", handleTicker)
 	return e
 }

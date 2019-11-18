@@ -15,10 +15,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/atoyr/goflyer/models"
 	"github.com/atoyr/goflyer/configs"
+	"github.com/atoyr/goflyer/models"
 	"github.com/gorilla/websocket"
 )
+
+const bitflyerURL = "https://api.bitflyer.com/v1/"
 
 type APIClient struct {
 	key        string
@@ -64,17 +66,8 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 	}
 }
 
-func (api *APIClient) doRequest(method, urlPath string, query map[string]string, data []byte) (body []byte, err error) {
-	config ,err := configs.GetGeneralConfig()
-	if err != nil {
-		return nil, err
-	}
-	endpoint, err := config.GetEndpoint(urlPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(data))
+func (api *APIClient) doRequest(method, url string, query map[string]string, data []byte) (body []byte, err error) {
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +143,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 }
 
 func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) {
-	url := "me/getpermissions"
+	url := bitflyerURL + "me/getpermissions"
 	query := map[string]string{}
 	permissions = make(map[string]bool, 0)
 
@@ -211,7 +204,7 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 }
 
 func (api *APIClient) GetBoardState(productCode string) (boardState *models.BoardState, err error) {
-	url := "getboardstate"
+	url := bitflyerURL + "getboardstate"
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -228,7 +221,7 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *models.Boar
 }
 
 func (api *APIClient) GetHealth(productCode string) (health *models.Health, err error) {
-	url := "gethealth"
+	url := bitflyerURL + "gethealth"
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -245,7 +238,7 @@ func (api *APIClient) GetHealth(productCode string) (health *models.Health, err 
 }
 
 func (api *APIClient) GetTicker(productCode string) (ticker *models.Ticker, err error) {
-	url := "getticker"
+	url := bitflyerURL + "getticker"
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -300,7 +293,7 @@ OUTER:
 }
 
 func (api *APIClient) GetBoard(productCode string) (board *models.Board, err error) {
-	url := "getboard"
+	url := bitflyerURL + "getboard"
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -357,7 +350,7 @@ OUTER:
 }
 
 func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []models.Execution, err error) {
-	url := "getexecutions"
+	url := bitflyerURL + "getexecutions"
 	query := map[string]string{}
 	query["product_code"] = productCode
 	if beforeID != "" {
@@ -418,7 +411,7 @@ OUTER:
 }
 
 func (api *APIClient) GetBalance() (balances []models.Balance, err error) {
-	url := "me/getbalance"
+	url := bitflyerURL + "me/getbalance"
 	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
 	if err != nil {
 		return nil, err

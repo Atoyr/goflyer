@@ -120,15 +120,17 @@ func (df *DataFrame) refreshChart() {
 
 // SMA
 
-// AddSmas is added Smas setting
-func (df *DataFrame) AddSmas(period int) {
+// GetSmas is added Smas setting
+func (df *DataFrame) GetSma(period int) Sma {
 	for i := range df.Smas {
 		if df.Smas[i].Period == period {
-			return
+			return df.Smas[i]
 		}
 	}
+	index := len(df.Smas)
 	sma := NewSma(df.Closes, period)
 	df.Smas = append(df.Smas, sma)
+	return df.Smas[index]
 }
 
 func (df *DataFrame) updateSmas() {
