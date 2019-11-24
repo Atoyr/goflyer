@@ -216,7 +216,7 @@ func (b *Bolt) GetCandles(duration time.Duration) (models.Candles, error) {
 		if durationBucket == nil {
 			return fmt.Errorf("%s bucket not found", bucketName)
 		}
-		bucket := durationBucket.Bucket([]byte(candleBucketName))
+		bucket := durationBucket.Bucket([]byte("candleBucket"))
 		if bucket == nil {
 			return fmt.Errorf("candle bucket not found")
 		}
@@ -249,7 +249,7 @@ func (b *Bolt) UpdateCandle(duration time.Duration, c models.Candle) error {
 		if err != nil {
 			return err
 		}
-		bucket, err := durationBucket.CreateBucketIfNotExists([]byte(candleBucketName))
+		bucket, err := durationBucket.CreateBucketIfNotExists([]byte("candleBucket"))
 		if err != nil {
 			return err
 		}
