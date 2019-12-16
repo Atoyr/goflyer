@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
+	"sync"
 
 	"encoding/json"
 
@@ -46,24 +47,37 @@ const (
 	websocketPath         = "/json-rpc"
 )
 
+var (
+	once sync.Once
+
+	config    generalConfig
+	configerr error
+)
+
 // GetGeneralConfig is Getting generalConfig.
 // if path is empty this use default generalConfig path
 func GetGeneralConfig() (generalConfig, error) {
-	var c generalConfig
+	once.Do(func() {
+		configerr = config.Load()
+	})
+	return config, configerr
+}
+
+func (c *generalConfig) Load() error {
 	appPath, err := util.CreateConfigDirectoryIfNotExists(appName)
 	if err != nil {
-		return generalConfig{}, err
+		return err
 	}
 	generalConfigFile := filepath.Join(appPath, generalConfigFileName)
 	if util.FileExists(generalConfigFile) {
 		raw, err := ioutil.ReadFile(generalConfigFile)
 		if err != nil {
-			return generalConfig{}, err
+			return err
 		}
 		var out outGeneralConfig
 		err = json.Unmarshal(raw, &out)
 		if err != nil {
-			return generalConfig{}, err
+			return err
 		}
 		c.appPath = out.AppPath
 		c.apikey = out.Apikey
@@ -86,10 +100,10 @@ func GetGeneralConfig() (generalConfig, error) {
 		c.websocketPath = websocketPath
 		err := c.Save()
 		if err != nil {
-			return c, err
+			return err
 		}
 	}
-	return c, nil
+	return nil
 }
 
 func (c *generalConfig) Save() error {
