@@ -27,6 +27,7 @@ func (cs *Candles) Add(datetime time.Time, price float64) {
 		for i := range cs.Candles {
 			index := length - i
 			if cs.Candles[index].Time.Before(datetime) {
+        // append middle
 				c := NewCandle(cs.Duration, datetime, price)
 
 				if index == length {
@@ -38,6 +39,7 @@ func (cs *Candles) Add(datetime time.Time, price float64) {
 				}
 				return 
 			}else if cs.Candles[index].Time.Equal(datetime) {
+        // add target
 				cs.Candles[index].Add(price)
         return 
 			}
