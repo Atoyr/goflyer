@@ -3,42 +3,42 @@ import (
 	"encoding/json"
 )
 
-type MovingAverageConvergenceDivergence struct {
+type MACD struct {
 	FastPeriod   int       `json:"fast_period"`
 	SlowPeriod   int       `json:"slow_period"`
 	SignalPeriod int       `json:"signal_period"`
-	Macd         []float64 `json:"macd"`
-	MacdSignal   []float64 `json:"macd_signal"`
-	MacdHist     []float64 `json:"macd_hist"`
+	MACD         []float64 `json:"macd"`
+	MACDSignal   []float64 `json:"macd_signal"`
+	MACDHist     []float64 `json:"macd_hist"`
 	fastEma      Ema
 	slowEma      Ema
 	signalEma    Ema
 }
 
-func NewMovingAverageConvergenceDivergence(inReal []float64, fastPeriod, slowPeriod, signalPeriod int) MovingAverageConvergenceDivergence {
-	var movingAverageConvergenceDivergence MovingAverageConvergenceDivergence
+func NewMACD(inReal []float64, fastPeriod, slowPeriod, signalPeriod int) MACD {
+	var macd MACD
 	fastEma := NewEma([]float64{}, fastPeriod)
 	slowEma := NewEma([]float64{}, slowPeriod)
 	signalEma := NewEma([]float64{}, signalPeriod)
-	macd := make([]float64, 0)
+	m := make([]float64, 0)
 	hist := make([]float64, 0)
 
-	movingAverageConvergenceDivergence.FastPeriod = fastPeriod
-	movingAverageConvergenceDivergence.SlowPeriod = slowPeriod
-	movingAverageConvergenceDivergence.SignalPeriod = signalPeriod
-	movingAverageConvergenceDivergence.Macd = macd
-	movingAverageConvergenceDivergence.MacdSignal = signalEma.Values
-	movingAverageConvergenceDivergence.MacdHist = hist
-	movingAverageConvergenceDivergence.fastEma = fastEma
-	movingAverageConvergenceDivergence.slowEma = slowEma
-	movingAverageConvergenceDivergence.signalEma = signalEma
-	movingAverageConvergenceDivergence.Update(inReal)
+	macd.FastPeriod = fastPeriod
+	macd.SlowPeriod = slowPeriod
+	macd.SignalPeriod = signalPeriod
+	macd.MACD = m
+	macd.MACDSignal = signalEma.Values
+	macd.MACDHist = hist
+	macd.fastEma = fastEma
+	macd.slowEma = slowEma
+	macd.signalEma = signalEma
+	macd.Update(inReal)
 
-	return movingAverageConvergenceDivergence
+	return macd
 }
 
-func  JsonUnmarshalMovingAverageConvergenceDivergence(row []byte)  (*MovingAverageConvergenceDivergence,error) {
-	var macd = new(MovingAverageConvergenceDivergence)
+func  JsonUnmarshalMACD(row []byte)  (*MACD,error) {
+	var macd = new(MACD)
 	err := json.Unmarshal(row,macd)
 	if err != nil {
 		return nil, err
@@ -46,22 +46,22 @@ func  JsonUnmarshalMovingAverageConvergenceDivergence(row []byte)  (*MovingAvera
 	return macd ,nil
 }
 
-func (m *MovingAverageConvergenceDivergence) Update(inReal []float64) {
-	if difflength := len(inReal) - len(m.Macd); difflength > 0 {
-		baselength := len(m.Macd)
+func (m *MACD) Update(inReal []float64) {
+	if difflength := len(inReal) - len(m.MACD); difflength > 0 {
+		baselength := len(m.MACD)
 		m.fastEma.Update(inReal)
 		m.slowEma.Update(inReal)
 		macd := make([]float64, difflength)
 		for i := range macd {
 			macd[i] = m.fastEma.Values[baselength+i] - m.slowEma.Values[baselength+i]
 		}
-		m.Macd = append(m.Macd, macd...)
-		m.signalEma.Update(m.Macd)
-		m.MacdSignal = m.signalEma.Values
+		m.MACD = append(m.MACD, macd...)
+		m.signalEma.Update(m.MACD)
+		m.MACDSignal = m.signalEma.Values
 		hist := make([]float64, difflength)
 		for i := range hist {
-			hist[i] = m.Macd[baselength+i] - m.MacdSignal[baselength+i]
+			hist[i] = m.MACD[baselength+i] - m.MACDSignal[baselength+i]
 		}
-		m.MacdHist = append(m.MacdHist, hist...)
+		m.MACDHist = append(m.MACDHist, hist...)
 	}
 }

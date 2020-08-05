@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/models/bitflyer"
 )
 
 func RunAsync(ctx context.Context) {
-	callback := make([]func(beforeticker,ticker models.Ticker),0)
-	callback = append(callback , func(beforeticker,ticker models.Ticker) {
+	callback := make([]func(beforeticker,ticker bitflyer.Ticker),0)
+	callback = append(callback , func(beforeticker,ticker bitflyer.Ticker) {
 		Add(ticker.DateTime(), ticker.Ltp,ticker.Volume)
 		SaveDataFrame()
 		exe := getExecutor()

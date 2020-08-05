@@ -6,6 +6,7 @@ import (
 
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
@@ -32,7 +33,7 @@ func exportTickersCommand() urfavecli.Command {
 func exportTickersAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	executor.FetchTickerAsync(ctx, make([]func(beforeticker, ticker models.Ticker), 0))
+	executor.FetchTickerAsync(ctx, make([]func(beforeticker, ticker bitflyer.Ticker), 0))
 
 	return nil
 }

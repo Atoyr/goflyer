@@ -23,7 +23,7 @@ type DataFrame struct {
 	Emas          []Ema
 	BollingerBand *BollingerBand
 	Rsis          []RelativeStrengthIndex
-	Macd          []MovingAverageConvergenceDivergence
+	Macd          []MACD
 }
 
 // NewDataFrame is getting CreateDataFrame
@@ -227,7 +227,7 @@ func (df *DataFrame) refreshRsis() {
 // AddMacd is added Macd setting
 func (df *DataFrame) AddMacd(fastPeriod, slowPeriod, signalPeriod int) {
 	Closes := df.Closes
-	macd := NewMovingAverageConvergenceDivergence(Closes, fastPeriod, slowPeriod, signalPeriod)
+	macd := NewMACD(Closes, fastPeriod, slowPeriod, signalPeriod)
 	df.Macd = append(df.Macd, macd)
 }
 

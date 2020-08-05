@@ -1,4 +1,4 @@
-package models
+package bitflyer
 
 type Board struct {
 	MidPrice float64 `json:"mid_price,omitempty"`

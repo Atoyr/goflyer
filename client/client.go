@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/atoyr/goflyer/configs"
-	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/gorilla/websocket"
 )
 
@@ -186,7 +186,7 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 		return permissions, err
 	}
 
-	ret := new(models.Permission)
+	ret := new(bitflyer.Permission)
 	err = json.Unmarshal(resp, &ret)
 	if err != nil {
 		log.Print(resp)
@@ -203,7 +203,7 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 
 }
 
-func (api *APIClient) GetBoardState(productCode string) (boardState *models.BoardState, err error) {
+func (api *APIClient) GetBoardState(productCode string) (boardState *bitflyer.BoardState, err error) {
 	url := bitflyerURL + "getboardstate"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -212,7 +212,7 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *models.Boar
 	if err != nil {
 		return nil, err
 	}
-	boardState = new(models.BoardState)
+	boardState = new(bitflyer.BoardState)
 	err = json.Unmarshal(resp, boardState)
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *models.Boar
 	return boardState, nil
 }
 
-func (api *APIClient) GetHealth(productCode string) (health *models.Health, err error) {
+func (api *APIClient) GetHealth(productCode string) (health *bitflyer.Health, err error) {
 	url := bitflyerURL + "gethealth"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -229,7 +229,7 @@ func (api *APIClient) GetHealth(productCode string) (health *models.Health, err 
 	if err != nil {
 		return nil, err
 	}
-	health = new(models.Health)
+	health = new(bitflyer.Health)
 	err = json.Unmarshal(resp, health)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (api *APIClient) GetHealth(productCode string) (health *models.Health, err 
 	return health, nil
 }
 
-func (api *APIClient) GetTicker(productCode string) (ticker *models.Ticker, err error) {
+func (api *APIClient) GetTicker(productCode string) (ticker *bitflyer.Ticker, err error) {
 	url := bitflyerURL + "getticker"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -246,7 +246,7 @@ func (api *APIClient) GetTicker(productCode string) (ticker *models.Ticker, err 
 	if err != nil {
 		return nil, err
 	}
-	ticker = new(models.Ticker)
+	ticker = new(bitflyer.Ticker)
 	err = json.Unmarshal(resp, ticker)
 	if err != nil {
 		return nil, err
@@ -254,7 +254,7 @@ func (api *APIClient) GetTicker(productCode string) (ticker *models.Ticker, err 
 	return ticker, nil
 }
 
-func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- models.Ticker, productCode string) {
+func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- bitflyer.Ticker, productCode string) {
 	jsonRPC2 := new(JsonRPC2)
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
@@ -274,7 +274,7 @@ OUTER:
 
 		default:
 			param := <-paramCh
-			ticker := new(models.Ticker)
+			ticker := new(bitflyer.Ticker)
 			marchalTick, err := json.Marshal(param)
 			if err != nil {
 				ticker.Message = err.Error()
@@ -292,7 +292,7 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetBoard(productCode string) (board *models.Board, err error) {
+func (api *APIClient) GetBoard(productCode string) (board *bitflyer.Board, err error) {
 	url := bitflyerURL + "getboard"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -301,7 +301,7 @@ func (api *APIClient) GetBoard(productCode string) (board *models.Board, err err
 	if err != nil {
 		return nil, err
 	}
-	board = new(models.Board)
+	board = new(bitflyer.Board)
 	err = json.Unmarshal(resp, board)
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func (api *APIClient) GetBoard(productCode string) (board *models.Board, err err
 	return board, nil
 }
 
-func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- models.Board, productCode string, isDiff bool) {
+func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- bitflyer.Board, productCode string, isDiff bool) {
 	jsonRPC2 := new(JsonRPC2)
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
@@ -339,7 +339,7 @@ OUTER:
 				log.Printf("error : %s", err)
 				continue OUTER
 			}
-			board := new(models.Board)
+			board := new(bitflyer.Board)
 			if err := json.Unmarshal(marchalBoard, &board); err != nil {
 				log.Printf("error : %s", err)
 				continue OUTER
@@ -349,7 +349,7 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []models.Execution, err error) {
+func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []bitflyer.Execution, err error) {
 	url := bitflyerURL + "getexecutions"
 	query := map[string]string{}
 	query["product_code"] = productCode
@@ -367,7 +367,7 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 		return nil, err
 	}
 
-	executions = make([]models.Execution, 0)
+	executions = make([]bitflyer.Execution, 0)
 	err = json.Unmarshal(resp, &executions)
 	if err != nil {
 		return nil, err
@@ -376,7 +376,7 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 	return executions, nil
 }
 
-func (api *APIClient) GetRealtimeExecutions(ctx context.Context, ch chan<- []models.Execution, productCode string) {
+func (api *APIClient) GetRealtimeExecutions(ctx context.Context, ch chan<- []bitflyer.Execution, productCode string) {
 	jsonRPC2 := new(JsonRPC2)
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
@@ -400,7 +400,7 @@ OUTER:
 			if err != nil {
 				continue OUTER
 			}
-			executions := make([]models.Execution, 0)
+			executions := make([]bitflyer.Execution, 0)
 			if err := json.Unmarshal(marshalExecutions, &executions); err != nil {
 				continue OUTER
 			}
@@ -410,14 +410,14 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetBalance() (balances []models.Balance, err error) {
+func (api *APIClient) GetBalance() (balances []bitflyer.Balance, err error) {
 	url := bitflyerURL + "me/getbalance"
 	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	balances = make([]models.Balance, 0)
+	balances = make([]bitflyer.Balance, 0)
 	err = json.Unmarshal(resp, &balances)
 	if err != nil {
 		return nil, err

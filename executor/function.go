@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/atoyr/goflyer/models" 
+	"github.com/atoyr/goflyer/models/bitflyer"
 )
 
 // GetDataFrame is getting dataframe?
@@ -19,13 +20,13 @@ func DataFrame(duration time.Duration) models.DataFrame {
 	return df
 }
 
-func FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker models.Ticker)) {
+func FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker bitflyer.Ticker)) {
 	exe := getExecutor()
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var tickerChannl = make(chan models.Ticker)
+	var tickerChannl = make(chan bitflyer.Ticker)
 	
-	before := models.Ticker{}
+	before := bitflyer.Ticker{}
 	go exe.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
 	for ticker := range tickerChannl {
 		for i := range callbacks {
@@ -35,13 +36,13 @@ func FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticke
 	}
 }
 
-func FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, execution models.Execution)) {
+func FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, execution bitflyer.Execution)) {
 	exe := getExecutor()
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var executionChannl = make(chan []models.Execution)
+	var executionChannl = make(chan []bitflyer.Execution)
 	
-	before := models.Execution{}
+	before := bitflyer.Execution{}
 	go exe.client.GetRealtimeExecutions(childctx, executionChannl, models.BTC_JPY)
 	for executions := range executionChannl{
 		for i := range executions{
@@ -58,7 +59,7 @@ func FetchDataFrameAsync(ctx context.Context) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var tickerChannl = make(chan models.Ticker)
+	var tickerChannl = make(chan bitflyer.Ticker)
 	go exe.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
 	for ticker := range tickerChannl {
 		Add(ticker.DateTime(),ticker.Ltp,ticker.Volume)
@@ -72,28 +73,28 @@ func Add(datetime time.Time, price, volume float64) {
 	}
 }
 
-func GetTicker(count int, before, after float64) ([]models.Ticker, error) {
+func GetTicker(count int, before, after float64) ([]bitflyer.Ticker, error) {
 	exe := getExecutor()
 	// TODO Ticker is getting filter
 	tickers, err := exe.db.GetTickerAll()
 	return tickers, err
 }
 
-func SaveTicker(beforeticker,ticker models.Ticker) {
+func SaveTicker(beforeticker,ticker bitflyer.Ticker) {
 	exe := getExecutor()
 	if ticker.Message == "" {
 		exe.db.UpdateTicker(ticker)
 	}
 }
 
-func GetExecution(count int, before, after float64) ([]models.Execution, error) {
+func GetExecution(count int, before, after float64) ([]bitflyer.Execution, error) {
 	exe := getExecutor()
 	// TODO Execution is getting filter
 	executions, err := exe.db.GetExecutionAll()
 	return executions, err
 }
 
-func SaveExecution(beforeexecution,execution models.Execution) {
+func SaveExecution(beforeexecution,execution bitflyer.Execution) {
 	exe := getExecutor()
 		exe.db.UpdateExecution(execution)
 }

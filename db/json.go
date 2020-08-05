@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 )
 
 type JsonDB struct {
-	tickers []models.Ticker
+	tickers []bitflyer.Ticker
 }
 
 func GetJsonDB() (JsonDB, error) {
@@ -19,24 +20,24 @@ func GetJsonDB() (JsonDB, error) {
 	return jsonDB, nil
 }
 
-func (j *JsonDB) UpdateTicker(models.Ticker) error {
+func (j *JsonDB) UpdateTicker(bitflyer.Ticker) error {
 	return nil
 }
 
-func (j *JsonDB) GetTicker(tickID float64) (models.Ticker, error) {
+func (j *JsonDB) GetTicker(tickID float64) (bitflyer.Ticker, error) {
 	tickers, err := j.GetTickerAll()
 	if err != nil {
-		return models.Ticker{}, err
+		return bitflyer.Ticker{}, err
 	}
 	for i := range tickers {
 		if tickers[i].TickID == tickID {
 			return tickers[i], nil
 		}
 	}
-	return models.Ticker{}, nil
+	return bitflyer.Ticker{}, nil
 }
 
-func (j *JsonDB) GetTickerAll() ([]models.Ticker, error) {
+func (j *JsonDB) GetTickerAll() ([]bitflyer.Ticker, error) {
 	jsonFile, err := os.Open("./testdata/tickers.json")
 	if err != nil {
 		return nil, err
@@ -46,7 +47,7 @@ func (j *JsonDB) GetTickerAll() ([]models.Ticker, error) {
 	if err != nil {
 		return nil, err
 	}
-	tickers, err := models.JsonUnmarshalTickers(raw)
+	tickers, err := bitflyer.JsonUnmarshalTickers(raw)
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +64,10 @@ func ExportJsonForTickers(db DB, path string) error {
 }
 
 
-func (j *JsonDB)UpdateExecution(execution models.Execution) error{
+func (j *JsonDB)UpdateExecution(execution bitflyer.Execution) error{
 	return nil
 }
-func (j *JsonDB) GetExecutionAll() ([]models.Execution, error) {
+func (j *JsonDB) GetExecutionAll() ([]bitflyer.Execution, error) {
 	return nil,nil
 }
 

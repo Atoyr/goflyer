@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 	"github.com/boltdb/bolt"
 )
@@ -103,7 +104,7 @@ func (b *Bolt) init() error {
 	return nil
 }
 
-func (b *Bolt) UpdateTicker(t models.Ticker) error {
+func (b *Bolt) UpdateTicker(t bitflyer.Ticker) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -123,17 +124,17 @@ func (b *Bolt) UpdateTicker(t models.Ticker) error {
 	return nil
 }
 
-func (b *Bolt) GetTicker(tickID float64) (models.Ticker, error) {
+func (b *Bolt) GetTicker(tickID float64) (bitflyer.Ticker, error) {
 	db := b.db()
 	defer db.Close()
-	ticker := new(models.Ticker)
+	ticker := new(bitflyer.Ticker)
 	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(tickerBucketName)).Cursor()
 
 		marshalID := util.Float64ToBytes(tickID)
 
 		for k, v := c.Seek(marshalID); k != nil && bytes.Compare(k, marshalID) <= 0; k, v = c.Next() {
-			t, err := models.JsonUnmarshalTicker(v)
+			t, err := bitflyer.JsonUnmarshalTicker(v)
 			if err != nil {
 				return err
 			}
@@ -146,15 +147,15 @@ func (b *Bolt) GetTicker(tickID float64) (models.Ticker, error) {
 	return *ticker, err
 }
 
-func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
+func (b *Bolt) GetTickerAll() ([]bitflyer.Ticker, error) {
 	db := b.db()
 	defer db.Close()
-	tickers := make([]models.Ticker, 0)
+	tickers := make([]bitflyer.Ticker, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(tickerBucketName)).Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			var t models.Ticker
+			var t bitflyer.Ticker
 			json.Unmarshal(v, &t)
 			tickers = append(tickers, t)
 		}
@@ -167,7 +168,7 @@ func (b *Bolt) GetTickerAll() ([]models.Ticker, error) {
 	return tickers, nil
 }
 
-func (b *Bolt) UpdateExecution(execution models.Execution) error {
+func (b *Bolt) UpdateExecution(execution bitflyer.Execution) error {
 	db := b.db()
 	defer db.Close()
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -186,15 +187,15 @@ func (b *Bolt) UpdateExecution(execution models.Execution) error {
 	}
 	return nil
 }
-func (b *Bolt) GetExecutionAll() ([]models.Execution, error) {
+func (b *Bolt) GetExecutionAll() ([]bitflyer.Execution, error) {
 	db := b.db()
 	defer db.Close()
-	executions := make([]models.Execution, 0)
+	executions := make([]bitflyer.Execution, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(executionBucketName)).Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			var e models.Execution
+			var e bitflyer.Execution
 			json.Unmarshal(v, &e)
 			executions = append(executions, e)
 		}

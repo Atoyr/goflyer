@@ -1,4 +1,4 @@
-package models
+package bitflyer
 
 type BoardState struct {
 	Health string `json:"health"`

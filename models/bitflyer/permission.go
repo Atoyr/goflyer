@@ -1,4 +1,4 @@
-package models
+package bitflyer
 
 type Permission struct {
 	Value []string

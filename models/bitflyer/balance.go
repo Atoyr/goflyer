@@ -1,4 +1,4 @@
-package models
+package bitflyer
 
 type Balance struct {
 	CurrencyCode string `json:"currency_code"`

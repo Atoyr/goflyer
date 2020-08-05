@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/atoyr/goflyer/executor"
-	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
@@ -47,7 +47,7 @@ func fetchAction(c *urfavecli.Context) error {
 func fetchTickerAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	f := make([]func(beforeticker, ticker models.Ticker), 0)
+	f := make([]func(beforeticker, ticker bitflyer.Ticker), 0)
 	f = append(f, printFetchTicker)
 	if c.Bool("save") {
 		f = append(f, executor.SaveTicker)
@@ -60,7 +60,7 @@ func fetchTickerAction(c *urfavecli.Context) error {
 func fetchExecutionAction(c *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	f := make([]func(beforeexecution, execution models.Execution), 0)
+	f := make([]func(beforeexecution, execution bitflyer.Execution), 0)
 	f = append(f, printFetchExecution)
 	if c.Bool("save") {
 		f = append(f, executor.SaveExecution)
@@ -70,7 +70,7 @@ func fetchExecutionAction(c *urfavecli.Context) error {
 	return nil
 }
 
-func printFetchTicker(beforeticker, ticker models.Ticker) {
+func printFetchTicker(beforeticker, ticker bitflyer.Ticker) {
 	var status, ltp, ask, bid string
 	okAtt := util.GetMultiColorAttribute(47, false)
 	ngAtt := util.GetMultiColorAttribute(160, false)
@@ -114,6 +114,6 @@ func printFetchTicker(beforeticker, ticker models.Ticker) {
 	fmt.Printf("\r%s  %s  |  ASK : %s  |  BID : %s  |  LTP : %s", status, ticker.DateTime().Format(time.RFC3339), ask, bid, ltp)
 }
 
-func printFetchExecution(beforeexecution, execution models.Execution) {
+func printFetchExecution(beforeexecution, execution bitflyer.Execution) {
 	fmt.Printf("%s | %.0f |  %s | Price %.2f \n",execution.DateTime().Format(time.RFC3339),execution.ID,execution.Side, execution.Price)
 }
