@@ -22,12 +22,14 @@ import (
 
 const bitflyerURL = "https://api.bitflyer.com/v1/"
 
+// APIClient is bitflyer api client
 type APIClient struct {
 	key        string
 	secret     string
 	httpClient *http.Client
 }
 
+// JsonRPC2 is Json rpc 2 struct
 type JsonRPC2 struct {
 	Version string      `json:"jsonrpc"`
 	Method  string      `json:"method"`
@@ -37,10 +39,12 @@ type JsonRPC2 struct {
 	Id      *int        `json:"id,omitempty"`
 }
 
+// SubscriveParams is Json rpc 2 Params
 type SubscriveParams struct {
 	Channel string `json:"channel"`
 }
 
+// New is create APIClient
 func New(key, secret string) *APIClient {
 	client := new(APIClient)
 	client.key = key
@@ -50,6 +54,7 @@ func New(key, secret string) *APIClient {
 	return client
 }
 
+// header is create api call header
 func (api *APIClient) header(method, endpoint string, body []byte) map[string]string {
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	message := timestamp + method + endpoint + string(body)
@@ -66,6 +71,7 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 	}
 }
 
+// doRequest is request api
 func (api *APIClient) doRequest(method, url string, query map[string]string, data []byte) (body []byte, err error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
@@ -131,11 +137,9 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 			if message.Method == "channelMessage" {
 				switch params := message.Params.(type) {
 				case map[string]interface{}:
-					for k, v := range params {
-						if k == "message" {
-							ch <- v
-						}
-					}
+          if v,ok := params["message"]; ok {
+            ch <- v
+          }
 				}
 			}
 		}
