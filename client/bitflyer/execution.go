@@ -1,9 +1,9 @@
 package bitflyer
 
 import (
+	"encoding/json"
 	"log"
 	"time"
-	"encoding/json"
 )
 
 type Execution struct {
@@ -16,25 +16,25 @@ type Execution struct {
 	SellChildOrderAcceptanceID string  `json:"sell_child_order_acceptance_id"`
 }
 
-func  JsonUnmarshalExecution(row []byte)  (*Execution,error) {
+func JsonUnmarshalExecution(row []byte) (*Execution, error) {
 	var execution = new(Execution)
-	err := json.Unmarshal(row,execution)
+	err := json.Unmarshal(row, execution)
 	if err != nil {
 		return nil, err
 	}
-	return execution ,nil
+	return execution, nil
 }
 
-func  JsonUnmarshalExecutions(row []byte)  ([]Execution,error) {
+func JsonUnmarshalExecutions(row []byte) ([]Execution, error) {
 	var executions []Execution
-	err := json.Unmarshal(row,&executions)
+	err := json.Unmarshal(row, &executions)
 	if err != nil {
 		return nil, err
 	}
-	return executions ,nil
+	return executions, nil
 }
 
-func (e *Execution)DateTime() time.Time {
+func (e *Execution) DateTime() time.Time {
 	datetime, err := time.Parse(time.RFC3339, e.ExecDate)
 	if err != nil {
 		log.Printf("action=Execution.GetTimestamp, argslen=0, args=, err=%s", err.Error())
@@ -42,4 +42,3 @@ func (e *Execution)DateTime() time.Time {
 	}
 	return datetime
 }
-

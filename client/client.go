@@ -23,6 +23,7 @@ type APIClient struct {
 	key        string
 	secret     string
 	httpClient *http.Client
+	conf       config
 }
 
 // JsonRPC2 is Json rpc 2 struct

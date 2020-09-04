@@ -1,9 +1,9 @@
 package bitflyer
 
 import (
+	"encoding/json"
 	"log"
 	"time"
-	"encoding/json"
 )
 
 type Ticker struct {
@@ -19,25 +19,25 @@ type Ticker struct {
 	Ltp             float64 `json:"ltp"`
 	Volume          float64 `json:"volume"`
 	VolumeByProduct float64 `json:"volume_by_product"`
-	Message         string `json:"message,omitempty"`
+	Message         string  `json:"message,omitempty"`
 }
 
-func  JsonUnmarshalTicker(row []byte)  (*Ticker,error) {
+func JsonUnmarshalTicker(row []byte) (*Ticker, error) {
 	var ticker = new(Ticker)
-	err := json.Unmarshal(row,ticker)
+	err := json.Unmarshal(row, ticker)
 	if err != nil {
 		return nil, err
 	}
-	return ticker ,nil
+	return ticker, nil
 }
 
-func  JsonUnmarshalTickers(row []byte)  ([]Ticker,error) {
+func JsonUnmarshalTickers(row []byte) ([]Ticker, error) {
 	var tickers []Ticker
-	err := json.Unmarshal(row,&tickers)
+	err := json.Unmarshal(row, &tickers)
 	if err != nil {
 		return nil, err
 	}
-	return tickers ,nil
+	return tickers, nil
 }
 
 func (t *Ticker) DateTime() time.Time {
