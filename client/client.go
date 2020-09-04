@@ -12,18 +12,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/atoyr/goflyer/configs"
 	"github.com/gorilla/websocket"
 )
-
-const bitflyerURL = "https://api.bitflyer.com/v1/"
 
 // APIClient is bitflyer api client
 type APIClient struct {
 	key        string
 	secret     string
 	httpClient *http.Client
-	conf       config
 }
 
 // JsonRPC2 is Json rpc 2 struct
@@ -103,7 +99,7 @@ func (api *APIClient) doRequest(method, url string, query map[string]string, dat
 }
 
 func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) {
-	config, err := configs.GetGeneralConfig()
+	config, err := GetConfig()
 	if err != nil {
 		return
 	}

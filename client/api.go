@@ -5,11 +5,16 @@ import (
 	"log"
 	"strings"
 
-	"github.com/atoyr/goflyer/models/bitflyer"
+	"github.com/atoyr/goflyer/client/bitflyer"
 )
 
 func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) {
-	url := bitflyerURL + "me/getpermissions"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("me/getpermissions")
 	query := map[string]string{}
 	permissions = make(map[string]bool, 0)
 
@@ -70,7 +75,12 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 }
 
 func (api *APIClient) GetBoardState(productCode string) (boardState *bitflyer.BoardState, err error) {
-	url := bitflyerURL + "getboardstate"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("getboardstate")
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -87,7 +97,12 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *bitflyer.Bo
 }
 
 func (api *APIClient) GetHealth(productCode string) (health *bitflyer.Health, err error) {
-	url := bitflyerURL + "gethealth"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("gethealth")
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -104,7 +119,12 @@ func (api *APIClient) GetHealth(productCode string) (health *bitflyer.Health, er
 }
 
 func (api *APIClient) GetTicker(productCode string) (ticker *bitflyer.Ticker, err error) {
-	url := bitflyerURL + "getticker"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("getticker")
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -121,7 +141,12 @@ func (api *APIClient) GetTicker(productCode string) (ticker *bitflyer.Ticker, er
 }
 
 func (api *APIClient) GetBoard(productCode string) (board *bitflyer.Board, err error) {
-	url := bitflyerURL + "getboard"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("getboard")
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -138,7 +163,12 @@ func (api *APIClient) GetBoard(productCode string) (board *bitflyer.Board, err e
 }
 
 func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []bitflyer.Execution, err error) {
-	url := bitflyerURL + "getexecutions"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("getexecutions")
 	query := map[string]string{}
 	query["product_code"] = productCode
 	if beforeID != "" {
@@ -165,7 +195,12 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 }
 
 func (api *APIClient) GetBalance() (balances []bitflyer.Balance, err error) {
-	url := bitflyerURL + "me/getbalance"
+	config, err := GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	url := conf.GetWebapiUrl("me/getbalance")
 	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
 	if err != nil {
 		return nil, err
