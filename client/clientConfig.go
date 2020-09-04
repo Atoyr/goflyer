@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/url"
+	"path"
 	"path/filepath"
 	"sync"
 
@@ -44,14 +45,14 @@ var (
 
 // GetConfig is Getting ClientConfig.
 // if path is empty this use default generalConfig path
-func GetConfig() (Config, error) {
+func GetConfig() (ClientConfig, error) {
 	once.Do(func() {
 		configerr = config.Load()
 	})
 	return config, configerr
 }
 
-func (c *Config) Load() error {
+func (c *ClientConfig) Load() error {
 	appPath, err := util.CreateConfigDirectoryIfNotExists(appName)
 	if err != nil {
 		return err
@@ -84,24 +85,24 @@ func (c *Config) Load() error {
 	return nil
 }
 
-func (c *Config) Save() error {
-	return util.SaveJsonMarshalIndent(out, filepath.Join(c.AppPath, configFileName))
+func (c *ClientConfig) Save() error {
+	return util.SaveJsonMarshalIndent(c, filepath.Join(c.AppPath, configFileName))
 }
 
-func (c *Config) DBFilePath() string {
+func (c *ClientConfig) DBFilePath() string {
 	return filepath.Join(c.AppPath, c.Dbfile)
 }
 
-func (c *Config) GetWebapiUrl(path string) (string, error) {
+func (c *ClientConfig) GetWebapiUrl(urlPath string) (string, error) {
 	baseUrl, err := url.Parse(c.WebapiUrl)
 	if err != nil {
 		return "", err
 	}
-	baseUrl.Path = path.Join(baseUrl.Path, path)
+	baseUrl.Path = path.Join(baseUrl.Path, urlPath)
 	return baseUrl.String(), nil
 }
 
-func (c *Config) GetDB() db.DB {
+func (c *ClientConfig) GetDB() db.DB {
 	switch c.Dbtype {
 	case "bolt":
 		dbfile := c.DBFilePath()
@@ -115,7 +116,7 @@ func (c *Config) GetDB() db.DB {
 	}
 }
 
-func (c *Config) GetWebsocketString() string {
-	websocket := url.URL{Scheme: c.websocketScheme, Host: c.websocketHost, Path: c.websocketPath}
+func (c *ClientConfig) GetWebsocketString() string {
+	websocket := url.URL{Scheme: c.WebsocketScheme, Host: c.WebsocketHost, Path: c.WebsocketPath}
 	return websocket.String()
 }

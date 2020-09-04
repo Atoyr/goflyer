@@ -1,11 +1,11 @@
 package executor
 
 import (
-	"time"
 	"context"
+	"time"
 
-	"github.com/atoyr/goflyer/models" 
-	"github.com/atoyr/goflyer/models/bitflyer"
+	"github.com/atoyr/goflyer/client/bitflyer"
+	"github.com/atoyr/goflyer/models"
 )
 
 // GetDataFrame is getting dataframe?
@@ -25,7 +25,7 @@ func FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticke
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var tickerChannl = make(chan bitflyer.Ticker)
-	
+
 	before := bitflyer.Ticker{}
 	go exe.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
 	for ticker := range tickerChannl {
@@ -41,11 +41,11 @@ func FetchExecutionAsync(ctx context.Context, callbacks []func(beforeExecution, 
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var executionChannl = make(chan []bitflyer.Execution)
-	
+
 	before := bitflyer.Execution{}
 	go exe.client.GetRealtimeExecutions(childctx, executionChannl, models.BTC_JPY)
-	for executions := range executionChannl{
-		for i := range executions{
+	for executions := range executionChannl {
+		for i := range executions {
 			for j := range callbacks {
 				callbacks[j](before, executions[i])
 			}
@@ -62,14 +62,14 @@ func FetchDataFrameAsync(ctx context.Context) {
 	var tickerChannl = make(chan bitflyer.Ticker)
 	go exe.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
 	for ticker := range tickerChannl {
-		Add(ticker.DateTime(),ticker.Ltp,ticker.Volume)
+		Add(ticker.DateTime(), ticker.Ltp, ticker.Volume)
 	}
 }
 
 func Add(datetime time.Time, price, volume float64) {
 	exe := getExecutor()
 	for i := range exe.dataFrames {
-		exe.dataFrames[i].Add(datetime,price,volume)
+		exe.dataFrames[i].Add(datetime, price, volume)
 	}
 }
 
@@ -80,7 +80,7 @@ func GetTicker(count int, before, after float64) ([]bitflyer.Ticker, error) {
 	return tickers, err
 }
 
-func SaveTicker(beforeticker,ticker bitflyer.Ticker) {
+func SaveTicker(beforeticker, ticker bitflyer.Ticker) {
 	exe := getExecutor()
 	if ticker.Message == "" {
 		exe.db.UpdateTicker(ticker)
@@ -94,12 +94,12 @@ func GetExecution(count int, before, after float64) ([]bitflyer.Execution, error
 	return executions, err
 }
 
-func SaveExecution(beforeexecution,execution bitflyer.Execution) {
+func SaveExecution(beforeexecution, execution bitflyer.Execution) {
 	exe := getExecutor()
-		exe.db.UpdateExecution(execution)
+	exe.db.UpdateExecution(execution)
 }
 
-// GetCandles is getting candles 
+// GetCandles is getting candles
 func GetCandles(duration time.Duration) models.Candles {
 	df := DataFrame(duration)
 	cs := df.GetCandles()

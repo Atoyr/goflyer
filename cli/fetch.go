@@ -3,11 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
+	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/executor"
-	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
@@ -41,7 +41,7 @@ func fetchAction(c *urfavecli.Context) error {
 		return fetchExecutionAction(c)
 	default:
 		return fmt.Errorf("target not found")
-	} 
+	}
 }
 
 func fetchTickerAction(c *urfavecli.Context) error {
@@ -115,5 +115,5 @@ func printFetchTicker(beforeticker, ticker bitflyer.Ticker) {
 }
 
 func printFetchExecution(beforeexecution, execution bitflyer.Execution) {
-	fmt.Printf("%s | %.0f |  %s | Price %.2f \n",execution.DateTime().Format(time.RFC3339),execution.ID,execution.Side, execution.Price)
+	fmt.Printf("%s | %.0f |  %s | Price %.2f \n", execution.DateTime().Format(time.RFC3339), execution.ID, execution.Side, execution.Price)
 }

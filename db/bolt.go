@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 	"github.com/boltdb/bolt"
 )

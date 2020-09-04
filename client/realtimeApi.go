@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/atoyr/goflyer/models/bitflyer"
+	"github.com/atoyr/goflyer/client/bitflyer"
 )
 
 // GetRealtimeTicker get Ticker for websocket

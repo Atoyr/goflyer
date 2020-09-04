@@ -3,8 +3,8 @@ package db
 import (
 	"time"
 
+	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/models/bitflyer"
 )
 
 type DB interface {
@@ -15,8 +15,8 @@ type DB interface {
 	GetExecutionAll() ([]bitflyer.Execution, error)
 	UpdateDataFrame(models.DataFrame) error
 	GetDataFrame(duration time.Duration) models.DataFrame
-// 	UpdateCandle(duration time.Duration, c models.Candle) error 
-// 	GetCandles(duration time.Duration) (models.Candles,error)
+	// 	UpdateCandle(duration time.Duration, c models.Candle) error
+	// 	GetCandles(duration time.Duration) (models.Candles,error)
 	//	MergeCandle(candle models.Candle)
 	//	GetCandles(productCode string) ([]models.Candle, error)
 }

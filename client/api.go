@@ -14,7 +14,10 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("me/getpermissions")
+	url, err := config.GetWebapiUrl("me/getpermissions")
+	if err != nil {
+		return nil, err
+	}
 	query := map[string]string{}
 	permissions = make(map[string]bool, 0)
 
@@ -80,7 +83,10 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *bitflyer.Bo
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("getboardstate")
+	url, err := config.GetWebapiUrl("getboardstate")
+	if err != nil {
+		return nil, err
+	}
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -102,7 +108,10 @@ func (api *APIClient) GetHealth(productCode string) (health *bitflyer.Health, er
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("gethealth")
+	url, err := config.GetWebapiUrl("gethealth")
+	if err != nil {
+		return nil, err
+	}
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -124,7 +133,10 @@ func (api *APIClient) GetTicker(productCode string) (ticker *bitflyer.Ticker, er
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("getticker")
+	url, err := config.GetWebapiUrl("getticker")
+	if err != nil {
+		return nil, err
+	}
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -146,7 +158,10 @@ func (api *APIClient) GetBoard(productCode string) (board *bitflyer.Board, err e
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("getboard")
+	url, err := config.GetWebapiUrl("getboard")
+	if err != nil {
+		return nil, err
+	}
 	query := map[string]string{}
 	query["product_code"] = productCode
 
@@ -168,7 +183,10 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("getexecutions")
+	url, err := config.GetWebapiUrl("getexecutions")
+	if err != nil {
+		return nil, err
+	}
 	query := map[string]string{}
 	query["product_code"] = productCode
 	if beforeID != "" {
@@ -200,7 +218,10 @@ func (api *APIClient) GetBalance() (balances []bitflyer.Balance, err error) {
 		return nil, err
 	}
 
-	url := conf.GetWebapiUrl("me/getbalance")
+	url, err := config.GetWebapiUrl("me/getbalance")
+	if err != nil {
+		return nil, err
+	}
 	resp, err := api.doRequest("GET", url, map[string]string{}, nil)
 	if err != nil {
 		return nil, err

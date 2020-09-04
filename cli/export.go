@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/executor"
 	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 	urfavecli "github.com/urfave/cli"
 )
@@ -44,7 +44,7 @@ func exportExecutionsCommand() urfavecli.Command {
 	command.Action = exportExecutionsAction
 	command.Flags = []urfavecli.Flag{
 		urfavecli.StringFlag{
-			Name: "path, p",
+			Name:  "path, p",
 			Value: "export file path",
 		},
 	}
@@ -53,16 +53,16 @@ func exportExecutionsCommand() urfavecli.Command {
 }
 
 func exportExecutionsAction(c *urfavecli.Context) error {
-		
+
 	path := c.String("path")
 	if path == "" {
 		return fmt.Errorf("export file path not found")
 	}
-	executions,err := executor.GetExecution(0,0,0)
+	executions, err := executor.GetExecution(0, 0, 0)
 	if err != nil {
 		return err
 	}
-	err = util.SaveJsonMarshalIndent(executions,path)
+	err = util.SaveJsonMarshalIndent(executions, path)
 	if err != nil {
 		return err
 	}
@@ -75,11 +75,11 @@ func exportCandlesCommand() urfavecli.Command {
 	command.Action = exportCandlesAction
 	command.Flags = []urfavecli.Flag{
 		urfavecli.StringFlag{
-			Name: "path, p",
+			Name:  "path, p",
 			Value: "",
 		},
 		urfavecli.StringFlag{
-			Name: "duration, d",
+			Name:  "duration, d",
 			Value: "1m",
 		},
 	}
@@ -88,16 +88,16 @@ func exportCandlesCommand() urfavecli.Command {
 }
 
 func exportCandlesAction(c *urfavecli.Context) error {
-		
+
 	path := c.String("path")
 	if path == "" {
 		return fmt.Errorf("export file path not found")
 	}
 	duration := c.String("duration")
 	candles := executor.GetCandles(models.GetDuration(duration))
-	err := util.SaveJsonMarshalIndent(candles,path)
+	err := util.SaveJsonMarshalIndent(candles, path)
 	if err != nil {
-	fmt.Println(err)
+		fmt.Println(err)
 		return err
 	}
 	return nil

@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/models/bitflyer"
 	"github.com/atoyr/goflyer/util"
 )
 
@@ -63,20 +63,19 @@ func ExportJsonForTickers(db DB, path string) error {
 	return util.SaveJsonMarshalIndent(tickers, path)
 }
 
-
-func (j *JsonDB)UpdateExecution(execution bitflyer.Execution) error{
+func (j *JsonDB) UpdateExecution(execution bitflyer.Execution) error {
 	return nil
 }
 func (j *JsonDB) GetExecutionAll() ([]bitflyer.Execution, error) {
-	return nil,nil
+	return nil, nil
 }
 
-func (j *JsonDB)UpdateCandle(duration time.Duration,c models.Candle) error {
+func (j *JsonDB) UpdateCandle(duration time.Duration, c models.Candle) error {
 	return nil
 }
 
-func (j *JsonDB)GetCandles(duration time.Duration) (models.Candles,error){
-	return models.Candles{},nil
+func (j *JsonDB) GetCandles(duration time.Duration) (models.Candles, error) {
+	return models.Candles{}, nil
 }
 func (j *JsonDB) UpdateDataFrame(models.DataFrame) error {
 	return nil
