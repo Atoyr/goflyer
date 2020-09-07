@@ -39,7 +39,7 @@ const (
 var (
 	once sync.Once
 
-	config    generalConfig
+	config    ClientConfig
 	configerr error
 )
 

@@ -117,7 +117,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 	if err != nil {
 		log.Fatalf("function=APIClient,doWebsocketRequest, action=Get Config, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
 	}
-	retrymsec := config.Retrymsec()
+	retrymsec := config.Retrymsec
 
 	for {
 		select {
@@ -130,7 +130,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 					time.Sleep(time.Duration(retrymsec) * time.Millisecond)
 				} else {
 					log.Println(message)
-					log.Fatalln("read:", err)
+					return
 				}
 			}
 
