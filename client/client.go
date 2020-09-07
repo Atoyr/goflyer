@@ -1,13 +1,13 @@
 package client
 
 import (
+  "fmt"
 	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -98,39 +98,38 @@ func (api *APIClient) doRequest(method, url string, query map[string]string, dat
 	return body, err
 }
 
-func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) {
+func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) error {
 	config, err := GetConfig()
 	if err != nil {
-		return
+		return err
 	}
 	c, _, err := websocket.DefaultDialer.Dial(config.GetWebsocketString(), nil)
 	if err != nil {
-		log.Fatalf("function=APIClient.doWebsocketRequest, action=Websocket Dial, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
+		return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Websocket Dial, err=%w \n", err)
 	}
 
 	defer c.Close()
 	if err := c.WriteJSON(&jsonRPC2); err != nil {
-		log.Fatalf("function=APIClient.doWebsocketRequest, action=Write Json, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
+		return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Write Json, err=%w \n", err)
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	if err != nil {
-		log.Fatalf("function=APIClient,doWebsocketRequest, action=Get Config, argslen=3, args=%v , %v , %v err=%s \n", ctx, jsonRPC2, ch, err.Error())
+		return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Get Config, err=%w \n", err)
 	}
 	retrymsec := config.Retrymsec
 
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		default:
 			message := new(JsonRPC2)
 			if err := c.ReadJSON(message); err != nil {
 				if retrymsec > 0 {
 					time.Sleep(time.Duration(retrymsec) * time.Millisecond)
 				} else {
-					log.Println(message)
-					return
+          return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Read Json, message=%s, err=%w \n", message, err)
 				}
 			}
 
