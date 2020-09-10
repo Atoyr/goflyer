@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"log"
+	"context"
 
 	"github.com/atoyr/goflyer/client"
-	"github.com/atoyr/goflyer/db"
+	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/models"
 )
 
@@ -12,15 +12,26 @@ type ClientController struct {
 	client client.Client
 }
 
-func NewClientController(d db.Bolt) *ClientController {
+func NewClientController(c client.Client) *ClientController {
 	cc := new(ClientController)
+	cc.client = c
 
 	return cc
 }
 
-func (cc *ClientController) ExecuteTickerRoutin(tickerChannel <-chan models.Ticker) {
-	for ticker := range tickerChannel {
-		log.Printf("action=ExecuteTickerRoutin, %v", ticker)
-		cc.DB.UpdateTicker(ticker)
+func FetchTickerAsync(ctx context.Context, callbacks []func(beforeeticker, ticker bitflyer.Ticker)) {
+	exe := getExecutor()
+	childctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var tickerChannl = make(chan bitflyer.Ticker)
+
+	before := bitflyer.Ticker{}
+	go exe.client.GetRealtimeTicker(childctx, tickerChannl, models.BTC_JPY)
+
+	for ticker := range tickerChannl {
+		for i := range callbacks {
+			callbacks[i](before, ticker)
+		}
+		before = ticker
 	}
 }

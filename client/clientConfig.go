@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/util"
 )
 
@@ -22,8 +21,6 @@ type ClientConfig struct {
 	WebsocketScheme string `json:"websocket_scheme"`
 	WebsocketHost   string `json:"websocket_host"`
 	WebsocketPath   string `json:"websocket_path"`
-	Dbtype          string `json:"dbtype"`
-	Dbfile          string `json:"dbfile"`
 }
 
 const (
@@ -33,7 +30,6 @@ const (
 	websocketScheme = "wss"
 	websocketHost   = "ws.lightstream.bitflyer.com"
 	websocketPath   = "/json-rpc"
-	dbFileName      = "goflyer.db"
 )
 
 var (
@@ -75,8 +71,6 @@ func (c *ClientConfig) Load() error {
 		c.WebsocketScheme = websocketScheme
 		c.WebsocketHost = websocketHost
 		c.WebsocketPath = websocketPath
-		c.Dbtype = "bolt"
-		c.Dbfile = dbFileName
 		err := c.Save()
 		if err != nil {
 			return err
@@ -89,10 +83,6 @@ func (c *ClientConfig) Save() error {
 	return util.SaveJsonMarshalIndent(c, filepath.Join(c.AppPath, configFileName))
 }
 
-func (c *ClientConfig) DBFilePath() string {
-	return filepath.Join(c.AppPath, c.Dbfile)
-}
-
 func (c *ClientConfig) GetWebapiUrl(urlPath string) (string, error) {
 	baseUrl, err := url.Parse(c.WebapiUrl)
 	if err != nil {
@@ -102,19 +92,19 @@ func (c *ClientConfig) GetWebapiUrl(urlPath string) (string, error) {
 	return baseUrl.String(), nil
 }
 
-func (c *ClientConfig) GetDB() db.DB {
-	switch c.Dbtype {
-	case "bolt":
-		dbfile := c.DBFilePath()
-		db, err := db.GetBolt(dbfile)
-		if err != nil {
-			return nil
-		}
-		return &db
-	default:
-		return nil
-	}
-}
+// func (c *ClientConfig) GetDB() db.DB {
+// 	switch c.Dbtype {
+// 	case "bolt":
+// 		dbfile := c.DBFilePath()
+// 		db, err := db.GetBolt(dbfile)
+// 		if err != nil {
+// 			return nil
+// 		}
+// 		return &db
+// 	default:
+// 		return nil
+// 	}
+// }
 
 func (c *ClientConfig) GetWebsocketString() string {
 	websocket := url.URL{Scheme: c.WebsocketScheme, Host: c.WebsocketHost, Path: c.WebsocketPath}
