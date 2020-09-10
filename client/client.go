@@ -1,12 +1,12 @@
 package client
 
 import (
-  "fmt"
 	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -15,8 +15,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// APIClient is bitflyer api client
-type APIClient struct {
+// Client is bitflyer api client
+type Client struct {
 	key        string
 	secret     string
 	httpClient *http.Client
@@ -37,9 +37,9 @@ type SubscribeParams struct {
 	Channel string `json:"channel"`
 }
 
-// New is create APIClient
-func New(key, secret string) *APIClient {
-	client := new(APIClient)
+// New is create Client
+func New(key, secret string) *Client {
+	client := new(Client)
 	client.key = key
 	client.secret = secret
 	client.httpClient = new(http.Client)
@@ -55,7 +55,7 @@ func NewJsonRPC2Subscribe() *JsonRPC2 {
 }
 
 // header is create api call header
-func (api *APIClient) header(method, endpoint string, body []byte) map[string]string {
+func (api *Client) header(method, endpoint string, body []byte) map[string]string {
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	message := timestamp + method + endpoint + string(body)
 
@@ -72,7 +72,7 @@ func (api *APIClient) header(method, endpoint string, body []byte) map[string]st
 }
 
 // doRequest is request api
-func (api *APIClient) doRequest(method, url string, query map[string]string, data []byte) (body []byte, err error) {
+func (api *Client) doRequest(method, url string, query map[string]string, data []byte) (body []byte, err error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
@@ -98,24 +98,24 @@ func (api *APIClient) doRequest(method, url string, query map[string]string, dat
 	return body, err
 }
 
-func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) error {
+func (api *Client) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) error {
 	config, err := GetConfig()
 	if err != nil {
 		return err
 	}
 	c, _, err := websocket.DefaultDialer.Dial(config.GetWebsocketString(), nil)
 	if err != nil {
-		return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Websocket Dial, err=%w \n", err)
+		return fmt.Errorf("function=Client.doWebsocketRequest, action=Websocket Dial, err=%w \n", err)
 	}
 
 	defer c.Close()
 	if err := c.WriteJSON(&jsonRPC2); err != nil {
-		return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Write Json, err=%w \n", err)
+		return fmt.Errorf("function=Client.doWebsocketRequest, action=Write Json, err=%w \n", err)
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	if err != nil {
-		return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Get Config, err=%w \n", err)
+		return fmt.Errorf("function=Client.doWebsocketRequest, action=Get Config, err=%w \n", err)
 	}
 	retrymsec := config.Retrymsec
 
@@ -129,7 +129,7 @@ func (api *APIClient) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2,
 				if retrymsec > 0 {
 					time.Sleep(time.Duration(retrymsec) * time.Millisecond)
 				} else {
-          return fmt.Errorf("function=APIClient.doWebsocketRequest, action=Read Json, message=%s, err=%w \n", message, err)
+					return fmt.Errorf("function=Client.doWebsocketRequest, action=Read Json, message=%s, err=%w \n", message, err)
 				}
 			}
 

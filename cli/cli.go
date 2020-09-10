@@ -7,7 +7,6 @@ import (
 func NewCli() *urfavecli.App {
 	app := urfavecli.NewApp()
 	app.Name = "goflyer"
-	app.Author = "atoyr"
 
 	app.Commands = append(app.Commands, exportCommand())
 	app.Commands = append(app.Commands, runWebappsCommand())

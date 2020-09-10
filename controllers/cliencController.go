@@ -3,17 +3,17 @@ package controllers
 import (
 	"log"
 
+	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
 )
 
 type ClientController struct {
-	DB db.Bolt
+	client client.Client
 }
 
 func NewClientController(d db.Bolt) *ClientController {
 	cc := new(ClientController)
-	cc.DB = d
 
 	return cc
 }

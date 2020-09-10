@@ -12,24 +12,24 @@ import (
 	urfavecli "github.com/urfave/cli"
 )
 
-func fetchCommand() urfavecli.Command {
+func fetchCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "fetch"
 	command.Aliases = []string{"f"}
 	command.Action = fetchAction
 	command.Flags = []urfavecli.Flag{
-		urfavecli.StringFlag{
+		&urfavecli.StringFlag{
 			Name:     "target , t",
 			Usage:    "target choose ticker ,executoin ...",
 			Value:    "fetch target",
 			Required: true,
 		},
-		urfavecli.BoolFlag{
+		&urfavecli.BoolFlag{
 			Name:  "save , s",
 			Usage: "save db",
 		}}
 
-	return command
+	return &command
 }
 
 func fetchAction(c *urfavecli.Context) error {

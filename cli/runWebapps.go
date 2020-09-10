@@ -6,16 +6,16 @@ import (
 	urfavecli "github.com/urfave/cli"
 )
 
-func runWebappsCommand() urfavecli.Command {
+func runWebappsCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "runweb"
 	command.Action = runWebappsAction
 
-	return command
+	return &command
 }
 
 func runWebappsAction(c *urfavecli.Context) error {
-	go func(){
+	go func() {
 		b := backend.GetEcho()
 		b.Start(":3000")
 	}()

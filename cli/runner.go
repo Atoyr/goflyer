@@ -7,13 +7,13 @@ import (
 	urfavecli "github.com/urfave/cli"
 )
 
-func runCommand() urfavecli.Command {
+func runCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "run"
 	command.Aliases = []string{"r"}
 	command.Action = runAction
 
-	return command
+	return &command
 }
 
 func runAction(c *urfavecli.Context) error {
@@ -22,5 +22,3 @@ func runAction(c *urfavecli.Context) error {
 	executor.RunAsync(ctx)
 	return nil
 }
-
-

@@ -4,16 +4,16 @@ import (
 	"sync"
 
 	"github.com/atoyr/goflyer/client"
+	"github.com/atoyr/goflyer/configs"
 	"github.com/atoyr/goflyer/db"
 	"github.com/atoyr/goflyer/models"
-	"github.com/atoyr/goflyer/configs"
 )
 
 // Executor is singleton
 type executor struct {
 	dataFrames []models.DataFrame
 	db         db.DB
-	client     client.APIClient
+	client     client.Client
 }
 
 var (
@@ -23,13 +23,13 @@ var (
 
 func getExecutor() *executor {
 	once.Do(func() {
-		config ,err := configs.GetGeneralConfig()
+		config, err := configs.GetGeneralConfig()
 		if err != nil {
 			panic(err)
 		}
 		e := new(executor)
 		e.dataFrames = make([]models.DataFrame, 0)
-		e.client = *client.New(config.Apikey(),config.Secretkey())
+		e.client = *client.New(config.Apikey(), config.Secretkey())
 
 		// Get DataFrame for DB
 		e.db = config.GetDB()
@@ -48,7 +48,7 @@ func getExecutor() *executor {
 		e.dataFrames = append(e.dataFrames, e.db.GetDataFrame(models.GetDuration("24h")))
 
 		// GetDataFrame config
-		// TODO 
+		// TODO
 		exe = e
 	})
 	return exe
@@ -58,4 +58,3 @@ func ChangeDB(db db.DB) {
 	exe := getExecutor()
 	exe.db = db
 }
-

@@ -11,7 +11,7 @@ import (
 	urfavecli "github.com/urfave/cli"
 )
 
-func exportCommand() urfavecli.Command {
+func exportCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "export"
 	command.Aliases = []string{"e"}
@@ -19,15 +19,15 @@ func exportCommand() urfavecli.Command {
 	command.Subcommands = append(command.Subcommands, exportExecutionsCommand())
 	command.Subcommands = append(command.Subcommands, exportCandlesCommand())
 
-	return command
+	return &command
 }
 
-func exportTickersCommand() urfavecli.Command {
+func exportTickersCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "tickers"
 	command.Action = exportTickersAction
 
-	return command
+	return &command
 }
 
 func exportTickersAction(c *urfavecli.Context) error {
@@ -38,18 +38,18 @@ func exportTickersAction(c *urfavecli.Context) error {
 	return nil
 }
 
-func exportExecutionsCommand() urfavecli.Command {
+func exportExecutionsCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "executions"
 	command.Action = exportExecutionsAction
 	command.Flags = []urfavecli.Flag{
-		urfavecli.StringFlag{
+		&urfavecli.StringFlag{
 			Name:  "path, p",
 			Value: "export file path",
 		},
 	}
 
-	return command
+	return &command
 }
 
 func exportExecutionsAction(c *urfavecli.Context) error {
@@ -69,22 +69,22 @@ func exportExecutionsAction(c *urfavecli.Context) error {
 	return nil
 }
 
-func exportCandlesCommand() urfavecli.Command {
+func exportCandlesCommand() *urfavecli.Command {
 	var command urfavecli.Command
 	command.Name = "candles"
 	command.Action = exportCandlesAction
 	command.Flags = []urfavecli.Flag{
-		urfavecli.StringFlag{
+		&urfavecli.StringFlag{
 			Name:  "path, p",
 			Value: "",
 		},
-		urfavecli.StringFlag{
+		&urfavecli.StringFlag{
 			Name:  "duration, d",
 			Value: "1m",
 		},
 	}
 
-	return command
+	return &command
 }
 
 func exportCandlesAction(c *urfavecli.Context) error {
