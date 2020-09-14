@@ -8,7 +8,7 @@ import (
 	"github.com/atoyr/goflyer/client/bitflyer"
 )
 
-func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) {
+func (api *Client) GetPermissions() (permissions map[string]bool, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (api *APIClient) GetPermissions() (permissions map[string]bool, err error) 
 
 }
 
-func (api *APIClient) GetBoardState(productCode string) (boardState *bitflyer.BoardState, err error) {
+func (api *Client) GetBoardState(productCode string) (boardState *bitflyer.BoardState, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (api *APIClient) GetBoardState(productCode string) (boardState *bitflyer.Bo
 	return boardState, nil
 }
 
-func (api *APIClient) GetHealth(productCode string) (health *bitflyer.Health, err error) {
+func (api *Client) GetHealth(productCode string) (health *bitflyer.Health, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (api *APIClient) GetHealth(productCode string) (health *bitflyer.Health, er
 	return health, nil
 }
 
-func (api *APIClient) GetTicker(productCode string) (ticker *bitflyer.Ticker, err error) {
+func (api *Client) GetTicker(productCode string) (ticker *bitflyer.Ticker, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err
@@ -152,7 +152,7 @@ func (api *APIClient) GetTicker(productCode string) (ticker *bitflyer.Ticker, er
 	return ticker, nil
 }
 
-func (api *APIClient) GetBoard(productCode string) (board *bitflyer.Board, err error) {
+func (api *Client) GetBoard(productCode string) (board *bitflyer.Board, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func (api *APIClient) GetBoard(productCode string) (board *bitflyer.Board, err e
 	return board, nil
 }
 
-func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []bitflyer.Execution, err error) {
+func (api *Client) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []bitflyer.Execution, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err
@@ -212,7 +212,7 @@ func (api *APIClient) GetExecutions(productCode string, beforeID, afterID string
 	return executions, nil
 }
 
-func (api *APIClient) GetBalance() (balances []bitflyer.Balance, err error) {
+func (api *Client) GetBalance() (balances []bitflyer.Balance, err error) {
 	config, err := GetConfig()
 	if err != nil {
 		return nil, err

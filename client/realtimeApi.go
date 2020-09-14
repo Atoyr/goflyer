@@ -10,7 +10,7 @@ import (
 )
 
 // GetRealtimeTicker get Ticker for websocket
-func (api *APIClient) GetRealtimeTicker(ctx context.Context, ch chan<- bitflyer.Ticker, productCode string) {
+func (api *Client) GetRealtimeTicker(ctx context.Context, ch chan<- bitflyer.Ticker, productCode string) {
 	jsonRPC2 := NewJsonRPC2Subscribe()
 
 	childctx, cancel := context.WithCancel(ctx)
@@ -45,7 +45,7 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetRealtimeBoard(ctx context.Context, ch chan<- bitflyer.Board, productCode string, isDiff bool) {
+func (api *Client) GetRealtimeBoard(ctx context.Context, ch chan<- bitflyer.Board, productCode string, isDiff bool) {
 	jsonRPC2 := NewJsonRPC2Subscribe()
 
 	childctx, cancel := context.WithCancel(ctx)
@@ -83,7 +83,7 @@ OUTER:
 	}
 }
 
-func (api *APIClient) GetRealtimeExecutions(ctx context.Context, ch chan<- []bitflyer.Execution, productCode string) {
+func (api *Client) GetRealtimeExecutions(ctx context.Context, ch chan<- []bitflyer.Execution, productCode string) {
 	jsonRPC2 := NewJsonRPC2Subscribe()
 
 	childctx, cancel := context.WithCancel(ctx)

@@ -2,8 +2,11 @@ package cli
 
 import (
 	"context"
+  "fmt"
 
-	"github.com/atoyr/goflyer/executor"
+	"github.com/atoyr/goflyer/client"
+	"github.com/atoyr/goflyer/client/bitflyer"
+	"github.com/atoyr/goflyer/controllers"
 	urfavecli "github.com/urfave/cli"
 )
 
@@ -16,9 +19,18 @@ func runCommand() *urfavecli.Command {
 	return &command
 }
 
-func runAction(c *urfavecli.Context) error {
+func runAction(clictx *urfavecli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	executor.RunAsync(ctx)
+
+  c := client.New("","")
+  cc := controllers.NewClientController(*c)
+
+	cc.SubscribeTicker(func(ticker bitflyer.Ticker) {
+		fmt.Printf("\r%s value %f ", ticker.Timestamp, ticker.Ltp)
+	})
+
+  cc.ExecuteFetchTicker(ctx)
+
 	return nil
 }
