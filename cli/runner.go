@@ -3,6 +3,9 @@ package cli
 import (
 	"context"
   "fmt"
+  "bufio"
+  "os"
+  "time"
 
 	"github.com/atoyr/goflyer/client"
 	"github.com/atoyr/goflyer/client/bitflyer"
@@ -30,7 +33,26 @@ func runAction(clictx *urfavecli.Context) error {
 		fmt.Printf("\r%s value %f ", ticker.Timestamp, ticker.Ltp)
 	})
 
-  cc.ExecuteFetchTicker(ctx)
+  go cc.ExecuteFetchTicker(ctx)
+
+  for {
+    fmt.Println("application end is typed end")
+    scanner := bufio.NewScanner(os.Stdin)
+    scanner.Scan()
+    s := scanner.Text()
+    switch s {
+
+    case "start":
+      cc.RegisterScheduleAction(time.Now(),controllers.StartAction)
+      break;
+    case "stop":
+      cc.RegisterScheduleAction(time.Now(),controllers.StopAction)
+      break;
+    case "end":
+      cc.RegisterScheduleAction(time.Now(),controllers.ExitAction)
+      break;
+    }
+  }
 
 	return nil
 }
