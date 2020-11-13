@@ -105,17 +105,23 @@ func (api *Client) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch
 	}
 	c, _, err := websocket.DefaultDialer.Dial(config.GetWebsocketString(), nil)
 	if err != nil {
-		return fmt.Errorf("function=Client.doWebsocketRequest, action=Websocket Dial, err=%w \n", err)
+    e := fmt.Errorf("function=Client.doWebsocketRequest, action=Websocket Dial, err=%v \n", err)
+    logf("error : %v", e)
+		return e
 	}
 
 	defer c.Close()
 	if err := c.WriteJSON(&jsonRPC2); err != nil {
-		return fmt.Errorf("function=Client.doWebsocketRequest, action=Write Json, err=%w \n", err)
+    e := fmt.Errorf("function=Client.doWebsocketRequest, action=Write Json, err=%v \n", err)
+    logf("error : %v", e)
+		return e
 	}
 	c.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	if err != nil {
-		return fmt.Errorf("function=Client.doWebsocketRequest, action=Get Config, err=%w \n", err)
+    e := fmt.Errorf("function=Client.doWebsocketRequest, action=Get Config, err=%v \n", err)
+    logf("error : %v", e)
+		return e
 	}
 	retrymsec := config.Retrymsec
 
@@ -129,7 +135,7 @@ func (api *Client) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch
 				if retrymsec > 0 {
 					time.Sleep(time.Duration(retrymsec) * time.Millisecond)
 				} else {
-					return fmt.Errorf("function=Client.doWebsocketRequest, action=Read Json, message=%s, err=%w \n", message, err)
+					 logf("function=Client.doWebsocketRequest, action=Read Json, message=%s, err=%v \n", message, err)
 				}
 			}
 
