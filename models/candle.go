@@ -32,15 +32,6 @@ func JsonUnmarshalCandle(row []byte) (*Candle, error) {
 	return candle, nil
 }
 
-func JsonUnmarshalCandles(row []byte) ([]Candle, error) {
-	var candles []Candle
-	err := json.Unmarshal(row, &candles)
-	if err != nil {
-		return nil, err
-	}
-	return candles, nil
-}
-
 func (c *Candle) GetTimeString() string {
 	return c.Time.Format(time.RFC3339)
 }

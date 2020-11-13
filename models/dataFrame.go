@@ -43,6 +43,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 	for i := range df.Datetimes {
 		index := len(df.Datetimes) - i - 1
 		if df.Datetimes[index].Equal(dt) {
+      // add last
 			df.Closes[index] = price
 			if df.Highs[index] < price {
 				df.Highs[index] = price
@@ -53,6 +54,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 			break
 		} else if df.Datetimes[index].Before(dt) {
 			if i == 0 {
+        // append last
 				df.Datetimes = append(df.Datetimes, dt)
 				df.Opens = append(df.Opens, price)
 				df.Closes = append(df.Closes, price)
@@ -60,6 +62,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 				df.Lows = append(df.Lows, price)
 				df.Volumes = append(df.Volumes, volume)
 			} else {
+        // add target
 				tdates := df.Datetimes[index+1:]
 				df.Datetimes, df.Datetimes = append(df.Datetimes[:index], dt), append(df.Datetimes, tdates...)
 				tOpens := df.Opens[index+1:]
@@ -93,15 +96,14 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 		df.Lows = append(df.Lows, price)
 		df.Volumes = append(df.Volumes, volume)
 	}
-	df.updateChart()
 }
 
 // GetCandle is Export Candles data
-func (df *DataFrame) GetCandles() Candles {
-	cs := NewCandles(df.ProductCode, df.Duration)
+func (df *DataFrame) GetCandles() []Candle {
+  cs := make([]Candle,len(df.Datetimes))
 	for i := range df.Datetimes {
 		c := Candle{Time: df.Datetimes[i], Open: df.Opens[i], Close: df.Closes[i], High: df.Highs[i], Low: df.Lows[i]}
-		cs.Candles = append(cs.Candles, c)
+		cs[i] = c
 	}
 	return cs
 }

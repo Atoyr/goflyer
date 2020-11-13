@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0 // indirect
+	github.com/mattn/go-pubsub v0.0.0-20160821075316-7a151c7747cd
 	github.com/urfave/cli v1.22.1
 	golang.org/x/crypto v0.0.0-20191001170739-f9e2070545dc // indirect
 )
