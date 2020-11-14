@@ -98,7 +98,7 @@ func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 	}
 }
 
-// GetCandle is Export Candles data
+// GetCandles is Export Candles data
 func (df *DataFrame) GetCandles() []Candle {
   cs := make([]Candle,len(df.Datetimes))
 	for i := range df.Datetimes {
