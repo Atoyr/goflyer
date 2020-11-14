@@ -115,13 +115,7 @@ func (df *DataFrame) updateChart() {
 	df.updateRsis()
 }
 
-func (df *DataFrame) refreshChart() {
-	df.refreshSmas()
-	df.refreshEmas()
-}
-
 // SMA
-
 // GetSmas is added Smas setting
 func (df *DataFrame) GetSma(period int) Sma {
 	for i := range df.Smas {

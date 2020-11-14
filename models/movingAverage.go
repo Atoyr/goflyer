@@ -15,7 +15,7 @@ type Sma struct {
 
 type Ema struct {
 	*MovingAverage
-} 
+}
 
 func  JsonUnmarshalSma(row []byte)  (*Sma,error) {
 	var sma = new(Sma)

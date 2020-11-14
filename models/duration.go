@@ -28,18 +28,18 @@ var (
 func Durations() []string{
 	once.Do(func() {
 		durations = make([]string,12)
-		durations[0] = Duration_1m  
-		durations[1] = Duration_3m  
-		durations[2] = Duration_5m  
-		durations[3] = Duration_10m 
-		durations[4] = Duration_15m 
-		durations[5] = Duration_30m 
-		durations[6] = Duration_1h  
-		durations[7] = Duration_2h  
-		durations[8] = Duration_4h  
-		durations[9] = Duration_6h  
-		durations[10] = Duration_12h 
-		durations[11] = Duration_24h 
+		durations[0] = Duration_1m
+		durations[1] = Duration_3m
+		durations[2] = Duration_5m
+		durations[3] = Duration_10m
+		durations[4] = Duration_15m
+		durations[5] = Duration_30m
+		durations[6] = Duration_1h
+		durations[7] = Duration_2h
+		durations[8] = Duration_4h
+		durations[9] = Duration_6h
+		durations[10] = Duration_12h
+		durations[11] = Duration_24h
 	})
 	return durations
 }

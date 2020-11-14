@@ -15,6 +15,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const BTC_JPY = "BTC_JPY"
+
 // Client is bitflyer api client
 type Client struct {
 	key        string
