@@ -1,10 +1,7 @@
 package models
 
 import (
-	"fmt"
 	"time"
-
-	"github.com/atoyr/go-talib"
 )
 
 // DataFrame is goflyer chart data framework
@@ -30,11 +27,6 @@ type DataFrame struct {
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{ProductCode: productCode, Duration: duration}
 	return df
-}
-
-// Name is getting productCode_duration
-func (df *DataFrame) Name() string {
-	return fmt.Sprintf("%s_%s", df.ProductCode, df.Duration)
 }
 
 // Add is Add value
@@ -164,42 +156,42 @@ func (df *DataFrame) updateEmas() {
 	}
 }
 
-func (df *DataFrame) refreshEmas() {
-	for i, ema := range df.Emas {
-		if len(df.Datetimes) > ema.Period {
-			df.Emas[i].Values = talib.Ema(df.Closes, ema.Period)
-		} else {
-			df.Emas[i].Values = make([]float64, len(df.Datetimes))
-		}
-	}
-}
+// func (df *DataFrame) refreshEmas() {
+// 	for i, ema := range df.Emas {
+// 		if len(df.Datetimes) > ema.Period {
+// 			df.Emas[i].Values = talib.Ema(df.Closes, ema.Period)
+// 		} else {
+// 			df.Emas[i].Values = make([]float64, len(df.Datetimes))
+// 		}
+// 	}
+// }
 
 // BollingerBand
 
 // AddBollingerBand is added setting
-func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
-	bb := new(BollingerBand)
-	bb.N = n
-	bb.K1 = k1
-	bb.K2 = k2
-	if n <= len(df.Datetimes) {
-		Closes := df.Closes
-		up1, center, down1 := talib.BBands(Closes, n, k1, k1, 0)
-		up2, center, down2 := talib.BBands(Closes, n, k2, k2, 0)
-		bb.Up2 = up2
-		bb.Up1 = up1
-		bb.Center = center
-		bb.Down1 = down1
-		bb.Down2 = down2
-	} else {
-		bb.Up2 = make([]float64, len(df.Datetimes))
-		bb.Up1 = make([]float64, len(df.Datetimes))
-		bb.Center = make([]float64, len(df.Datetimes))
-		bb.Down1 = make([]float64, len(df.Datetimes))
-		bb.Down2 = make([]float64, len(df.Datetimes))
-	}
-	df.BollingerBand = bb
-}
+// func (df *DataFrame) AddBollingerBand(n int, k1, k2 float64) {
+// 	bb := new(BollingerBand)
+// 	bb.N = n
+// 	bb.K1 = k1
+// 	bb.K2 = k2
+// 	if n <= len(df.Datetimes) {
+// 		Closes := df.Closes
+// 		up1, center, down1 := talib.BBands(Closes, n, k1, k1, 0)
+// 		up2, center, down2 := talib.BBands(Closes, n, k2, k2, 0)
+// 		bb.Up2 = up2
+// 		bb.Up1 = up1
+// 		bb.Center = center
+// 		bb.Down1 = down1
+// 		bb.Down2 = down2
+// 	} else {
+// 		bb.Up2 = make([]float64, len(df.Datetimes))
+// 		bb.Up1 = make([]float64, len(df.Datetimes))
+// 		bb.Center = make([]float64, len(df.Datetimes))
+// 		bb.Down1 = make([]float64, len(df.Datetimes))
+// 		bb.Down2 = make([]float64, len(df.Datetimes))
+// 	}
+// 	df.BollingerBand = bb
+// }
 
 // RSI
 

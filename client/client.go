@@ -7,21 +7,40 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+  "path"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+	"net/url"
 
 	"github.com/gorilla/websocket"
 )
 
-const BTC_JPY = "BTC_JPY"
+const (
+  BTC_JPY = "BTC_JPY"
+  timeoutmsec = 5000
+  retrymsec = 60000
+	webapiUrl       = "https://api.bitflyer.com/v1/"
+	websocketScheme = "wss"
+	websocketHost   = "ws.lightstream.bitflyer.com"
+	websocketPath   = "/json-rpc"
+)
+
 
 // Client is bitflyer api client
 type Client struct {
 	key        string
 	secret     string
 	httpClient *http.Client
+
+
+	timeoutmsec     int64
+	retrymsec       int64
+	webapiUrl       string
+	websocketScheme string
+	websocketHost   string
+	websocketPath   string
 }
 
 // JsonRPC2 is Json rpc 2 struct
@@ -46,6 +65,9 @@ func New(key, secret string) *Client {
 	client.secret = secret
 	client.httpClient = new(http.Client)
 
+  client.timeoutmsec = timeoutmsec
+  client.retrymsec = retrymsec
+
 	return client
 }
 
@@ -54,6 +76,46 @@ func NewJsonRPC2Subscribe() *JsonRPC2 {
 	jsonRPC2.Version = "2.0"
 	jsonRPC2.Method = "subscribe"
 	return jsonRPC2
+}
+
+func (c *Client) SetTimeoutmsec(t int64) {
+  if t < 0 {
+    c.timeoutmsec = timeoutmsec
+  }else {
+    c.timeoutmsec = t
+  }
+}
+
+func (c *Client) SetRetrymsec(t int64) {
+  if t < 0 {
+    c.retrymsec = retrymsec
+  }else {
+    c.retrymsec = t
+  }
+}
+
+func (c *Client) SetWebApiUrl(url string) {
+  c.webapiUrl = url
+}
+
+func (c *Client) SetWebsocket(scheme, host, path string) {
+  c.websocketScheme = scheme
+  c.websocketHost = host
+  c.websocketPath = path
+}
+
+func (c *Client) getWebapiUrl(urlPath string) (string, error) {
+  baseUrl, err := url.Parse(c.webapiUrl)
+	if err != nil {
+		return "", err
+	}
+	baseUrl.Path = path.Join(baseUrl.Path, urlPath)
+	return baseUrl.String(), nil
+}
+
+func (c *Client) getWebsocketString() string {
+	websocket := url.URL{Scheme: c.websocketScheme, Host: c.websocketHost, Path: c.websocketPath}
+	return websocket.String()
 }
 
 // header is create api call header
@@ -101,11 +163,7 @@ func (api *Client) doRequest(method, url string, query map[string]string, data [
 }
 
 func (api *Client) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch chan<- interface{}) error {
-	config, err := GetConfig()
-	if err != nil {
-		return err
-	}
-	c, _, err := websocket.DefaultDialer.Dial(config.GetWebsocketString(), nil)
+	c, _, err := websocket.DefaultDialer.Dial(api.getWebsocketString(), nil)
 	if err != nil {
     e := fmt.Errorf("function=Client.doWebsocketRequest, action=Websocket Dial, err=%v \n", err)
     logf("error : %v", e)
@@ -125,7 +183,6 @@ func (api *Client) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch
     logf("error : %v", e)
 		return e
 	}
-	retrymsec := config.Retrymsec
 
 	for {
 		select {
@@ -134,10 +191,10 @@ func (api *Client) doWebsocketRequest(ctx context.Context, jsonRPC2 JsonRPC2, ch
 		default:
 			message := new(JsonRPC2)
 			if err := c.ReadJSON(message); err != nil {
-				if retrymsec > 0 {
-					time.Sleep(time.Duration(retrymsec) * time.Millisecond)
+				if api.retrymsec > 0 {
+					time.Sleep(time.Duration(api.retrymsec) * time.Millisecond)
 				} else {
-					 logf("function=Client.doWebsocketRequest, action=Read Json, message=%s, err=%v \n", message, err)
+					 logf("function=Client.doWebsocketRequest, action=Read Json, message=%v, err=%v \n", message, err)
 				}
 			}
 

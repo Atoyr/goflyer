@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -44,4 +45,8 @@ func (c *Candle) Add(price float64)  {
 		c.Low = price
 	}
 	c.Close = price
+}
+
+func (c *Candle) String() string{
+  return fmt.Sprintf("Time : %s , Open : %f , High : %f , Low : %f , close : %f", c.GetTimeString(), c.Open, c.High, c.Low, c.Close)
 }

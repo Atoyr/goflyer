@@ -9,12 +9,7 @@ import (
 )
 
 func (api *Client) GetPermissions() (permissions map[string]bool, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("me/getpermissions")
+	url, err := api.getWebapiUrl("me/getpermissions")
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +73,7 @@ func (api *Client) GetPermissions() (permissions map[string]bool, err error) {
 }
 
 func (api *Client) GetBoardState(productCode string) (boardState *bitflyer.BoardState, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("getboardstate")
+	url, err := api.getWebapiUrl("getboardstate")
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +93,7 @@ func (api *Client) GetBoardState(productCode string) (boardState *bitflyer.Board
 }
 
 func (api *Client) GetHealth(productCode string) (health *bitflyer.Health, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("gethealth")
+	url, err := api.getWebapiUrl("gethealth")
 	if err != nil {
 		return nil, err
 	}
@@ -128,12 +113,7 @@ func (api *Client) GetHealth(productCode string) (health *bitflyer.Health, err e
 }
 
 func (api *Client) GetTicker(productCode string) (ticker *bitflyer.Ticker, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("getticker")
+	url, err := api.getWebapiUrl("getticker")
 	if err != nil {
 		return nil, err
 	}
@@ -153,12 +133,7 @@ func (api *Client) GetTicker(productCode string) (ticker *bitflyer.Ticker, err e
 }
 
 func (api *Client) GetBoard(productCode string) (board *bitflyer.Board, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("getboard")
+	url, err := api.getWebapiUrl("getboard")
 	if err != nil {
 		return nil, err
 	}
@@ -178,12 +153,7 @@ func (api *Client) GetBoard(productCode string) (board *bitflyer.Board, err erro
 }
 
 func (api *Client) GetExecutions(productCode string, beforeID, afterID string, count int) (executions []bitflyer.Execution, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("getexecutions")
+	url, err := api.getWebapiUrl("getexecutions")
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +183,7 @@ func (api *Client) GetExecutions(productCode string, beforeID, afterID string, c
 }
 
 func (api *Client) GetBalance() (balances []bitflyer.Balance, err error) {
-	config, err := GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	url, err := config.GetWebapiUrl("me/getbalance")
+	url, err := api.getWebapiUrl("me/getbalance")
 	if err != nil {
 		return nil, err
 	}
