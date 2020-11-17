@@ -11,6 +11,7 @@ type DataFrame struct {
 	ProductCode string
 	Duration    time.Duration
 
+  // main data
 	Datetimes []time.Time
 	Opens     []float64
 	Closes    []float64
@@ -24,6 +25,7 @@ type DataFrame struct {
 	Rsis          []RelativeStrengthIndex
 	Macd          []MACD
 
+  // inner data
   executionPool []Execution
   // candle duration is 1m
   candles []Candle
@@ -35,12 +37,7 @@ type DataFrame struct {
 // NewDataFrame is getting CreateDataFrame
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{ProductCode: productCode, Duration: duration}
-  df.Datetimes = make([]time.Time, 0)
-  df.Opens = make([]float64, 0)
-  df.Closes = make([]float64, 0)
-  df.Highs = make([]float64, 0)
-  df.Lows = make([]float64, 0)
-  df.Volumes = make([]float64, 0)
+  df.clearMainData()
 
   df.Smas = make([]Sma, 0)
   df.Emas = make([]Ema, 0)
@@ -64,20 +61,18 @@ func (df *DataFrame) AddExecution(e Execution) {
 
 func (df *DataFrame) ApplyExecution() {
   df.m.Lock()
+  defer df.m.Unlock()
   sort.Slice(df.executionPool, func(i, j int) bool { return df.executionPool[i].Time.Before(df.executionPool[j].Time) })
-  t := time.Date(2006, 1, 2, 3, 4, 5, 0, time.Local)
-  if len(df.candles) > 0 {
-    t = df.candles[len(df.candles) - 1].Time
-  }
+
   for i := range df.executionPool {
     df.Add(df.executionPool[i].Time, df.executionPool[i].Price, df.executionPool[i].Size)
-
-    if tt := df.executionPool[i].Time.Truncate(1 * time.Minute); t.Equal(tt) {
-      df.candles[len(df.candles) - 1].Close = df.executionPool[i].Price
-      if df.candles[len(df.candles) - 1].High < df.executionPool[i].Price {
-        df.candles[len(df.candles) - 1].High = df.executionPool[i].Price
-      }else if df.candles[len(df.candles) - 1].Low > df.executionPool[i].Price {
-        df.candles[len(df.candles) - 1].Low = df.executionPool[i].Price
+    last := len(df.candles) - 1
+    if last >= 0 && df.candles[last].Time.Equal(df.executionPool[i].Time.Truncate(1 * time.Minute)) {
+      df.candles[last].Close = df.executionPool[i].Price
+      if df.candles[last].High < df.executionPool[i].Price {
+        df.candles[last].High = df.executionPool[i].Price
+      }else if df.candles[last].Low > df.executionPool[i].Price {
+        df.candles[last].Low = df.executionPool[i].Price
       }
       df.volumes[len(df.volumes) - 1] = df.volumes[len(df.volumes) - 1] + df.executionPool[i].Size
     }else {
@@ -86,7 +81,6 @@ func (df *DataFrame) ApplyExecution() {
     }
   }
   df.executionPool = make([]Execution, 0)
-  df.m.Unlock()
 }
 
 // Add is Add value
@@ -158,6 +152,46 @@ func (df *DataFrame) GetCandles() []Candle {
 		cs[i] = c
 	}
 	return cs
+}
+
+func (df *DataFrame) SetDuration(d time.Duration) {
+  df.m.Lock()
+  defer df.m.Unlock()
+  df.Duration = d
+  df.clearMainData()
+  if len(df.candles) == 0 {
+    return
+  }
+
+  for i := range df.candles {
+    t := df.candles[i].Time.Truncate(df.Duration)
+    last := len(df.Datetimes) - 1
+    if last >= 0 && df.Datetimes[last].Equal(t) {
+      if df.candles[i].High > df.Highs[last] {
+        df.Highs[last] = df.candles[i].High
+      }
+      if df.candles[i].Low < df.Lows[last] {
+        df.Lows[last] = df.candles[i].Low
+      }
+      df.Closes[last] = df.candles[i].Close
+    }else {
+      df.Datetimes = append(df.Datetimes, df.candles[i].Time)
+      df.Opens = append(df.Opens, df.candles[i].Open)
+      df.Highs = append(df.Highs, df.candles[i].High)
+      df.Lows = append(df.Lows, df.candles[i].Low)
+      df.Closes = append(df.Closes, df.candles[i].Close)
+      df.Volumes = append(df.Volumes, df.volumes[i])
+    }
+  }
+}
+
+func (df *DataFrame) clearMainData() {
+  df.Datetimes = make([]time.Time, 0)
+  df.Opens = make([]float64, 0)
+  df.Closes = make([]float64, 0)
+  df.Highs = make([]float64, 0)
+  df.Lows = make([]float64, 0)
+  df.Volumes = make([]float64, 0)
 }
 
 func (df *DataFrame) updateChart() {
