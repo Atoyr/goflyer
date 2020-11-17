@@ -2,12 +2,14 @@ package main
 
 import (
   "os"
+	"net/http"
 	"time"
 	"context"
   "log"
   "fmt"
 
   "github.com/urfave/cli/v2"
+  "github.com/labstack/echo"
   "github.com/atoyr/goflyer/config"
 	"github.com/atoyr/goflyer/models"
   "github.com/atoyr/goflyer/client"
@@ -35,10 +37,22 @@ func main() {
       ctx := context.Background()
       ch := make(chan []bitflyer.Execution)
       go cli.GetRealtimeExecutions(ctx,ch,"BTC_JPY")
+
       fmt.Println("execute")
       ticker := time.NewTicker(30 * time.Second)
       df := models.NewDataFrame("BTC_JPY", 5 * time.Minute)
       t := time.Now().Truncate(1 * time.Minute)
+
+      api := echo.New()
+      api.GET("/last_candle",
+        func (c echo.Context) error {
+          if index := len(df.Datetimes) - 1; index > 0 {
+            return c.JSON(http.StatusOK, df.GetCandles())
+          }else {
+            return c.String(http.StatusServiceUnavailable, "fooo")
+          }
+        })
+      go api.Start(":8080")
       for {
         select {
         case <-ctx.Done():
