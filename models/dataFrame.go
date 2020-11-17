@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+  "sync"
+  "sort"
 )
 
 // DataFrame is goflyer chart data framework
@@ -21,12 +23,70 @@ type DataFrame struct {
 	BollingerBand *BollingerBand
 	Rsis          []RelativeStrengthIndex
 	Macd          []MACD
+
+  executionPool []Execution
+  // candle duration is 1m
+  candles []Candle
+  volumes []float64
+
+  m *sync.Mutex
 }
 
 // NewDataFrame is getting CreateDataFrame
 func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	df := DataFrame{ProductCode: productCode, Duration: duration}
+  df.Datetimes = make([]time.Time, 0)
+  df.Opens = make([]float64, 0)
+  df.Closes = make([]float64, 0)
+  df.Highs = make([]float64, 0)
+  df.Lows = make([]float64, 0)
+  df.Volumes = make([]float64, 0)
+
+  df.Smas = make([]Sma, 0)
+  df.Emas = make([]Ema, 0)
+  df.BollingerBand = new(BollingerBand)
+  df.Rsis = make([]RelativeStrengthIndex, 0)
+  df.Macd = make([]MACD, 0)
+
+  df.executionPool = make([]Execution, 0)
+  df.candles = make([]Candle, 0)
+  df.volumes = make([]float64, 0)
+
+  df.m = new(sync.Mutex)
 	return df
+}
+
+func (df *DataFrame) AddExecution(e Execution) {
+  df.m.Lock()
+  df.executionPool = append(df.executionPool, e)
+  df.m.Unlock()
+}
+
+func (df *DataFrame) ApplyExecution() {
+  df.m.Lock()
+  sort.Slice(df.executionPool, func(i, j int) bool { return df.executionPool[i].Time.Before(df.executionPool[j].Time) })
+  t := time.Date(2006, 1, 2, 3, 4, 5, 0, time.Local)
+  if len(df.candles) > 0 {
+    t = df.candles[len(df.candles) - 1].Time
+  }
+  for i := range df.executionPool {
+    df.Add(df.executionPool[i].Time, df.executionPool[i].Price, df.executionPool[i].Size)
+
+    if tt := df.executionPool[i].Time.Truncate(1 * time.Minute); t.Equal(tt) {
+      df.candles[len(df.candles) - 1].Close = df.executionPool[i].Price
+      if df.candles[len(df.candles) - 1].High < df.executionPool[i].Price {
+        df.candles[len(df.candles) - 1].High = df.executionPool[i].Price
+      }else if df.candles[len(df.candles) - 1].Low > df.executionPool[i].Price {
+        df.candles[len(df.candles) - 1].Low = df.executionPool[i].Price
+      }
+      df.volumes[len(df.volumes) - 1] = df.volumes[len(df.volumes) - 1] + df.executionPool[i].Size
+    }else {
+      df.candles = append(df.candles, NewCandle(1 * time.Minute, df.executionPool[i].Time, df.executionPool[i].Price))
+      df.volumes = append(df.volumes, df.executionPool[i].Size)
+    }
+  }
+  df.executionPool = make([]Execution, 0)
+  df.m.Unlock()
 }
 
 // Add is Add value
