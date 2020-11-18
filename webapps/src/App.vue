@@ -1,7 +1,7 @@
 <template>
   <div id="contents">
       <GChart
-        type="ColumnChart"
+        type="CandlestickChart"
         :data="chartData"
         :options="chartOptions"
       />
@@ -16,15 +16,14 @@ export default {
   components: {
     GChart
   },
-  mounted() {
-    this.intervalId = setInterval(function () {
-      fetch('http://localhost:8080/candles',{mode: "no-cors",})
+  methods : {
+    getCandles(){
+      fetch('http://localhost:8080/candles')
         .then(res => {
-          console.log(res)
-          return res.json()
+          return res.json();
         })
         .then(data => {
-          this.chartData = []
+          this.chartData = [["","","","",""]]
           for (const c of data) {
             let temp = []
             temp.push(c.time)
@@ -34,7 +33,14 @@ export default {
             temp.push(c.high)
             this.chartData.push(temp)
           }
-        })}, 1000)
+        })
+    }
+  },
+  mounted() {
+    let self = this
+    this.intervalId = setInterval(function () {
+      self.getCandles()
+    }, 1000)
   },
   beforeDestroy() {
     clearInterval(this.intervalId)

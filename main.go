@@ -10,6 +10,7 @@ import (
 
   "github.com/urfave/cli/v2"
   "github.com/labstack/echo"
+  "github.com/labstack/echo/middleware"
   "github.com/atoyr/goflyer/controller"
 )
 
@@ -21,6 +22,7 @@ func main() {
   app := &cli.App{
     Action: func(c *cli.Context) error {
       clr := controller.New(APP_NAME)
+      clr.SaveConfig()
 
       ctx := context.Background()
       childctx , cancel := context.WithCancel(ctx)
@@ -28,6 +30,7 @@ func main() {
 
 
       api := echo.New()
+      api.Use(middleware.CORS())
       api.GET("/candles",
         func (ec echo.Context) error {
           return ec.JSON(http.StatusOK, clr.Candles())
