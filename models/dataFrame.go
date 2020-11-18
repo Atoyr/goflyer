@@ -4,6 +4,7 @@ import (
 	"time"
   "sync"
   "sort"
+  "log"
 )
 
 // DataFrame is goflyer chart data framework
@@ -32,6 +33,8 @@ type DataFrame struct {
   volumes []float64
 
   m *sync.Mutex
+
+  logger *log.Logger
 }
 
 // NewDataFrame is getting CreateDataFrame
@@ -63,6 +66,7 @@ func (df *DataFrame) ApplyExecution() {
   df.m.Lock()
   defer df.m.Unlock()
   sort.Slice(df.executionPool, func(i, j int) bool { return df.executionPool[i].Time.Before(df.executionPool[j].Time) })
+  df.logf("apply execution : execution count is %d", len(df.executionPool))
 
   for i := range df.executionPool {
     df.Add(df.executionPool[i].Time, df.executionPool[i].Price, df.executionPool[i].Size)
@@ -154,6 +158,17 @@ func (df *DataFrame) GetCandles() []Candle {
 	return cs
 }
 
+func (df *DataFrame) SetLogger(l *log.Logger) {
+  df.logger = l
+}
+
+func (df *DataFrame) logf(format string, v ...interface{}) {
+  if df.logger == nil {
+    return
+  }
+  df.logger.Printf(format, v...)
+}
+
 func (df *DataFrame) SetDuration(d time.Duration) {
   df.m.Lock()
   defer df.m.Unlock()
@@ -174,8 +189,9 @@ func (df *DataFrame) SetDuration(d time.Duration) {
         df.Lows[last] = df.candles[i].Low
       }
       df.Closes[last] = df.candles[i].Close
+      df.Volumes[last] = df.Volumes[last] + df.volumes[i]
     }else {
-      df.Datetimes = append(df.Datetimes, df.candles[i].Time)
+      df.Datetimes = append(df.Datetimes, t)
       df.Opens = append(df.Opens, df.candles[i].Open)
       df.Highs = append(df.Highs, df.candles[i].High)
       df.Lows = append(df.Lows, df.candles[i].Low)

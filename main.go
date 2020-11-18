@@ -40,17 +40,33 @@ func main() {
 
       fmt.Println("execute")
       ticker := time.NewTicker(30 * time.Second)
-      df := models.NewDataFrame("BTC_JPY", 5 * time.Minute)
-      t := time.Now().Truncate(1 * time.Minute)
+      df := models.NewDataFrame("BTC_JPY", 1 * time.Minute)
+      // df.SetLogger( log.New(os.Stdout, "myapp", log.LstdFlags))
+
+      t := time.Now().Truncate(1 * time.Hour)
 
       api := echo.New()
       api.GET("/last_candle",
         func (c echo.Context) error {
-          if index := len(df.Datetimes) - 1; index > 0 {
-            return c.JSON(http.StatusOK, df.GetCandles())
-          }else {
+          if index := len(df.Datetimes) - 1; index < 0 {
             return c.String(http.StatusServiceUnavailable, "fooo")
+          }else {
+            return c.JSON(http.StatusOK, df.GetCandles())
           }
+        })
+      api.POST("/set_duration",
+        func (c echo.Context) error {
+          fmt.Println()
+          fmt.Println("call set_duration")
+          durationString := c.FormValue("duration")
+          d := models.GetDuration(durationString)
+          df.SetDuration(d)
+          fmt.Println(durationString)
+          for i := range df.Datetimes {
+          fmt.Printf("Time : %s , Open : %7.0f , High : %7.0f , Low : %7.0f , Close : %7.0f , Volume : %f",df.Datetimes[i], df.Opens[i], df.Highs[i], df.Lows[i], df.Closes[i], df.Volumes[i])
+          fmt.Println()
+          }
+          return c.String(http.StatusOK, string(d))
         })
       go api.Start(":8080")
       for {
