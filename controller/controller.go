@@ -17,9 +17,8 @@ type Controller struct {
   appName   string
 	client    *client.Client
 	config    config.Config
-	dataframe models.DataFrame
-
-	duration time.Duration
+	dataframeSet models.DataFrameSet
+  duration time.Duration
 
   ps *pubsub.PubSub
 }
@@ -33,7 +32,10 @@ func New(appName string) *Controller {
   }
   c.config = conf
 	c.client = client.New(c.config.Apikey, c.config.Secretkey)
-  c.dataframe = models.NewDataFrame("BTC_JPY", time.Duration(c.config.DataFrameDurationMinute) * time.Minute)
+  c.dataframeSet = models.NewDataFrameSet("BTC_JPY")
+  for i := range c.config.CanUsedDataFrameDurationMinute {
+    c.dataframeSet.AddDataFrame( time.Duration( c.config.CanUsedDataFrameDurationMinute[i]) * time.Minute)
+  }
   c.ps = pubsub.New()
 
   c.applyConfig()
@@ -63,20 +65,29 @@ func (c *Controller) FetchExecuter(ctx context.Context) {
         fmt.Println("Done")
         return
       case <-ticker.C:
-        c.dataframe.ApplyExecution()
-        i := len(c.dataframe.Datetimes) - 1
-        fmt.Printf("Time : %s , Open : %7.0f , High : %7.0f , Low : %7.0f , Close : %7.0f , Volume : %f",c.dataframe.Datetimes[i], c.dataframe.Opens[i], c.dataframe.Highs[i], c.dataframe.Lows[i], c.dataframe.Closes[i], c.dataframe.Volumes[i])
+        c.dataframeSet.ApplyExecution()
+        df, err := c.dataframeSet.GetDataFrame(15 * time.Minute)
+        if err != nil {
+          fmt.Println(err)
+        }
+        i := len(df.Datetimes) - 1
+        fmt.Printf("Time : %s , Open : %7.0f , High : %7.0f , Low : %7.0f , Close : %7.0f , Volume : %f",df.Datetimes[i], df.Opens[i], df.Highs[i], df.Lows[i], df.Closes[i], df.Volumes[i])
         fmt.Println()
       case param := <-ch:
         for i := range  param {
           e := models.Execution{ Side: param[i].Side, Price : param[i].Price, Size : param[i].Size, Time : param[i].DateTime()}
-          c.dataframe.AddExecution(e)
+          c.dataframeSet.AddExecution(e)
         }
       }
     }
   }()
 }
 
-func (c *Controller) Candles() []models.Candle {
-  return c.dataframe.GetCandles()
+func (c *Controller) Candles(duration time.Duration) ([]models.Candle, error) {
+  if df, err := c.dataframeSet.GetDataFrame(duration); err != nil {
+    return nil, err
+  }else {
+    fmt.Println(df.GetCandles())
+    return df.GetCandles(), nil
+  }
 }

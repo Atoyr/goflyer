@@ -22,11 +22,12 @@ type Config struct {
 	WebsocketHost   string `json:"websocket_host"`
 	WebsocketPath   string `json:"websocket_path"`
 
+
   // DataFrameUpdateDuration unit is second
   DataFrameUpdateDuration int `json:"data_frame_update_duration"`
 
   // User Config
-  DataFrameDurationMinute int `json:"data_frame_dutaion_Minute"`
+  CanUsedDataFrameDurationMinute []int `json:"can_used_data_frame_dutaion_Minute"`
 }
 
 const (
@@ -65,7 +66,7 @@ func (c *Config) loadDefaultValue() {
 		c.WebsocketHost = WebsocketHost
 		c.WebsocketPath = WebsocketPath
     c.DataFrameUpdateDuration = 30
-    c.DataFrameDurationMinute = 30
+    c.CanUsedDataFrameDurationMinute = []int {1,3,5,15,30,60,90,120,240,360,720,1440}
 }
 
 func (c *Config) Save() error {

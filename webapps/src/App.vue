@@ -18,7 +18,7 @@ export default {
   },
   methods : {
     getCandles(){
-      fetch('http://localhost:8080/candles')
+      fetch('http://localhost:8080/candles/1')
         .then(res => {
           return res.json();
         })

@@ -7,6 +7,7 @@ import (
   "log"
   "fmt"
   "context"
+  "strconv"
 
   "github.com/urfave/cli/v2"
   "github.com/labstack/echo"
@@ -31,9 +32,19 @@ func main() {
 
       api := echo.New()
       api.Use(middleware.CORS())
-      api.GET("/candles",
+      api.GET("/candles/:duration",
         func (ec echo.Context) error {
-          return ec.JSON(http.StatusOK, clr.Candles())
+          ds := ec.Param("duration")
+          d, err := strconv.Atoi(ds)
+          if err != nil {
+            return ec.JSON(http.StatusNotFound, nil)
+          }
+          c ,err := clr.Candles(time.Duration(d) * time.Minute)
+          if err != nil {
+            return ec.JSON(http.StatusNotFound, nil)
+          }else {
+            return ec.JSON(http.StatusOK, c)
+          }
         })
       api.POST("/set_duration",
         func (c echo.Context) error {

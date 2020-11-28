@@ -2,9 +2,6 @@ package models
 
 import (
 	"time"
-  "sync"
-  "sort"
-  "log"
 )
 
 // DataFrame is goflyer chart data framework
@@ -25,16 +22,6 @@ type DataFrame struct {
 	BollingerBand *BollingerBand
 	Rsis          []RelativeStrengthIndex
 	Macd          []MACD
-
-  // inner data
-  executionPool []Execution
-  // candle duration is 1m
-  candles []Candle
-  volumes []float64
-
-  m *sync.Mutex
-
-  logger *log.Logger
 }
 
 // NewDataFrame is getting CreateDataFrame
@@ -48,43 +35,7 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
   df.Rsis = make([]RelativeStrengthIndex, 0)
   df.Macd = make([]MACD, 0)
 
-  df.executionPool = make([]Execution, 0)
-  df.candles = make([]Candle, 0)
-  df.volumes = make([]float64, 0)
-
-  df.m = new(sync.Mutex)
 	return df
-}
-
-func (df *DataFrame) AddExecution(e Execution) {
-  df.m.Lock()
-  df.executionPool = append(df.executionPool, e)
-  df.m.Unlock()
-}
-
-func (df *DataFrame) ApplyExecution() {
-  df.m.Lock()
-  defer df.m.Unlock()
-  sort.Slice(df.executionPool, func(i, j int) bool { return df.executionPool[i].Time.Before(df.executionPool[j].Time) })
-  df.logf("apply execution : execution count is %d", len(df.executionPool))
-
-  for i := range df.executionPool {
-    df.Add(df.executionPool[i].Time, df.executionPool[i].Price, df.executionPool[i].Size)
-    last := len(df.candles) - 1
-    if last >= 0 && df.candles[last].Time.Equal(df.executionPool[i].Time.Truncate(1 * time.Minute)) {
-      df.candles[last].Close = df.executionPool[i].Price
-      if df.candles[last].High < df.executionPool[i].Price {
-        df.candles[last].High = df.executionPool[i].Price
-      }else if df.candles[last].Low > df.executionPool[i].Price {
-        df.candles[last].Low = df.executionPool[i].Price
-      }
-      df.volumes[len(df.volumes) - 1] = df.volumes[len(df.volumes) - 1] + df.executionPool[i].Size
-    }else {
-      df.candles = append(df.candles, NewCandle(1 * time.Minute, df.executionPool[i].Time, df.executionPool[i].Price))
-      df.volumes = append(df.volumes, df.executionPool[i].Size)
-    }
-  }
-  df.executionPool = make([]Execution, 0)
 }
 
 // Add is Add value
@@ -156,49 +107,6 @@ func (df *DataFrame) GetCandles() []Candle {
 		cs[i] = c
 	}
 	return cs
-}
-
-func (df *DataFrame) SetLogger(l *log.Logger) {
-  df.logger = l
-}
-
-func (df *DataFrame) logf(format string, v ...interface{}) {
-  if df.logger == nil {
-    return
-  }
-  df.logger.Printf(format, v...)
-}
-
-func (df *DataFrame) SetDuration(d time.Duration) {
-  df.m.Lock()
-  defer df.m.Unlock()
-  df.Duration = d
-  df.clearMainData()
-  if len(df.candles) == 0 {
-    return
-  }
-
-  for i := range df.candles {
-    t := df.candles[i].Time.Truncate(df.Duration)
-    last := len(df.Datetimes) - 1
-    if last >= 0 && df.Datetimes[last].Equal(t) {
-      if df.candles[i].High > df.Highs[last] {
-        df.Highs[last] = df.candles[i].High
-      }
-      if df.candles[i].Low < df.Lows[last] {
-        df.Lows[last] = df.candles[i].Low
-      }
-      df.Closes[last] = df.candles[i].Close
-      df.Volumes[last] = df.Volumes[last] + df.volumes[i]
-    }else {
-      df.Datetimes = append(df.Datetimes, t)
-      df.Opens = append(df.Opens, df.candles[i].Open)
-      df.Highs = append(df.Highs, df.candles[i].High)
-      df.Lows = append(df.Lows, df.candles[i].Low)
-      df.Closes = append(df.Closes, df.candles[i].Close)
-      df.Volumes = append(df.Volumes, df.volumes[i])
-    }
-  }
 }
 
 func (df *DataFrame) clearMainData() {
