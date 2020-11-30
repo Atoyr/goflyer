@@ -38,6 +38,16 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 	return df
 }
 
+func (df *DataFrame) addExecution(execitons []Execution) {
+  if len(execitons) > 0 {
+    beforeDatetime := execitons.Truncate(df.Duration)
+    for i := range execitons {
+      datetime := execitons[i]
+
+    }
+  }
+}
+
 // Add is Add value
 func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
 	dt := datetime.Truncate(df.Duration)
