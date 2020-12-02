@@ -39,11 +39,33 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 }
 
 func (df *DataFrame) addExecution(execitons []Execution) {
-  if len(execitons) > 0 {
-    beforeDatetime := execitons.Truncate(df.Duration)
-    for i := range execitons {
-      datetime := execitons[i]
+  datetimes := make([]time.Time, 0)
+  opens := make([]float64, 0)
+  closes := make([]float64, 0)
+  highs := make([]float64, 0)
+  lows := make([]float64, 0)
+  volumes := make([]float64, 0)
 
+  // create candlestick data
+  for i := range execitons {
+    datetime := execitons[i].Time.Truncate(df.Duration)
+    if len(datetimes) > 0 && datetimes[len(datetimes) -1].Equal(datetime) {
+      index := len(datetimes) - 1
+      closes[index] = executins[i].Price
+      if executions[i].Price > highs[index] {
+        highs[index] = executions[i].Price
+      } else if lows[index] > executions[i].Price {
+        lows[index] = executions[i].Price
+      }
+      volumes[index] = volumes[index] + executions[i].Volume
+    }else {
+      // add new Candlestick Data
+      datetimes = append(datetimes, datetime)
+      opens = append(opens, executions[i].Price)
+      closes = append(closes, executions[i].Price)
+      highs = append(highs, executions[i].Price)
+      lows = append(lows, executions[i].Price)
+      volumes = append(volumes, executions[i].size)
     }
   }
 }

@@ -54,6 +54,10 @@ func (c *Controller) SaveConfig() {
   c.config.Save()
 }
 
+func (c *Controller) Run(ctx context.Context) {
+
+}
+
 func (c *Controller) FetchExecuter(ctx context.Context) {
   ch := make(chan []bitflyer.Execution)
   ticker := time.NewTicker(c.duration)
