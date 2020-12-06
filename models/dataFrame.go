@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+  "sync"
+  "sort"
 )
 
 // DataFrame is goflyer chart data framework
@@ -22,6 +24,8 @@ type DataFrame struct {
 	BollingerBand *BollingerBand
 	Rsis          []RelativeStrengthIndex
 	Macd          []MACD
+
+  m *sync.Mutex
 }
 
 // NewDataFrame is getting CreateDataFrame
@@ -34,11 +38,14 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
   df.BollingerBand = new(BollingerBand)
   df.Rsis = make([]RelativeStrengthIndex, 0)
   df.Macd = make([]MACD, 0)
+  df.m = new(sync.Mutex)
 
 	return df
 }
 
-func (df *DataFrame) addExecution(execitons []Execution) {
+func (df *DataFrame) addExecution(executions []Execution) {
+  sort.Slice(executions, func(i, j int) bool { return executions[i].Time.Before(executions[j].Time) })
+
   datetimes := make([]time.Time, 0)
   opens := make([]float64, 0)
   closes := make([]float64, 0)
@@ -47,17 +54,17 @@ func (df *DataFrame) addExecution(execitons []Execution) {
   volumes := make([]float64, 0)
 
   // create candlestick data
-  for i := range execitons {
-    datetime := execitons[i].Time.Truncate(df.Duration)
+  for i := range executions {
+    datetime := executions[i].Time.Truncate(df.Duration)
     if len(datetimes) > 0 && datetimes[len(datetimes) -1].Equal(datetime) {
       index := len(datetimes) - 1
-      closes[index] = executins[i].Price
+      closes[index] = executions[i].Price
       if executions[i].Price > highs[index] {
         highs[index] = executions[i].Price
       } else if lows[index] > executions[i].Price {
         lows[index] = executions[i].Price
       }
-      volumes[index] = volumes[index] + executions[i].Volume
+      volumes[index] = volumes[index] + executions[i].Size
     }else {
       // add new Candlestick Data
       datetimes = append(datetimes, datetime)
@@ -65,13 +72,46 @@ func (df *DataFrame) addExecution(execitons []Execution) {
       closes = append(closes, executions[i].Price)
       highs = append(highs, executions[i].Price)
       lows = append(lows, executions[i].Price)
-      volumes = append(volumes, executions[i].size)
+      volumes = append(volumes, executions[i].Size)
     }
+  }
+
+  // add candlestick data
+  if len(datetimes) > 0 {
+    df.m.Lock()
+    defer df.m.Unlock()
+    // merge dataframe lastdata
+    if last := len(df.Datetimes) - 1; last >= 0 {
+      if df.Datetimes[0].Equal(df.Datetimes[last]) {
+        if df.Highs[last] < highs[0] {
+          df.Highs[last] = highs[0]
+        }
+        if df.Lows[last] > lows[0] {
+          df.Lows[last] = lows[0]
+        }
+        df.Closes[last] = closes[0]
+        df.Volumes[last] = df.Volumes[last] + volumes[0]
+
+        datetimes = datetimes[1:]
+        opens = opens[1:]
+        highs = highs[1:]
+        lows = lows[1:]
+        closes = closes[1:]
+        volumes = volumes[1:]
+      }
+    }
+    // append
+    df.Datetimes = append(df.Datetimes, datetimes...)
+    df.Opens = append(df.Opens, opens...)
+    df.Highs = append(df.Highs, highs...)
+    df.Lows = append(df.Lows, lows...)
+    df.Closes = append(df.Closes, closes...)
+    df.Volumes = append(df.Volumes, volumes...)
   }
 }
 
-// Add is Add value
-func (df *DataFrame) Add(datetime time.Time, price, volume float64) {
+// add is added one value
+func (df *DataFrame) add(datetime time.Time, price, volume float64) {
 	dt := datetime.Truncate(df.Duration)
 	for i := range df.Datetimes {
 		index := len(df.Datetimes) - i - 1

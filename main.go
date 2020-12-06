@@ -27,7 +27,7 @@ func main() {
 
       ctx := context.Background()
       childctx , cancel := context.WithCancel(ctx)
-      clr.FetchExecuter(childctx)
+      clr.Run(childctx)
 
 
       api := echo.New()

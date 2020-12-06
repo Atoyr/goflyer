@@ -5,7 +5,6 @@ import (
 	"time"
   "sync"
   "log"
-  "sort"
 )
 
 type DataFrameSet struct {
@@ -85,11 +84,10 @@ func (dfs *DataFrameSet) AddExecution(e Execution) {
 func (dfs *DataFrameSet) ApplyExecution() {
   dfs.m.Lock()
   defer dfs.m.Unlock()
-  sort.Slice(dfs.executionPool, func(i, j int) bool { return dfs.executionPool[i].Time.Before(dfs.executionPool[j].Time) })
 
   for i := range dfs.executionPool {
     for j := range dfs.DataFrames {
-      dfs.DataFrames[j].Add(dfs.executionPool[i].Time, dfs.executionPool[i].Price, dfs.executionPool[i].Size)
+      dfs.DataFrames[j].addExecution(dfs.executionPool)
 
       // create one minite
       last := len(dfs.candles) - 1
