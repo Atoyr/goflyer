@@ -4,6 +4,7 @@ import (
   "fmt"
 	"time"
   "context"
+  "sort"
 
   "github.com/mattn/go-pubsub"
 
@@ -34,6 +35,7 @@ func New(appName string) *Controller {
 	c.client = client.New(c.config.Apikey, c.config.Secretkey)
   c.dataframeSet = models.NewDataFrameSet("BTC_JPY")
   for i := range c.config.CanUsedDataFrameDurationMinute {
+    fmt.Println(c.config.CanUsedDataFrameDurationMinute[i])
     c.dataframeSet.AddDataFrame( time.Duration( c.config.CanUsedDataFrameDurationMinute[i]) * time.Minute)
   }
   c.ps = pubsub.New()
@@ -69,12 +71,14 @@ func (c *Controller) Run(ctx context.Context) {
       now := time.Now().Truncate(1 * time.Second)
       if now.Equal(now.Truncate(c.duration)) {
         c.dataframeSet.ApplyExecution()
-        df, err := c.dataframeSet.GetDataFrame(15 * time.Minute)
+        c.dataframeSet.UpdateTechnicalChartData()
+        df, err := c.dataframeSet.GetDataFrame(1 * time.Minute)
         if err != nil {
           fmt.Println(err)
         }
         if i := len(df.Datetimes) - 1; i >= 0 {
-          fmt.Printf("Time : %s , Open : %7.0f , High : %7.0f , Low : %7.0f , Close : %7.0f , Volume : %f",df.Datetimes[i], df.Opens[i], df.Highs[i], df.Lows[i], df.Closes[i], df.Volumes[i])
+          t := df.Datetimes[i].In(time.FixedZone("Asia/Tokyo", 9*60*60)).Format(time.RFC3339)
+          fmt.Printf("%d  Time : %s , Open : %7.0f , High : %7.0f , Low : %7.0f , Close : %7.0f , Volume : %f",i,t, df.Opens[i], df.Highs[i], df.Lows[i], df.Closes[i], df.Volumes[i])
           fmt.Println()
         }
       }
@@ -93,6 +97,7 @@ func (c *Controller) fetchExecuter(ctx context.Context) {
       fmt.Println("Done")
       return
     case param := <-ch:
+      sort.Slice(param, func(i, j int) bool { return param[i].ID < param[j].ID })
       for i := range  param {
         e := models.Execution{ Side: param[i].Side, Price : param[i].Price, Size : param[i].Size, Time : param[i].DateTime()}
         c.dataframeSet.AddExecution(e)

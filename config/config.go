@@ -27,7 +27,7 @@ type Config struct {
   DataFrameUpdateDuration int `json:"data_frame_update_duration"`
 
   // User Config
-  CanUsedDataFrameDurationMinute []int `json:"can_used_data_frame_dutaion_Minute"`
+  CanUsedDataFrameDurationMinute []int `json:"can_used_data_frame_dutaion_minute"`
 }
 
 const (
@@ -43,11 +43,11 @@ func Load(appName string) (Config, error) {
   c.loadDefaultValue()
   c.appName = appName
   configDir, err := createConfigDirectoryIfNotExists(appName)
-  if err == nil {
+  if err != nil {
     return *c, err
   }
   configFilePath := filepath.Join(configDir, ConfigFileName)
-  if _, err := os.Stat(configFilePath); os.IsExist(err) {
+  if _, err := os.Stat(configFilePath); err == nil {
     raw, err := ioutil.ReadFile(configFilePath)
     if err != nil {
       return *c, err

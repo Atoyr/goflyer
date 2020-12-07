@@ -3,7 +3,6 @@ package models
 import (
 	"time"
   "sync"
-  "sort"
 )
 
 // DataFrame is goflyer chart data framework
@@ -19,6 +18,7 @@ type DataFrame struct {
 	Lows      []float64
 	Volumes   []float64
 
+  // technical chart data
 	Smas          []Sma
 	Emas          []Ema
 	BollingerBand *BollingerBand
@@ -44,8 +44,6 @@ func NewDataFrame(productCode string, duration time.Duration) DataFrame {
 }
 
 func (df *DataFrame) addExecution(executions []Execution) {
-  sort.Slice(executions, func(i, j int) bool { return executions[i].Time.Before(executions[j].Time) })
-
   datetimes := make([]time.Time, 0)
   opens := make([]float64, 0)
   closes := make([]float64, 0)
@@ -228,7 +226,6 @@ func (df *DataFrame) refreshSmas() {
 }
 
 // EMA
-
 // AddEmas is Added Emas setting
 func (df *DataFrame) AddEmas(period int) {
 	for i := range df.Emas {

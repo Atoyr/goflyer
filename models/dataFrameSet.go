@@ -5,6 +5,7 @@ import (
 	"time"
   "sync"
   "log"
+  "sort"
 )
 
 type DataFrameSet struct {
@@ -81,10 +82,17 @@ func (dfs *DataFrameSet) AddExecution(e Execution) {
   dfs.m.Unlock()
 }
 
+func (dfs *DataFrameSet) AddExecutions(e []Execution) {
+  dfs.m.Lock()
+  dfs.executionPool = append(dfs.executionPool, e...)
+  dfs.m.Unlock()
+}
+
 func (dfs *DataFrameSet) ApplyExecution() {
   dfs.m.Lock()
   defer dfs.m.Unlock()
 
+  sort.Slice(dfs.executionPool, func(i, j int) bool { return dfs.executionPool[i].Time.Before(dfs.executionPool[j].Time) })
   for i := range dfs.executionPool {
     for j := range dfs.DataFrames {
       dfs.DataFrames[j].addExecution(dfs.executionPool)
@@ -106,4 +114,17 @@ func (dfs *DataFrameSet) ApplyExecution() {
     }
   }
   dfs.executionPool = make([]Execution, 0)
+}
+
+func (dfs *DataFrameSet) UpdateTechnicalChartData() {
+  wg := sync.WaitGroup{}
+  for i := range dfs.DataFrames {
+    wg.Add(1)
+    index := i
+    go func() {
+      dfs.DataFrames[index].updateChart()
+      wg.Done()
+    }()
+  }
+  wg.Wait()
 }
