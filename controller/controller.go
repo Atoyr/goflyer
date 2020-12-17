@@ -12,6 +12,7 @@ import (
 	"github.com/atoyr/goflyer/client/bitflyer"
 	"github.com/atoyr/goflyer/config"
 	"github.com/atoyr/goflyer/models"
+	"github.com/atoyr/goflyer/db"
 )
 
 type Controller struct {
@@ -20,6 +21,7 @@ type Controller struct {
 	config    config.Config
 	dataframeSet models.DataFrameSet
   duration time.Duration
+  database *db.Database
 
   ps *pubsub.PubSub
 }
@@ -38,6 +40,7 @@ func New(appName string) *Controller {
     fmt.Println(c.config.CanUsedDataFrameDurationMinute[i])
     c.dataframeSet.AddDataFrame( time.Duration( c.config.CanUsedDataFrameDurationMinute[i]) * time.Minute)
   }
+  c.database = nil
   c.ps = pubsub.New()
 
   c.applyConfig()
