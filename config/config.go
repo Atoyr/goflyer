@@ -22,7 +22,6 @@ type Config struct {
 	WebsocketHost   string `json:"websocket_host"`
 	WebsocketPath   string `json:"websocket_path"`
 
-
   // DataFrameUpdateDuration unit is second
   DataFrameUpdateDuration int `json:"data_frame_update_duration"`
 
@@ -95,3 +94,4 @@ func (c *Config) GetWebsocketString() string {
 	websocket := url.URL{Scheme: c.WebsocketScheme, Host: c.WebsocketHost, Path: c.WebsocketPath}
 	return websocket.String()
 }
+

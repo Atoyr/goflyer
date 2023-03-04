@@ -15,19 +15,14 @@ import (
   "github.com/atoyr/goflyer/controller"
 )
 
-const(
-  name     = "goflyer"
-  version  = "0.0.1"
-  revision = "HEAD"
-)
+const APP_NAME = "goflyer"
 
 var duration = 30 * time.Second
-var exitCode = 0
 
 func main() {
   app := &cli.App{
     Action: func(c *cli.Context) error {
-      clr := controller.New(name)
+      clr := controller.New(APP_NAME)
       clr.SaveConfig()
 
       ctx := context.Background()
@@ -54,6 +49,15 @@ func main() {
       api.POST("/set_duration",
         func (c echo.Context) error {
           fmt.Println()
+          // fmt.Println("call set_duration")
+          // durationString := c.FormValue("duration")
+          // d := models.GetDuration(durationString)
+          // df.SetDuration(d)
+          // fmt.Println(durationString)
+          // for i := range df.Datetimes {
+          // fmt.Printf("Time : %s , Open : %7.0f , High : %7.0f , Low : %7.0f , Close : %7.0f , Volume : %f",df.Datetimes[i], df.Opens[i], df.Highs[i], df.Lows[i], df.Closes[i], df.Volumes[i])
+          // fmt.Println()
+          // }
           return c.String(http.StatusOK, "")
         })
       api.POST("/cancel",
@@ -71,6 +75,4 @@ func main() {
   if err != nil {
     log.Fatal(err)
   }
-
-  os.Exit(exitCode)
 }

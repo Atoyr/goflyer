@@ -36,7 +36,7 @@ func saveJsonMarshalIndent(value interface{}, path string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, jsonIndent.Bytes(), 0777)
+	err = ioutil.WriteFile(path, jsonIndent.Bytes(), 0770)
 
 	if err != nil {
 		return err
